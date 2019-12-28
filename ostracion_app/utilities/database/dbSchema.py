@@ -200,3 +200,20 @@ dbSchema = {
         ],
     }
 }
+
+tableCreationOrderSequence = [
+    'users',
+    'boxes',
+    'roles',
+    'files',
+    'box_role_permissions',
+    'user_roles',
+    'settings',
+    'tickets',
+    'attempted_logins',
+]
+
+tableCreationOrder = {
+    tN: tI
+    for tI, tN in enumerate(tableCreationOrderSequence)
+}

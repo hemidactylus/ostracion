@@ -5,7 +5,11 @@
 ### Ansible
 
 Write the playbook for an easy deploy and documentation on install in README.md
-
+  TODOS:
+    use https in config
+      -> test install letsencry stuff
+    check the nginx workaround, still relevant?
+    hsts & other headers
 
 ## Maintenance (internals)
 

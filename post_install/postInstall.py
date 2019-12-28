@@ -27,7 +27,8 @@ from ostracion_app.utilities.database.sqliteEngine import (
     dbRetrieveRecordByKey,
 )
 from ostracion_app.utilities.database.dbSchema import (
-    dbSchema
+    dbSchema,
+    tableCreationOrder,
 )
 
 from ostracion_app.utilities.tools.securityCodes import makeSecretKey
@@ -48,7 +49,7 @@ sensitiveConfigFileTemplate = applyReplacementPairs(
         os.path.join(basedir, 'sensitive_config_TEMPLATE.py')
     ).read(),
     [
-        ('sensitive_config_TEMPLATE.py','sensitive_config.py'),
+        ('sensitive_config_TEMPLATE.py', 'sensitive_config.py'),
         (
             ('# SECRET_KEY = \'insert_a_very_unguessable_48char_'
              'secret_key_here\''),
@@ -86,7 +87,9 @@ if __name__ == '__main__':
     db = dbOpenDatabase(dbFullName)
     print('done.')
     print(' * Creating tables')
-    for tName, tContents in dbSchema.items():
+    for tName, tContents in sorted(
+            dbSchema.items(),
+            key=lambda tnc: tableCreationOrder[tnc[0]]):
         print('     * %-30s' % ('"%s"' % tName), end='')
         tableFound = dbTableExists(db, tName)
         if not tableFound:
