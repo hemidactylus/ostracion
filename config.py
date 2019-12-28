@@ -20,7 +20,7 @@ similarityScoreThreshold = 0.15
 lowercaseAlphabet = 'qwertyuiopasdfghjklzxcvbnm'
 
 # version
-ostracionVersion = '0.9.0'
+ostracionVersion = '1.0.0'
 
 # directories
 templateDirectory = os.path.join(
