@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% import "tools/fileview_tools.html" as fileviewtools %}
+
+{% block content %}
+
+      <div class="row">
+
+        <div class="col">
+
+            <div class="jumbotron" style="padding: 10px; background-color: #a0a0b8">
+                {{ fileviewtools.fileview_header(
+                    pageTitle,
+                    pageSubtitle,
+                    fileActions,
+                    fileInfo,
+                    downloadUrl,
+                ) }}
+
+              <span>
+                {% if filecontents.mode == 'plain' %}
+                    <pre><code>{{ filecontents.value }}</code></pre>
+                {% elif filecontents.mode == 'markdown' %}
+                  <div>{{ filecontents.value | safe }}</div>
+                {% elif filecontents.mode == 'error' %}
+                  <p><em>{{ filecontents.value }}</em></p>
+                {% elif filecontents.mode == 'image' %}
+                  <img src="{{ filecontents.value }}" style="max-width: 100%; max-height: 650px;" class="img-responsive"/>
+                {% else %}
+                  <p><em>Unhandled file view mode {{ filecontents.mode }}</em></p>
+                {% endif %}
+              </span>
+
+            </div>
+        </div>
+
+      </div>
+
+{% endblock %}

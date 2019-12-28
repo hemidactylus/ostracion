@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% import "tools/fileview_tools.html" as fileviewtools %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ fileviewtools.fileview_header(
+                  pageTitle,
+                  pageSubtitle,
+                  fileActions,
+                  fileInfo,
+              ) }}
+
+              <form method="post" name="uploadsinglefile" enctype="multipart/form-data" action="">
+                {{ form.hidden_tag() }}
+
+                {{ form.save(class_='btn btn-primary', style='margin-right: 25px;',tabindex=1) }}
+                <a href="#" class="btn btn-success" onclick="window.history.back()" tabindex="2">
+                  Cancel
+                </a>
+
+                <div class="form-group">
+                  <div>{{ form.textformat.label(style='margin-top:20px; margin-bottom: 5px;') }}</div>
+                  {% for subfield in form.textformat %}
+                    <div class="form-check form-check-inline">
+                      {{ subfield(class_='form-check-input',tabindex=3) }}
+                      {{ subfield.label(class_='form-check-label',style='font-family: monospace;') }}
+                    </div>
+                  {% endfor %}
+                </div>
+
+                <div class="form-group" style="margin-top: 18px;">
+                  <!-- <label for="filecontents">File contents</label> -->
+                  {{ form.filecontents(class_="form-control", style="font-family: monospace;",rows='36',tabindex=4) }}
+                  {% for error in form.filecontents.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                {{ form.save(class_='btn btn-primary', style='margin-right: 25px;',tabindex=5) }}
+                <a href="#" class="btn btn-success" onclick="window.history.back()" tabindex="6">
+                  Cancel
+                </a>
+              </form>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,135 @@
+{% import "tools/hero_tools.html" as herotools %}
+{% import "tools/card_tools.html" as cardtools %}
+
+{% macro permissionButton(isOn,isEnabled,link,symbol) %}
+                        {% if isEnabled %}
+                          <a href="{{ link }}">
+                        {% endif %}
+                        {% if isEnabled %}
+                        <span class="btn btn-sm btn-{%- if isOn -%}info{%- else -%}dark{%- endif -%}" style="font-family: monospace;">
+                        {% else %}
+                        <span class="btn btn-sm btn-outline-{%- if isOn -%}info{%- else -%}dark{%- endif -%}" style="font-family: monospace;">
+                        {% endif %}
+                        
+                          {%- if isOn -%}{{ symbol }}{%- else -%}-{%- endif -%}
+                        </span>
+                        {% if link %}
+                          </a>
+                        {% endif %}
+{% endmacro %}
+
+{% extends "base.html" %}
+
+{% block content %}
+
+      {{ herotools.image_hero(
+        title='Permissions for "%s"' % boxNiceName,
+        subtitle=None,
+        subtitleit=None,
+        icon_url=url_for('boxThumbnailView',dummyId=thisBox.icon_file_id+'_',boxPathString='/'.join(boxPath)),
+        info_lines=None,
+        role_list=None,
+        actions=None,
+        permission_info=permissionInfo,
+        hideAdditionalInfo=False,
+      ) }}
+
+      <div class="row">
+        <div class="col">
+          <div class="jumbotron" style="background-color: {{ g.settings.color.task_colors.table.value }}; padding-top: 20px;">
+            <p><i>
+              Click on a permission to toggle its value. Make an inherited permission-set explicit before editing.
+            </p></i>
+
+            {% if thisBox.box_id!='' %}      
+              {% if unmentionedRoleIds %}
+                <p>
+                  <strong>Add new permission set for role:</strong>
+                  {% for role_id in unmentionedRoleIds %}
+                    <a href="{{ url_for('adminMkPermissionView',roleId=role_id,lsPathString='/'.join(boxPath)) }}">
+                      <span class="badge badge-pill badge-primary">
+                        {{ role_id }}
+                      </span>
+                    </a>
+                  {% endfor %}
+                </p>
+              {% endif %}
+            {% endif %}
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="col-sm-2">Role</th>
+                        <th class="col-sm-1">Read/Write/Change?</th>
+                        <th class="col-sm-1">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                  {% for brp in thisBox.listPermissions('native') | sort %}
+                    <tr>
+                      <td>
+                        {{ brp.role_id }}
+                      </td>
+                      <td>
+                        {{ permissionButton(
+                          isOn=brp.r,
+                          isEnabled=thisBox.box_id!='',
+                          link=url_for('adminTogglePermissionBitView',roleId=brp.role_id,bit='r',lsPathString='/'.join(boxPath)),
+                          symbol='R',
+                        ) }}
+                        {{ permissionButton(
+                          isOn=brp.w,
+                          isEnabled=thisBox.box_id!='',
+                          link=url_for('adminTogglePermissionBitView',roleId=brp.role_id,bit='w',lsPathString='/'.join(boxPath)),
+                          symbol='W',
+                        ) }}
+                        {{ permissionButton(
+                          isOn=brp.c,
+                          isEnabled=thisBox.box_id!='',
+                          link=url_for('adminTogglePermissionBitView',roleId=brp.role_id,bit='c',lsPathString='/'.join(boxPath)),
+                          symbol='C'
+                        ) }}
+                      </td>
+                      <td>
+                        {% if thisBox.box_id!='' %}
+                          <a href="{{ url_for('adminRmPermissionView',roleId=brp.role_id,lsPathString='/'.join(boxPath)) }}" class="btn btn-sm btn-danger">X</a>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                  {% for brp in thisBox.listPermissions('inherited') | sort %}
+                    <tr style="color: grey; font-style: italic;">
+                      <td>
+                        <b>(Inherited)</b> {{ brp.role_id }}
+                      </td>
+                      <td>
+                        {{ permissionButton(
+                          isOn=brp.r,
+                          isEnabled=False,
+                          symbol='R'
+                        ) }}
+                        {{ permissionButton(
+                          isOn=brp.w,
+                          isEnabled=False,
+                          symbol='W'
+                        ) }}
+                        {{ permissionButton(
+                          isOn=brp.c,
+                          isEnabled=False,
+                          symbol='C'
+                        ) }}
+                      </td>
+                      <td>
+                        {% if brp.role_id!='admin' %}
+                          <a href="{{ url_for('adminMkPermissionView',roleId=brp.role_id,lsPathString='/'.join(boxPath)) }}" class="btn btn-sm btn-primary">M</a>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+{% endblock %}

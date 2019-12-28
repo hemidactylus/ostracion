@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% import "tools/form_tools.html" as formtools %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+              <div class="row">
+
+                <div class="col-md-12">
+                    <div class="jumbotron" style="background-color: {{ g.settings.color.task_colors.table.value }}; padding-top: 10px;">
+                        {% if newItemMenu %}
+                          <div class="row">
+                            <div class="col col-md-4" style="margin-top: 15px; margin-bottom: 15px;">
+                                <a href="{{ url_for(newItemMenu.endpointName) }}" class="btn btn-primary btn-md">{{ newItemMenu.title }}</a>
+                            </div>
+                          </div>
+                        {% endif %}
+                        <div class="row">
+
+                          <table class="table table-hover">
+                              <thead>
+                                  <tr>
+                                      <th class="col-sm-1">Name</th>
+                                      <th class="col-sm-1">Issued</th>
+                                      <th class="col-sm-1">Valid until</th>
+                                      <th class="col-sm-1">{{ targetName }}</th>
+                                      <th class="col-sm-1">Redeemed?</th>
+                                      <th class="col-sm-1">Redeemable?</th>
+                                      <th class="col-sm-4">Magic link</th>                                      
+                                      <th class="col-sm-1">Actions</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                {% for ticketDict in tickets %}
+                                  <tr>
+                                    <td class="{%- if not ticketDict.redeemable -%}un{%- endif -%}redeemable-ticket">
+                                      {{ ticketDict.ticket.name }}
+                                    </td>
+                                    <td class="{%- if not ticketDict.redeemable -%}un{%- endif -%}redeemable-ticket">
+                                      <small>
+                                        {{ ticketDict.ticket.issue_date.strftime('%y-%m-%d') }}
+                                        <span class="badge badge-primary" data-toggle="tooltip" title="Issuer username: {{ ticketDict.ticket.username }}">
+                                          {{ ticketDict.issuer_full_name }}
+                                        </span>
+                                      </small>
+                                    </td>
+                                    <td class="{%- if not ticketDict.redeemable -%}un{%- endif -%}redeemable-ticket">
+                                      {% if ticketDict.ticket.expiration_date %}
+                                        {{ ticketDict.ticket.expiration_date.strftime('%Y-%m-%d %H:%M') }}
+                                      {% else %}
+                                        <i>forever</i>
+                                      {% endif %}
+                                    </td>
+                                    <td style="font-family: monospace;" class="{%- if not ticketDict.redeemable -%}un{%- endif -%}redeemable-ticket">
+                                      {% if ticketDict.target %}
+                                        {%- if ticketDict.target_url -%}<a href="{{ ticketDict.target_url }}">{%- endif -%}
+                                          {{ ticketDict.target }}
+                                        {%- if ticketDict.target_url -%}</a>{%- endif -%}
+                                      {% endif %}
+                                    </td>
+                                    <td>
+                                      <span class="badge badge-{%- if ticketDict.redeemed -%}{%- if ticketDict.redeemable -%}warning{%- else -%}secondary{%- endif -%}{%- else -%}success{%- endif -%}">
+                                        {%- if ticketDict.redeemed -%}Yes{%- else -%}No{%- endif -%}
+                                      </span>
+                                      {% if ticketDict.redeemed %}
+                                        <span style="margin-left:0.25rem;" class="small">({{ ticketDict.ticket.times_redeemed }}, last: {{ ticketDict.ticket.last_redeemed.strftime('%m/%d %H:%M') }})</span>
+                                      {% endif %}
+                                    </td>
+                                    <td>
+                                      <span class="badge badge-{%- if ticketDict.redeemable -%}success{%- else -%}secondary{%- endif -%}">
+                                        {%- if ticketDict.redeemable -%}
+                                          Yes
+                                          {% if ticketDict.ticket.multiplicity %}
+                                            ({{ ticketDict.ticket.multiplicity - ticketDict.ticket.times_redeemed }} / {{ ticketDict.ticket.multiplicity }})
+                                          {% endif %}
+                                        {%- else -%}
+                                          No
+                                        {%- endif -%}
+                                      </span>
+                                    </td>
+                                    <td>
+                                      <small style="font-family: monospace;" class="badge badge-{%- if ticketDict.redeemable -%}warning{%- else -%}secondary{%- endif -%}">
+                                        {{ ticketDict.magic_link }}
+                                      </small>
+                                    </td>
+                                    <td>
+                                      <span>
+                                        <a href="{{ url_for('deleteTicketView',mode=mode,ticketId=ticketDict.ticket.ticket_id,asAdmin=1 if asAdmin else 0) }}" class="btn btn-danger btn-md" data-toggle="tooltip" title="Delete">
+                                          X
+                                        </a>
+                                      </span>
+                                    </td>
+                                  </tr>
+                                {% endfor %}
+
+                              </tbody>
+                          </table>
+                        </div>
+                    </div>
+                </div>
+
+              </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

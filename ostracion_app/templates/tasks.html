@@ -1,0 +1,47 @@
+{% import "tools/hero_tools.html" as herotools %}
+{% import "tools/card_tools.html" as cardtools %}
+
+{% extends "base.html" %}
+
+{% block content %}
+
+      {{ herotools.image_hero(
+        title=pageTitle,
+        titleit=None,
+        subtitle=pageSubtitle,
+        subtitleit=pageSubtitleit,
+        icon_url=iconUrl,
+        info_lines=infoLines,
+        role_list=roleList,
+        actions=None,
+        permission_info=None
+      ) }}
+
+      <div class="row">
+
+        {% if tasks | length > 0 %}
+
+          {% for task in tasks %}
+              {{ cardtools.action_card(
+                title=task.name,
+                subtitle=task.description,
+                subtitleit=None,
+                target_url=task.url,
+                bgcolor=bgcolor,
+                icon_url=task.thumbnail,
+              ) }}
+          {% endfor %}
+
+        {% else %}
+
+          <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+              <p class="lead">No tasks available.</p>
+            </div>
+          </div>
+
+        {% endif %}
+
+      </div>
+
+{% endblock %}

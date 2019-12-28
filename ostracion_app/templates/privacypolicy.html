@@ -1,0 +1,25 @@
+{% import "tools/hero_tools.html" as herotools %}
+
+{% extends "base.html" %}
+
+{% block content %}
+
+      {{ herotools.image_hero(
+        title=pageTitle,
+        titleit=None,
+        subtitle=pageSubtitle,
+        subtitleit=pageSubtitleit,
+        icon_url=iconUrl,
+        info_lines=None,
+        role_list=None,
+        actions=None,
+        permission_info=None,
+      ) }}
+
+        <div class="col">
+            <div class="jumbotron" style="padding-top: 5px;">
+                {{ privacyPolicy.contents | safe }}
+            </div>
+        </div>
+
+{% endblock %}

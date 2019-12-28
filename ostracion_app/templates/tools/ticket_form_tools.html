@@ -1,0 +1,13 @@
+{% macro validityHoursCaption(settings) %}
+  Validity, hours
+  {%- if settings['behaviour']['behaviour_tickets']['max_ticket_validityhours']['value'] -%}
+    . Max: {{ settings['behaviour']['behaviour_tickets']['max_ticket_validityhours']['value'] }}
+  {%- endif -%}
+{% endmacro %}
+
+{% macro multiplicityCaption(baseCaption,settings) %}
+  {{ baseCaption }}
+  {%- if settings['behaviour']['behaviour_tickets']['max_ticket_multiplicity']['value'] -%}
+    . Max: {{ settings['behaviour']['behaviour_tickets']['max_ticket_multiplicity']['value'] }}
+  {%- endif -%}
+{% endmacro %}

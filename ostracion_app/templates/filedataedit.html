@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% import "tools/form_tools.html" as formtools %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+              <form action="" method="post" name="filedata">
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                  <label for="filename">File name</label>
+                  {{ form.filename(class_="form-control",tabindex=1) }}
+                  {% for error in form.filename.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                <div class="form-group">
+                  <label for="filedescription">Description</label>
+                  {{ form.filedescription(class_="form-control", placeholder="Can be left blank",tabindex=2) }}
+                  {% for error in form.filedescription.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                {{ form.confirm(class_='btn btn-primary', style='margin-right: 25px;',tabindex=3) }}
+                <a href="#" class="btn btn-success" onclick="window.history.back()" tabindex="4">
+                  Cancel
+                </a>
+              </form>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

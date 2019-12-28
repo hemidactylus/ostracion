@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% import "tools/form_tools.html" as formtools %}
+{% import "tools/ticket_form_tools.html" as ticketformtools %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+              <form action="" method="post" name="adminnewuserinvitation">
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                  <label for="ticketmessage">Message on ticket</label>
+                  {{ form.ticketmessage(class_="form-control",placeholder="Optional: shown to recipient upon ticket redemption",tabindex=1) }}
+                  {% for error in form.ticketmessage.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                <hr>
+
+                <div class="form-group">
+                  <label for="username">Username</label>
+                  {{ form.username(class_="form-control",placeholder="Empty to let the recipient choose a username",tabindex=2) }}
+                  {% for error in form.username.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+                <div class="form-group">
+                  <label for="fullname">Full name</label>
+                  {{ form.fullname(class_="form-control",placeholder="Can be left blank",tabindex=3) }}
+                  {% for error in form.fullname.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+                <div class="form-group">
+                  <label for="email">Email</label>
+                  {{ form.email(class_="form-control",placeholder="Can be left blank",tabindex=4) }}
+                  {% for error in form.email.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+                <hr>
+
+                <div class="form-group">
+                  <label for="name">Internal name</label>
+                  {{ form.name(class_="form-control",placeholder="Used to easily remember issued tickets; not shown to users",tabindex=5) }}
+                  {% for error in form.name.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+                <div class="form-group">
+                  <label for="validityhours">{{ ticketformtools.validityHoursCaption(g.settings) }}</label>
+                  {{ form.validityhours(class_="form-control",placeholder="Leave empty for no expiration",tabindex=6) }}
+                  {% for error in form.validityhours.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                <hr>
+
+                {{ form.confirm(class_='btn btn-primary', style='margin-right: 25px;',tabindex=7) }}
+                <a href="#" class="btn btn-success" onclick="window.history.back()" tabindex="8">
+                  Cancel
+                </a>
+              </form>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

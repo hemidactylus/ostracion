@@ -1,0 +1,103 @@
+{% import "tools/hero_tools.html" as herotools %}
+{% import "tools/form_tools.html" as formtools %}
+
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+              <form action="" method="post" name="colorsettings">
+
+                {{ form.hidden_tag() }}
+
+                {% for field in form %}
+                  {% set field_looper = loop %}
+                  {% if field.type in ['SubmitField','CSRFTokenField'] %}
+                    {# not handled in this loop #}
+                  {% elif field.type=='StringField' %}
+                    {% if wideIdToFormProperties[field.id]['group_caption'] %}
+                      <h5>{{ wideIdToFormProperties[field.id]['group_caption'] }}</h5>
+                    {% endif %}
+                    <div class="form-group">
+                      {{ field.label(style="margin-bottom:0px;") }}
+                      <small class="form-text text-muted" style="margin-top:0px;">{{ wideIdToFormProperties[field.id]['richSetting']['setting']['description'] }}</small>
+                      {% if wideIdToFormProperties[field.id]['richSetting']['setting']['type'] == 'optional_integer' %}
+                        {{ field(class_="form-control",placeholder="Empty for no constraints",tabindex=field_looper.index) }}
+                      {% elif wideIdToFormProperties[field.id]['richSetting']['setting']['type'] == 'positive_integer' %}
+                        {{ field(class_="form-control",placeholder="Insert a positive integer. Default: %i" % wideIdToFormProperties[field.id]['richSetting']['default_value'] ,tabindex=field_looper.index) }}
+                      {% elif wideIdToFormProperties[field.id]['richSetting']['setting']['type'] == 'nonempty_string' %}
+                        {{ field(class_="form-control",placeholder="Cannot be left empty",tabindex=field_looper.index) }}
+                      {% elif wideIdToFormProperties[field.id]['richSetting']['setting']['type'] == 'nonnegative_integer' %}
+                        {{ field(class_="form-control",placeholder="Insert zero or a positive integer. Default: %i" % wideIdToFormProperties[field.id]['richSetting']['default_value'] ,tabindex=field_looper.index) }}
+                      {% else %}
+                        {{ field(class_="form-control",placeholder="Default: %s" % wideIdToFormProperties[field.id]['richSetting']['default_value'],tabindex=field_looper.index) }}
+                      {% endif %}
+                      {% for error in field.errors %}
+                        <small class="form-text text-muted">{{ error }}</small>
+                      {% endfor %}
+                    </div>
+                  {% elif field.type=='TextAreaField' %}
+                    {% if wideIdToFormProperties[field.id]['group_caption'] %}
+                      <h5>{{ wideIdToFormProperties[field.id]['group_caption'] }}</h5>
+                    {% endif %}
+                    <div class="form-group">
+                      {{ field.label(style="margin-bottom:0px;") }}
+                      <small class="form-text text-muted" style="margin-top:0px;">{{ wideIdToFormProperties[field.id]['richSetting']['setting']['description'] }}</small>
+                      {{ field(class_="form-control",placeholder="DEFAULT VALUE FOLLOWS:\n %s" % wideIdToFormProperties[field.id]['richSetting']['setting']['default_value'],rows='36',tabindex=field_looper.index) }}
+                      {% for error in field.errors %}
+                        <small class="form-text text-muted">{{ error }}</small>
+                      {% endfor %}
+                    </div>
+                  {% elif field.type=='BooleanField' %}
+                    {% if wideIdToFormProperties[field.id]['group_caption'] %}
+                      <h5>{{ wideIdToFormProperties[field.id]['group_caption'] }}</h5>
+                    {% endif %}
+                    <div class="form-group">
+                      <small class="form-text text-muted">{{ wideIdToFormProperties[field.id]['richSetting']['setting']['description'] }}</small>
+                      <div class="custom-control custom-switch">
+                        {{ field(class_="custom-control-input",tabindex=field_looper.index) }}
+                        <label class="custom-control-label" for="{{ field.id }}">{{ wideIdToFormProperties[field.id]['richSetting']['setting']['title'] }}</label>
+                        {% for error in field.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  {% elif field.type=='RadioField' %}
+                    {% if wideIdToFormProperties[field.id]['group_caption'] %}
+                      <h5>{{ wideIdToFormProperties[field.id]['group_caption'] }}</h5>
+                    {% endif %}
+                    <div class="form-group">
+                      {{ field.label(style="margin-bottom:0px;") }}
+                      <small class="form-text text-muted" style="margin-top:0px;">{{ wideIdToFormProperties[field.id]['richSetting']['setting']['description'] }}</small>
+                      {% for subfield in field %}
+                        <div class="form-check form-check-inline">
+                          {{ subfield(class_='form-check-input',tabindex=field_looper.index) }}
+                          {{ subfield.label(class_='form-check-label',style='font-family: monospace;') }}
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    <h3>UNHANDLED FIELD TYPE {{ field.type }}!</h3>
+                  {% endif %}
+                {% endfor %}
+
+                {{ form.confirm(class_='btn btn-primary', style='margin-right: 25px;',tabindex=wideIdToFormProperties | length + 1) }}
+                <a href="#" class="btn btn-success" onclick="window.history.back()" tabindex="{{ wideIdToFormProperties | length + 2 }}">
+                  Cancel
+                </a>
+              </form>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

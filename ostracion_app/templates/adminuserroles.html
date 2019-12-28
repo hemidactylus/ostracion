@@ -1,0 +1,53 @@
+{% import "tools/hero_tools.html" as herotools %}
+{% import "tools/form_tools.html" as formtools %}
+
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                'User roles',
+                'Manage roles granted to user "%s" (%s)' % (targetUser.fullname, targetUser.username),
+                icon_url=iconUrl,
+              ) }}
+
+              <div class="row">
+
+                <div class="col-md-12">
+                    <div class="jumbotron" style="background-color: {{ g.settings.color.task_colors.table.value }}; padding-top: 10px;">
+                      <p>
+                        Click on a role to grant/ungrant it
+                      </p>
+
+                      {% for roleItem in roleItems %}
+                        {% if roleItem.granted %}
+                          <a href="{{ url_for('adminUserRolesView',username=targetUser.username,op='del',roleId=roleItem.role.role_id) }}">
+                            <span class="badge badge-pill badge-success">
+                              {% if roleItem.role.system %}<i>{% endif %}
+                                {{ roleItem.role.role_id }}
+                              {% if roleItem.role.system %}</i>{% endif %}
+                            </span>
+                          </a>
+                        {% else %}
+                          <a href="{{ url_for('adminUserRolesView',username=targetUser.username,op='add',roleId=roleItem.role.role_id) }}">
+                            <span class="badge badge-pill badge-danger">
+                              {% if roleItem.role.system %}<i>{% endif %}
+                                {{ roleItem.role.role_id }}
+                              {% if roleItem.role.system %}</i>{% endif %}
+                            </span>
+                          </a>
+                        {% endif %}
+                      {% endfor %}
+
+                    </div>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

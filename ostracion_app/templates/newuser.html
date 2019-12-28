@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% import "tools/form_tools.html" as formtools %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+              <form action="" method="post" name="adminnewuser">
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                  <label for="username">Username</label>
+                  {%- if lockUsernameField %}
+                    {{ form.username(class_="form-control",readonly='x',tabindex=1) }}
+                  {% else %}
+                    {{ form.username(class_="form-control",tabindex=1) }}
+                  {% endif %}
+                  {% for error in form.username.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+                <div class="form-group">
+                  <label for="fullname">Full name</label>
+                  {{ form.fullname(class_="form-control",tabindex=2) }}
+                  {% for error in form.fullname.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+                <div class="form-group">
+                  <label for="email">Email</label>
+                  {{ form.email(class_="form-control",tabindex=3) }}
+                  {% for error in form.email.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+                <div class="form-group">
+                  <label for="password">Password</label>
+                  {{ form.password(class_="form-control",tabindex=4) }}
+                  {% for error in form.password.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+                <div class="form-group">
+                  <label for="confirmpassword">Confirm password</label>
+                  {{ form.confirmpassword(class_="form-control",tabindex=5) }}
+                  {% for error in form.confirmpassword.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                {{ form.confirm(class_='btn btn-primary', style='margin-right: 25px;',tabindex=6) }}
+                <a href="#" class="btn btn-success" onclick="window.history.back()" tabindex="7">
+                  Cancel
+                </a>
+              </form>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% import "tools/form_tools.html" as formtools %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+              <div class="row">
+
+                <div class="col-md-12">
+                    <div class="jumbotron" style="background-color: {{ g.settings.color.task_colors.table.value }}; padding-top: 10px;">
+                        <div class="row">
+                          <div class="col col-md-4" style="margin-top: 15px; margin-bottom: 15px;">
+                            <a href="{{ url_for('adminEditRole') }}" class="btn btn-primary btn-md">New role...</a>
+                          </div>
+                        </div>
+                        <div class="row">
+
+                          <table class="table table-hover">
+                              <thead>
+                                  <tr>
+                                      <th class="col-sm-1">Role ID</th>
+                                      <th class="col-sm-1">System?</th>
+                                      <th class="col-sm-4">Description</th>
+                                      <th class="col-sm-4">Users</th>
+                                      <th class="col-sm-2">Actions</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                {% for roleDict in roles %}
+                                  <tr>
+                                    <td>
+                                      {{ roleDict.role.role_id }}
+                                    </td>
+                                    <td>
+                                      {% if roleDict.role.system %}
+                                        <b>Yes</b>
+                                      {% else %}
+                                        No
+                                      {% endif %}
+                                    </td>
+                                    <td>
+                                      {{ roleDict.role.description }}
+                                    </td>
+                                    <td>
+                                      {% for ur in roleDict.role_users %}
+                                        <a href="{{ url_for('adminUserRolesView',username=ur.username) }}" class="badge badge-primary" data-toggle="tooltip" title="Roles for user '{{ ur.username }}'">
+                                          {{ ur.fullname }}
+                                        </a>
+                                        {% if not loop.last %}
+                                          /
+                                        {% endif %}
+                                      {% endfor %}
+                                    </td>
+                                    <td>
+                                      <span>
+                                        <a href="{{ url_for('adminEditRole',roleId=roleDict.role.role_id) }}" class="btn btn-primary btn-md" data-toggle="tooltip" title="Edit">
+                                          E
+                                        </a>
+                                      </span>
+                                      {% if roleDict.canDelete %}
+                                        <span>
+                                          <a href="{{ url_for('adminDeleteRoleView',roleId=roleDict.role.role_id) }}" class="btn btn-danger btn-md" data-toggle="tooltip" title="Delete">
+                                            X
+                                          </a>
+                                        </span>
+                                      {% endif %}
+                                    </td>
+                                  </tr>
+                                {% endfor %}
+
+                              </tbody>
+                          </table>
+                        </div>
+                    </div>
+                </div>
+
+              </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

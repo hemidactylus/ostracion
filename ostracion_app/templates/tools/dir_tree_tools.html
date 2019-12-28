@@ -1,0 +1,54 @@
+{% macro recursive_tree_box(mode,src_obj_path,box,contents,path,depth,dst_obj_path,predicate,colorShadeMap) %}
+    <div class="jumbotron dirtree-box-jumbotron"
+      style="background-color: {{ colorShadeMap[depth] }}">
+      <span>
+        {% if contents.files or contents.boxes %}
+          <a href="#blockId_{{ box.box_id }}" id="blockIdController_{{ box.box_id }}"
+            data-toggle="collapse" class="badge badge-primary" style="font-family: monospace; margin-right:0.4rem;">
+            -
+          </a>
+        {% endif %}
+
+        <span style="font-weight: bold;">
+          {% if mode == 'tree_view' %}
+            <a href="{{ url_for('lsView',lsPathString='/'.join(path)) }}">
+          {% endif %}
+          {% if mode == 'file_move' and predicate %}
+            <a href="{{ url_for('fsDoMoveFileView',quotedFilePath=src_obj_path,quotedDestBox=dst_obj_path) }}" class="btn btn-success btn-sm">V</a>
+          {% endif %}
+          {% if mode == 'box_move' and predicate %}
+            <a href="{{ url_for('fsDoMoveBoxView',quotedSrcBox=src_obj_path,quotedDestBox=dst_obj_path) }}" class="btn btn-success btn-sm">V</a>
+          {% endif %}
+          {{ hpc }}
+            <img src="{{ url_for('boxThumbnailView',dummyId=box.icon_file_id+'_',boxPathString='/'.join(path)) }}" class="dirtree-element-image rounded"/>
+            {{ box.box_name if box.box_name!='' else '(root)' }}
+          {% if mode == 'tree_view' %}
+            </a>
+          {% endif %}
+        </span>
+        <span id="counterInfo_{{ box.box_id }}">
+        </span>
+      </span>
+
+      <div class="collapse show collapsibleBoxContents" id="blockId_{{ box.box_id }}"
+        controllerId="{{ box.box_id }}" numItems="{{ (contents.files | length) + (contents.boxes | length) }}">
+        {% for richFile in contents.files %}
+          <div class="dirtree-child-element">
+            {% if mode == 'tree_view' %}
+              <a href="{{ url_for('fsView' if richFile.viewable else 'fsDownloadView',fsPathString='/'.join(path+[richFile.file.name])) }}">
+            {% endif %}
+              <img src="{{ url_for('fileThumbnailView',dummyId=richFile.file.icon_file_id+'_',fsPathString='/'.join(path+[richFile.file.name])) }}" class="dirtree-element-image rounded"/>
+              {{ richFile.file.name }}
+            {% if mode == 'tree_view' %}
+              </a>
+            {% endif %}
+          </div>
+        {% endfor %}
+        {% for childBox in contents.boxes %}
+          <div class="dirtree-child-element">
+            {{ recursive_tree_box(mode,src_obj_path,childBox.box,childBox.contents,childBox.path,childBox.depth,childBox.obj_path,childBox.predicate,colorShadeMap) }}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+{% endmacro %}

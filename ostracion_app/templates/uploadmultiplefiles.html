@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% import "tools/form_tools.html" as formtools %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+              <form method="post" name="uploadmultiplefiles" enctype="multipart/form-data" action="">
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                  <label for="files">Files</label>
+                  {{ form.files(class_="form-control-file",multiple="",tabindex=1) }}
+                  {% for error in form.files.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                <div class="form-group">
+                  <label for="filesdescription">Description</label>
+                  {{ form.filesdescription(class_="form-control", placeholder="Common to all uploaded files",tabindex=2) }}
+                  {% for error in form.filesdescription.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                {{ form.confirm(class_='btn btn-primary', style='margin-right: 25px;',tabindex=3) }}
+                <a href="#" class="btn btn-success" onclick="window.history.back()" tabindex="4">
+                  Cancel
+                </a>
+              </form>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

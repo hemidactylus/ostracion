@@ -1,0 +1,97 @@
+{% macro action_buttons(actions,info) %}
+  {% if actions.view %}
+    <a href="{{ actions.view }}" class="btn btn-success btn-sm" data-toggle="tooltip" title="View">
+      W
+    </a>
+  {% endif %}
+  {% if actions.download %}
+    <a href="{{ actions.download }}" class="btn btn-success btn-sm" data-toggle="tooltip" title="Download">
+      D
+    </a>
+  {% endif %}
+  {% if actions.ticket %}
+    <a href="{{ actions.ticket }}" class="btn btn-warning btn-sm" data-toggle="tooltip" title="File ticket">
+      T
+    </a>
+  {% endif %}
+  {% if actions.text_edit %}
+    <a href="{{ actions.text_edit }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Edit">
+      E
+    </a>
+  {% endif %}
+  {% if actions.icon %}
+    <a href="{{ actions.icon }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Icon">
+      I
+    </a>
+  {% endif %}
+  {% if actions.metadata %}
+    <a href="{{ actions.metadata }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Metadata">
+      M
+    </a>
+  {% endif %}
+  {% if actions.parent %}
+    <a href="{{ actions.parent }}" class="btn btn-success btn-sm"
+      style="font-family: 'Zapf Dingbats';"
+      data-toggle="tooltip" title="Container box">
+      &#9652;
+    </a>
+  {% endif %}
+  {% if info %}
+    <a href="#" class="btn btn-secondary btn-sm" data-toggle="tooltip" data-html="true" 
+    title="<div align='left'>
+      {%- for infoItem in info -%}
+        {{ infoItem.action }}: <b>{{ infoItem.actor }}</b>
+        {%- if not loop.last -%}
+          <br>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>">
+      i
+    </a>
+  {% endif %}
+  {% if actions.move %}
+    <a href="{{ actions.move }}" class="btn btn-success btn-sm" data-toggle="tooltip" title="Move">
+      V
+    </a>
+  {% endif %}
+  {% if actions.delete %}
+    <a href="{{ actions.delete }}" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
+      X
+    </a>
+  {% endif %}
+
+  {% if actions.gallery_prev %}
+    <a href="{{ actions.gallery_prev }}" class="btn btn-primary btn-sm"
+      style="font-family: 'Zapf Dingbats';"
+      data-toggle="tooltip" title="Previous">
+      &#9666;
+    </a>
+  {% endif %}
+  {% if actions.gallery_up %}
+    <a href="{{ actions.gallery_up }}" class="btn btn-primary btn-sm"
+      style="font-family: 'Zapf Dingbats';"
+      data-toggle="tooltip" title="Back to box">
+      &#9652;
+    </a>
+  {% endif %}
+  {% if actions.homepage %}
+    <a href="{{ actions.homepage }}" class="btn btn-primary btn-sm" data-toggle="tooltip"
+    style="padding-top: 0.05rem; padding-bottom:0.05rem;"
+    title="{{ g.settings.behaviour.behaviour_appearance.application_short_name.value }} homepage">
+      <img style="height: 3.6ex; max-width: 3rem;" src="{{ url_for(
+          'settingThumbnailView',
+          dummyId='%s_' % g.settings.image.ostracion_images.navbar_logo.value,
+          settingGroupId='ostracion_images',
+          settingId='navbar_logo',
+      ) }}"/>
+    </a>
+  {% endif %}
+  {% if actions.gallery_next %}
+    <a href="{{ actions.gallery_next }}" class="btn btn-primary btn-sm"
+      style="font-family: 'Zapf Dingbats';"
+      data-toggle="tooltip" title="Next">
+      &#9656;
+    </a>
+  {% endif %}
+
+{% endmacro %}

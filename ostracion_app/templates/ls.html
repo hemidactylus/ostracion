@@ -1,0 +1,79 @@
+{% import "tools/hero_tools.html" as herotools %}
+{% import "tools/card_tools.html" as cardtools %}
+
+{% extends "base.html" %}
+
+{% block content %}
+
+      {{ herotools.image_hero(
+        title=thisBox.title,
+        titleit=boxNiceName,
+        subtitle=thisBox.description,
+        subtitleit=boxChildrenCounter,
+        icon_url=url_for('boxThumbnailView',dummyId=thisBox.icon_file_id+'_',boxPathString='/'.join(boxPath)),
+        info_lines=None,
+        role_list=None,
+        actions=boxActions,
+        permission_info=permissionInfo,
+        showTaskButton=tasks | length > 0
+      ) }}
+
+      {% if tasks %}
+
+        <div class="collapse" id="tasksBlock">
+          <div class="row">
+            <!-- TASKS -->
+            {% for taskStructure in tasks %}
+                {{ cardtools.action_card(
+                  title=taskStructure.name,
+                  subtitle=taskStructure.description,
+                  subtitleit=None,
+                  target_url=taskStructure.url,
+                  bgcolor=taskStructure.bgcolor,
+                  icon_url=taskStructure.thumbnail,
+                ) }}
+            {% endfor %}
+          </div>
+          <hr style="border-top: 5px solid;">
+        </div>
+      {% endif %}
+
+      <div class="row">
+
+        <!-- BOXES -->
+        {% for boxStructure in boxes %}
+          {{ cardtools.box_card(
+            title=boxStructure.box.title,
+            titleit=boxStructure.box.box_name,
+            subtitle=boxStructure.box.description,
+            subtitleit=None,
+            infratitlesmall=None,
+            target_url=url_for('lsView',lsPathString='/'.join(boxStructure.path)),
+            icon_url=url_for('boxThumbnailView',dummyId=boxStructure['box'].icon_file_id+'_',boxPathString='/'.join(boxStructure['path'])),
+            icon_subtitle=boxStructure.box.date.strftime('%b %d, %Y'),
+            info=boxStructure.info,
+            actions=boxStructure.actions,
+            color=g.settings['color']['navigation_colors']['box']['value'],
+          ) }}
+        {% endfor %}
+
+        <!-- FILES -->
+        {% for fileStructure in files %}
+          {{ cardtools.file_card(
+            title=fileStructure['file'].name,
+            titleit=None,
+            subtitle=fileStructure['file'].description,
+            subtitleit='%s; %s' % (fileStructure['file'].type, fileStructure['nice_size']),
+            infratitlesmall=None,
+            target_url=fileStructure.actions.view if fileStructure.actions.view else fileStructure.actions.download,
+            icon_url=url_for('fileThumbnailView',dummyId=fileStructure['file'].icon_file_id+'_',fsPathString='/'.join(fileStructure.path)),
+            icon_subtitle=fileStructure['file'].date.strftime('%b %d, %Y'),
+            info=fileStructure.info,
+            actions=fileStructure.actions,
+            color=g.settings['color']['navigation_colors']['file']['value'],
+          ) }}
+        {% endfor %}
+
+      </div>
+
+{% endblock %}

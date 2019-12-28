@@ -1,0 +1,17 @@
+{% import "tools/action_button_tools.html" as actionbuttontools %}
+
+{% macro fileview_header(title,subtitle,actions,info,downloadUrl) %}
+              <h2 style="padding-bottom: 8px;">
+                {{ title }}
+              </h2>
+              {% if subtitle %}
+                <p>
+                  {{ subtitle }}
+                </p>
+              {% endif %}
+              {{ actionbuttontools.action_buttons(actions,info) }}
+              {% if downloadUrl %}
+                <a href="{{ downloadUrl }}" class="btn btn-success">Download file</a>
+              {% endif %}
+              <hr>
+{% endmacro %}

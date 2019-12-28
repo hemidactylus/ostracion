@@ -1,0 +1,25 @@
+{% import "tools/action_button_tools.html" as actionbuttontools %}
+
+{% macro form_header(title,subtitle,icon_url,actions=None,info=None) %}
+
+                <div class="row">
+                    {% if icon_url %}
+                      <div class="col" style="max-width: 200px;">
+                        <img src="{{ icon_url }}" class="rounded" width="100%">
+                      </div>
+                    {% endif %}
+                    <div class="col">
+                        <h2>
+                            {{ title }}
+                        </h2>
+                        {% if subtitle %}
+                            <p>
+                                {{ subtitle }}
+                            </p>
+                        {% endif %}
+                        {{ actionbuttontools.action_buttons(actions,info) }}
+                    </div>
+                </div>
+                <hr>
+
+{% endmacro %}

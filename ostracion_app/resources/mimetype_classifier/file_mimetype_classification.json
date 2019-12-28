@@ -1,0 +1,212 @@
+{
+    "image_mime_types_by_thumbnail_method": {
+        "image/gif": "resize", 
+        "image/jpeg": "resize", 
+        "image/png": "resize", 
+        "image/svg+xml": "copy", 
+        "image/webp": "resize",
+        "image/x-ms-bmp": "resize"
+    }, 
+    "mime_types_by_filetype": {
+        "archive": [
+            "application/gzip", 
+            "application/x-archive", 
+            "application/x-tar", 
+            "application/zip", 
+            "application/zlib"
+        ], 
+        "audio": [
+            "audio/midi", 
+            "audio/x-unknown", 
+            "audio/x-wav"
+        ], 
+        "binary": [
+            "application/octet-stream"
+        ], 
+        "compiled_code": [
+            "application/x-java-applet", 
+            "application/x-object", 
+            "application/x-sharedlib"
+        ], 
+        "deb": [
+            "application/vnd.debian.binary-package"
+        ], 
+        "diff_result": [
+            "text/x-diff"
+        ], 
+        "disc_image": [
+            "application/x-iso9660-image"
+        ], 
+        "document": [
+            "application/epub+zip", 
+            "image/vnd.djvu"
+        ], 
+        "dos_executable": [
+            "application/x-dosexec"
+        ], 
+        "dvi": [
+            "application/x-dvi"
+        ], 
+        "email": [
+            "message/rfc822"
+        ], 
+        "empty": [
+            "inode/x-empty"
+        ], 
+        "encrypted": [
+            "application/pgp"
+        ], 
+        "executable": [
+            "application/x-executable"
+        ], 
+        "font": [
+            "application/font-sfnt", 
+            "application/vnd.ms-fontobject", 
+            "application/vnd.ms-opentype"
+        ], 
+        "html": [
+            "text/html"
+        ], 
+        "icon": [
+            "image/x-icns", 
+            "image/x-icon"
+        ], 
+        "image": [
+            "image/jpeg", 
+            "image/png", 
+            "image/gif", 
+            "image/x-ms-bmp", 
+            "image/tiff", 
+            "image/webp",
+            "image/x-portable-greymap", 
+            "image/x-xpmi", 
+            "image/x-xcf"
+        ], 
+        "jar": [
+            "application/java-archive"
+        ], 
+        "latex": [
+            "text/x-tex"
+        ], 
+        "mp3": [
+            "audio/mpeg"
+        ], 
+        "ogg": [
+            "audio/ogg"
+        ], 
+        "pdf": [
+            "application/pdf"
+        ], 
+        "pgp_keys": [
+            "application/pgp-keys", 
+            "application/x-gnupg-keyring", 
+            "application/x-pgp-keyring"
+        ], 
+        "postscript": [
+            "application/postscript"
+        ], 
+        "presentation": [
+            "application/vnd.ms-powerpoint", 
+            "application/vnd.oasis.opendocument.presentation", 
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        ], 
+        "program_c": [
+            "text/x-c", 
+            "text/x-c++", 
+            "text/x-objective-c"
+        ], 
+        "program_java": [
+            "text/x-java", 
+            "text/x-pascal"
+        ], 
+        "program_makefile": [
+            "text/x-makefile"
+        ], 
+        "program_perl": [
+            "text/x-perl"
+        ], 
+        "program_python": [
+            "text/x-python"
+        ], 
+        "program_ruby": [
+            "text/x-ruby"
+        ], 
+        "program_shell": [
+            "text/x-shellscript", 
+            "text/x-msdos-batch", 
+            "application/x-setupscript"
+        ], 
+        "spreadsheet": [
+            "application/vnd.ms-excel", 
+            "application/vnd.oasis.opendocument.spreadsheet", 
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ], 
+        "sqlite": [
+            "application/x-sqlite3"
+        ], 
+        "svg": [
+            "image/svg+xml", 
+            "image/svg"
+        ], 
+        "text": [
+            "text/plain", 
+            "text/troff", 
+            "text/x-m4", 
+            "text/x-asm", 
+            "text/x-po"
+        ], 
+        "video": [
+            "video/mp4", 
+            "video/mpeg", 
+            "video/ogg", 
+            "video/quicktime", 
+            "video/webm", 
+            "video/x-matroska", 
+            "video/x-msvideo"
+        ], 
+        "word_processor": [
+            "application/msword", 
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document", 
+            "application/vnd.oasis.opendocument.text", 
+            "text/rtf"
+        ], 
+        "xml": [
+            "text/xml"
+        ]
+    }, 
+    "viewable_mime_types_by_view_mode": {
+        "image": [
+            "image/x-ms-bmp", 
+            "image/gif", 
+            "image/jpeg", 
+            "image/png", 
+            "image/svg+xml",
+            "image/webp"
+        ], 
+        "textual": [
+            "text/plain", 
+            "text/troff", 
+            "text/x-m4", 
+            "text/x-asm", 
+            "text/x-po", 
+            "text/html", 
+            "message/rfc822", 
+            "text/x-shellscript", 
+            "text/x-msdos-batch", 
+            "application/x-setupscript", 
+            "text/x-c", 
+            "text/x-c++", 
+            "text/x-objective-c", 
+            "text/x-diff", 
+            "text/x-java", 
+            "text/x-pascal", 
+            "text/x-makefile", 
+            "text/x-perl", 
+            "text/x-python", 
+            "text/x-ruby", 
+            "text/x-tex", 
+            "text/xml",
+            "inode/x-empty"
+        ]
+    }
+}

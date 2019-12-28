@@ -1,0 +1,5 @@
+sensitive_config.py
+sensitive_config.pyc
+ostracion_app/managed_files/*png
+ostracion_app/db/ostracion.db
+__pycache__

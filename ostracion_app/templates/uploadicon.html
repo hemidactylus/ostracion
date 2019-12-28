@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% import "tools/form_tools.html" as formtools %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+
+              <form method="post" name="uploadicon" enctype="multipart/form-data" action="">
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                  <label for="file">Image</label>
+                  {{ form.file(class_="form-control-file",tabindex=1) }}
+                  {% for error in form.file.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+                <div class="form-group">
+                  {{ form.confirm(class_='btn btn-primary', style='margin-right: 25px;',tabindex=2) }}
+                  <a href="{{ url_for('unsetIconView',mode=mode,itemPathString=itemPathString) }}" class="btn btn-success" style="margin-right: 25px;" tabindex="3">
+                    Unset
+                  </a>
+                  <a href="#" class="btn btn-success" onclick="window.history.back()" tabindex="4">
+                    Cancel
+                  </a>
+                </div>
+              </form>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

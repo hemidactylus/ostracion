@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% import "tools/form_tools.html" as formtools %}
+{% import "tools/card_tools.html" as cardtools %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+              <form action="{{ url_for('findView') }}" method="post" name="login">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                  {{ form.text(class_="form-control",placeholder="Type search term(s) here",tabindex=1) }}
+                  {% for error in form.text.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+                <div class="form-group">
+                  {{ form.submit(class_='btn btn-primary', style='margin-right: 25px;',tabindex=2) }}
+                  <a href="#advancedSearchBlock" data-toggle="collapse" class="btn btn-secondary" tabindex="3">Options</a>
+                </div>
+
+                <div class="collapse" id="advancedSearchBlock">
+                  <div class="form-group">
+                    <span style="margin-right: 0.5rem;"><b>Search for:</b></span>
+                    {{ form.searchTypeBoxes.label }}
+                    {{ form.searchTypeBoxes(style="margin-right: 0.5rem;",tabindex=4) }}
+                    {{ form.searchTypeFiles.label }}
+                    {{ form.searchTypeFiles(tabindex=5) }}
+                  </div>
+                  <div class="form-group">
+                    {{ form.searchMode.label(style="margin-bottom:0px; font-weight: bold;") }} :
+                    {% for subfield in form.searchMode %}
+                      <div class="form-check form-check-inline">
+                        {{ subfield(class_='form-check-input',tabindex=6) }}
+                        {{ subfield.label(class_='form-check-label') }}
+                      </div>
+                    {% endfor %}
+                  </div>
+                  <div class="form-group">
+                    {{ form.searchFieldDescription.label }}
+                    {{ form.searchFieldDescription(tabindex=7) }}
+                  </div>
+                  <div class="form-group">
+                    {{ form.submit(class_='btn btn-primary',tabindex=8) }}
+                  </div>
+                </div>
+
+              </form>
+
+              <hr>
+
+              {% if findResults %}
+
+                {% if findResults.results %}
+
+                  <p>
+                    {{ findResults.counts.boxes }} box{{ 'es' if findResults.counts.boxes != 1 else '' }}
+                    and {{ findResults.counts.files }} file{{ 's' if findResults.counts.files != 1 else '' }} found.
+                    <small class="text-muted">
+                      Search took {{ '%.3f' % elapsed }} seconds.
+                    </small>
+                  </p>
+
+                  <div class="row">
+
+                    {% for foundItemStructure in findResults.results %}
+
+                      {% if foundItemStructure.object_type == 'box' %}
+                        {{ cardtools.box_card(
+                          title=foundItemStructure.box.title,
+                          titleit=foundItemStructure.box.box_name,
+                          subtitle=foundItemStructure.box.description,
+                          subtitleit=None,
+                          infratitlesmall=foundItemStructure.parentInfo + (
+                            (' ; score: %.2f' % foundItemStructure.score) if g.settings['behaviour']['search']['show_search_results_scores']['value'] else ''
+                          ),
+                          target_url=url_for('lsView',lsPathString='/'.join(foundItemStructure.path)),
+                          icon_url=url_for('boxThumbnailView',dummyId=foundItemStructure['box'].icon_file_id+'_',boxPathString='/'.join(foundItemStructure['path'])),
+                          icon_subtitle=foundItemStructure.box.date.strftime('%b %d, %Y'),
+                          info=foundItemStructure.info,
+                          actions=foundItemStructure.actions,
+                          color=g.settings['color']['navigation_colors']['box']['value'],
+                        ) }}
+                      {% elif foundItemStructure.object_type == 'file' %}
+                        {{ cardtools.file_card(
+                          title=foundItemStructure['file'].name,
+                          titleit=None,
+                          subtitle=foundItemStructure['file'].description,
+                          subtitleit='%s; %s' % (foundItemStructure['file'].mime_type, foundItemStructure['nice_size']),
+                          infratitlesmall=foundItemStructure.parentInfo + (
+                            (' ; score: %.2f' % foundItemStructure.score) if g.settings['behaviour']['search']['show_search_results_scores']['value'] else ''
+                          ),
+                          target_url=foundItemStructure.actions.view if foundItemStructure.actions.view else foundItemStructure.actions.download,
+                          icon_url=url_for('fileThumbnailView',dummyId=foundItemStructure['file'].icon_file_id+'_',fsPathString='/'.join(foundItemStructure.path)),
+                          icon_subtitle=foundItemStructure['file'].date.strftime('%b %d, %Y'),
+                          info=foundItemStructure.info,
+                          actions=foundItemStructure.actions,
+                          color=g.settings['color']['navigation_colors']['file']['value'],
+                        ) }}
+                      {% else %}
+                        <p>Unknown find result object_type {{ foundItemStructure.object_type }}</p>
+                      {% endif %}
+                    {% endfor %}
+
+                  </div>
+
+                {% else %}
+
+                  <p class="lead">
+                    {% if findResults.message %}
+                      No results for "{{ searchTerm }}" ({{ findResults.message }}).
+                    {% else %}
+                      No results for "{{ searchTerm }}".
+                    {% endif %}
+                    Try another search.
+                  </p>
+
+                {% endif %}
+
+              {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

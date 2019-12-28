@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% import "tools/form_tools.html" as formtools %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+              <div class="row">
+
+                <div class="col-md-12">
+                    <div class="jumbotron" style="background-color: {{ g.settings.color.task_colors.table.value }}; padding-top: 10px;">
+                        <div class="row">
+                          <div class="col" style="margin-top: 15px; margin-bottom: 15px;">
+                              <a href="{{ url_for('adminNewUserInvitationView') }}" class="btn btn-primary btn-md" style="margin-right:20px;">Invite user ...</a>
+                              {% if g.settings.behaviour.behaviour_admin_powers.admin_is_god.value %}
+                                <a href="{{ url_for('adminNewUserView') }}" class="btn btn-primary btn-md">Create user ...</a>
+                              {% endif %}
+                          </div>
+                        </div>
+                        <div class="row">
+
+                          <table class="table table-hover">
+                              <thead>
+                                  <tr>
+                                      <th class="col-sm-1"></th>
+                                      <th class="col-sm-2">Username</th>
+                                      <th class="col-sm-2">Full name</th>
+                                      <th class="col-sm-2">Email</th>
+                                      <th class="col-sm-1">Last login</th>
+                                      <th class="col-sm-2">Roles granted</th>
+                                      <th class="col-sm-2">Actions</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                {% for userDict in users %}
+                                  <tr>
+                                    <td>
+                                      <img src="{{ userDict.profilepicture }}" style="max-width: 80px;"/>
+                                    </td>
+                                    <td>
+                                        {% if userDict.is_current_user %}
+                                          <b>
+                                        {% endif %}
+                                        {{ userDict.user.username }}
+                                        {% if userDict.user.banned %}
+                                          <span class="badge badge-pill badge-danger">banned</span>
+                                        {% endif %}
+                                        {% if userDict.user.username==user.username %}
+                                          <span class="badge badge-pill badge-success">you</span>
+                                        {% endif %}
+                                        {% if userDict.is_current_user %}
+                                          </b>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                      {{ userDict.user.fullname }}
+                                    </td>
+                                    <td>
+                                      {{ userDict.user.email }}
+                                    </td>
+                                    <td>
+                                      {% if userDict.user.last_login %}
+                                        {{ userDict.user.last_login.strftime('%Y-%m-%d') }}
+                                      {% endif %}
+                                    </td>
+                                    <td>
+                                      {% for role in userDict.user.roles | sort %}
+                                        <span class="badge badge-success badge-pill">
+                                          {% if role.system != 0 %}
+                                            <b>
+                                          {% endif %}
+                                          {{ role.role_id }}
+                                          {% if role.system != 0 %}
+                                            </b>
+                                          {% endif %}
+                                        </span>
+                                      {% endfor %}
+                                    </td>
+                                    <td>
+                                      <span>
+                                        <a href="{{ url_for('adminUserRolesView',username=userDict.user.username) }}" class="btn btn-primary btn-md" data-toggle="tooltip" title="Roles">
+                                          R
+                                        </a>
+                                      </span>
+                                      {% if g.settings.behaviour.behaviour_admin_powers.admin_is_god.value %}
+                                        <span>
+                                          <a href="{{ url_for('adminEditUser',username=userDict.user.username) }}" class="btn btn-primary btn-md" data-toggle="tooltip" title="Edit user info">
+                                            E
+                                          </a>
+                                        </span>
+                                        <span>
+                                          <a href="{{ url_for('setIconView',mode='au',itemPathString=userDict.user.username) }}" class="btn btn-primary btn-md" data-toggle="tooltip" title="User icon">
+                                            I
+                                          </a>
+                                        </span>
+                                      {% endif %}
+                                      {% if userDict.bannable %}
+                                        <span>
+                                          {% if userDict.user.banned %}
+                                            <a href="{{ url_for('adminBanUserView',username=userDict.user.username,state=0) }}" class="btn btn-success btn-md" data-toggle="tooltip" title="Unban">
+                                              U
+                                            </a>
+                                          {% else %}
+                                            <a href="{{ url_for('adminBanUserView',username=userDict.user.username,state=1) }}" class="btn btn-warning btn-md" data-toggle="tooltip" title="Ban">
+                                              B
+                                            </a>
+                                          {% endif %}
+                                        </span>
+                                      {% endif %}
+                                      <span>
+                                          <a href="{{ url_for('adminUserIssueChangePasswordTicket',username=userDict.user.username) }}" class="btn btn-primary btn-md" data-toggle="tooltip" title="Change-password ticket">
+                                            P
+                                          </a>
+                                      </span>
+                                      {% if g.settings.behaviour.behaviour_admin_powers.admin_is_god.value %}
+                                        <span>
+                                          <a href="{{ url_for('adminUserChangePasswordView',username=userDict.user.username) }}" class="btn btn-primary btn-md" data-toggle="tooltip" title="Change password">
+                                            Q
+                                          </a>
+                                        </span>
+                                      {% endif %}
+                                      {% if userDict.canDelete %}
+                                        <span>
+                                          <a href="{{ url_for('adminDeleteUserView',username=userDict.user.username) }}" class="btn btn-danger btn-md" data-toggle="tooltip" title="Delete">
+                                            X
+                                          </a>
+                                        </span>
+                                      {% endif %}
+                                    </td>
+                                  </tr>
+                                {% endfor %}
+
+                              </tbody>
+                          </table>
+                        </div>
+                    </div>
+                </div>
+
+              </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

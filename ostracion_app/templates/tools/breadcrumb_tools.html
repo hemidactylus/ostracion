@@ -1,0 +1,29 @@
+{% macro breadcrumbs(breadcrumb_items) %}
+
+  {% if breadcrumb_items %}
+
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        {% for itm in breadcrumb_items %}
+          <li class="breadcrumb-item{% if loop.last %} active{% endif %}">
+            {% if itm.link %}
+              <a href="{{ itm.target }}">
+            {% endif %}
+              {% if itm.type!='file' and itm.type!='box' %}<i>{% endif %}
+                {% if itm.is_root_as_pic %}
+                  <img src="{{ g.applicationLogoUrl }}" height="26" alt="">
+                {% else %}
+                  {{ itm.name }}
+                {% endif %}
+              {% if itm.type!='file' and itm.type!='box' %}</i>{% endif %}
+            {% if itm.link %}
+              </a>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ol>
+    </nav>
+
+  {% endif %}
+
+{% endmacro %}

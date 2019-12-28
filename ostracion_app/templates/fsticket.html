@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% import "tools/form_tools.html" as formtools %}
+{% import "tools/ticket_form_tools.html" as ticketformtools %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+
+              <form action="" method="post" name="login">
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                  <label for="ticketmessage">Message on ticket</label>
+                  {{ form.ticketmessage(class_="form-control",placeholder="Optional: shown to recipient upon ticket redemption",tabindex=1) }}
+                  {% for error in form.ticketmessage.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                <hr>
+
+                <div class="form-group">
+                  <label for="name">Ticket name</label>
+                  {{ form.name(class_="form-control",placeholder="Ticket nickname for easier management",tabindex=2) }}
+                  {% for error in form.name.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                {% if showFileMode %}
+                  <div class="form-group">
+                    <div>{{ form.filemode.label() }}</div>
+                    {% for subfield in form.filemode %}
+                      <div class="form-check form-check-inline">
+                        {{ subfield(class_='form-check-input',tabindex=3) }}
+                        {{ subfield.label(class_='form-check-label',style='font-family: monospace;') }}
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+                <div class="form-group">
+                  <label for="validityhours">{{ ticketformtools.validityHoursCaption(g.settings) }}</label>
+                  {{ form.validityhours(class_="form-control",placeholder="Leave blank for no expiration",tabindex=4) }}
+                  {% for error in form.validityhours.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+                <div class="form-group">
+                  <label for="multiplicity">{{ ticketformtools.multiplicityCaption(baseMultiplicityCaption,g.settings) }}</label>
+                  {{ form.multiplicity(class_="form-control", placeholder="Empty for no limits",tabindex=5) }}
+                  {% for error in form.multiplicity.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                <div class="form-group">
+                  {{ form.submit(class_='btn btn-primary', style='margin-right: 25px;',tabindex=6) }}
+                  <a href="#" class="btn btn-success" onclick="window.history.back()" tabindex="7">
+                    Cancel
+                  </a>
+                </div>
+              </form>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% import "tools/form_tools.html" as formtools %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+              <form action="" method="post" name="login">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                  <label for="username">Username</label>
+                  {{ form.username(class_="form-control",tabindex=1) }}
+                  {% for error in form.username.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+                <div class="form-group">
+                  <label for="password">Password</label>
+                  {{ form.password(class_="form-control",tabindex=2) }}
+                  {% for error in form.password.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+                <div class="form-group">
+                  {{ form.login(class_='btn btn-primary',tabindex=3) }}
+                </div>
+              </form>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,216 @@
+{% macro image_hero(
+    title,titleit,subtitle,subtitleit,icon_url,info_lines,role_list,actions,
+    permission_info,hideAdditionalInfo=True,backToUrl=None,showTaskButton=False
+) %}
+
+      <div class="row">
+        <div class="col">
+
+            <div class="jumbotron" style="padding: 10px;">
+
+
+                <div class="row">
+                    {% if icon_url %}
+                        <div class="col" style="max-width: 200px;">
+                          <img src="{{ icon_url }}" class="rounded" width="100%">
+                        </div>
+                    {% endif %}
+                    <div class="col">
+                        <h5>
+                            {{ title }}
+                            {% if titleit %}
+                                <i>({{ titleit }})</i>
+                            {% endif %}
+                        </h5>
+                        {% if subtitle or subtitleit %}
+                            <p>{{ subtitle }}
+                                {% if subtitleit %}
+                                    <i>({{ subtitleit }})</i>
+                                {% endif %}
+                            </p>
+                        {% endif %}
+                        {% if backToUrl %}
+                            <p>
+                              <a href="{{ backToUrl }}" class="btn btn-success">
+                                Cancel
+                              </a>
+                            </p>
+                        {% endif %}
+                        <!-- THIS FOR USER PROFILE -->
+                        {% if info_lines %}
+                            <ul class="list-unstyled">
+                                {% for iline in info_lines %}
+                                    <li class="small">
+                                        <strong>{{ iline.heading }}:</strong> {{ iline.value }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        {% if role_list %}
+                            <p>
+                                <strong>Roles:</strong>
+                                {% for r in role_list %}
+                                    <span class="badge badge-pill badge-success">{{ r }}</span>
+                                {% endfor %}
+                            </p>
+                        {% endif %}
+
+                        <p>
+                            {% if actions.mkbox %}
+                                <a href="{{ actions.mkbox }}" class="btn btn-primary" data-toggle="tooltip" title="New box">
+                                    M
+                                </a>
+                            {% endif %}
+                            {% if actions.upload_single %}
+                                <a href="{{ actions.upload_single }}" class="btn btn-primary" data-toggle="tooltip" title="Upload file">
+                                    u
+                                </a>
+                            {% endif %}
+                            {% if actions.upload_multiple %}
+                                <a href="{{ actions.upload_multiple }}" class="btn btn-primary" data-toggle="tooltip" title="Multiple upload">
+                                    U
+                                </a>
+                            {% endif %}
+                            {% if actions.make_text %}
+                                <a href="{{ actions.make_text }}" class="btn btn-primary" data-toggle="tooltip" title="New text file">
+                                    t
+                                </a>
+                            {% endif %}
+                            {% if actions.issue_upload_ticket %}
+                                <a href="{{ actions.issue_upload_ticket }}" class="btn btn-warning" data-toggle="tooltip" title="Issue upload ticket">
+                                    T
+                                </a>
+                            {% endif %}
+                            {% if actions.issue_gallery_ticket %}
+                                <a href="{{ actions.issue_gallery_ticket }}" class="btn btn-warning" data-toggle="tooltip" title="Issue gallery-view ticket">
+                                    g
+                                </a>
+                            {% endif %}
+                            {% if actions.gallery_view %}
+                                <a href="{{ actions.gallery_view }}" class="btn btn-success" data-toggle="tooltip" title="View as gallery">
+                                    G
+                                </a>
+                            {% endif %}
+                            {% if actions.hide_tree_files %}
+                                <a href="{{ actions.hide_tree_files }}" class="btn btn-outline-primary" data-toggle="tooltip" title="View boxes only">
+                                    B
+                                </a>
+                            {% endif %}
+                            {% if actions.disabled_hide_tree_files %}
+                                <a href="{{ actions.hide_tree_files }}" class="btn btn-primary disabled">
+                                    B
+                                </a>
+                            {% endif %}
+                            {% if actions.show_tree_files %}
+                                <a href="{{ actions.show_tree_files }}" class="btn btn-outline-primary" data-toggle="tooltip" title="View also files">
+                                    F
+                                </a>
+                            {% endif %}
+                            {% if actions.disabled_show_tree_files %}
+                                <a href="{{ actions.disabled_show_tree_files }}" class="btn btn-primary disabled">
+                                    F
+                                </a>
+                            {% endif %}
+                        </p>
+
+                        <p>
+                            {% if showTaskButton %}
+                                <a href="#tasksBlock" data-toggle="collapse" class="btn btn-secondary btn-sm">Actions</a>
+                            {% endif %}
+                            {% if (permission_info.powers or permission_info.assignments) and hideAdditionalInfo %}
+                                <a href="#permissionBlock" data-toggle="collapse" class="btn btn-secondary btn-sm">Box permissions</a>
+                            {% endif %}
+                        </p>
+
+                        {% if permission_info.powers or permission_info.assignments %}
+                            {% if hideAdditionalInfo %}
+                                <div class="collapse" id="permissionBlock">
+                            {% else %}
+                                <div>
+                            {% endif %}
+                                {% if permission_info.powers %}
+                                    <div class="row">
+                                        <div class="col-2">
+                                            <h6>
+                                                Who can do what:
+                                            </h6>
+                                        </div>
+                                        <div class="col-10">
+                                            <div class="row">
+                                                <div class="col-1">Read</div>
+                                                <div class="col">
+                                                    {% for role_id in permission_info.powers.r %}
+                                                        <span class="badge badge-pill badge-success">{{ role_id }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-1">Write</div>
+                                                <div class="col">
+                                                    {% for role_id in permission_info.powers.w %}
+                                                        <span class="badge badge-pill badge-warning">{{ role_id }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-1">Create</div>
+                                                <div class="col">
+                                                    {% for role_id in permission_info.powers.c %}
+                                                        <span class="badge badge-pill badge-danger">{{ role_id }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                {% if permission_info.powers and permission_info.assignments %}
+                                    <hr>
+                                {% endif %}
+                                {% if permission_info.assignments %}
+                                    <div class="row">
+                                        <div class="col-2">
+                                            <h6>
+                                                Assignments:
+                                            </h6>
+                                            {% if permission_info.assignments.edit_url %}
+                                                <p>
+                                                    <a href="{{ permission_info.assignments.edit_url }}" class="btn btn-primary btn-sm">
+                                                        Edit
+                                                    </a>
+                                                </p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-10">
+                                            {% for pa in permission_info.assignments.native %}
+                                                <div class="row" style="font-weight: bold;">
+                                                    <div class="col-1">{{ pa.role_id }}</div>
+                                                    <div class="col" style="font-family: monospace;">
+                                                        {% if pa.r %}R{% else %}-{% endif %}
+                                                        {% if pa.w %}W{% else %}-{% endif %}
+                                                        {% if pa.c %}C{% else %}-{% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                            {% for pa in permission_info.assignments.inherited %}
+                                                <div class="row" style="font-style: italic;">
+                                                    <div class="col-1">{{ pa.role_id }}</div>
+                                                    <div class="col" style="font-family: monospace;">
+                                                        {% if pa.r %}R{% else %}-{% endif %}
+                                                        {% if pa.w %}W{% else %}-{% endif %}
+                                                        {% if pa.c %}C{% else %}-{% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+      </div>
+
+{% endmacro %}

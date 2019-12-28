@@ -1,0 +1,46 @@
+{% import "tools/hero_tools.html" as herotools %}
+{% import "tools/dir_tree_tools.html" as dirtreetools %}
+
+{% extends "base.html" %}
+
+{% block content %}
+
+      {{ herotools.image_hero(
+        title=pageTitle,
+        titleit=None,
+        subtitle=pageSubtitle,
+        subtitleit=None,
+        icon_url=iconUrl,
+        info_lines=None,
+        role_list=None,
+        actions=actions,
+        permission_info=None,
+        backToUrl=backToUrl,
+      ) }}
+
+      <div class="col">
+        {% if tree %}
+          {{ dirtreetools.recursive_tree_box(
+          mode,object_quoted_path,tree.box,tree.contents,tree.path,tree.depth,tree.obj_path,tree.predicate,colorShadeMap) }}
+        {% else %}
+          No results
+        {% endif %}
+      </div>
+
+      <script>
+        $('.collapsibleBoxContents').on('hidden.bs.collapse', function (ev) {
+          const bareId = $(ev.target).attr('controllerId');
+          // console.log(bareId);
+          const numItems = $(ev.target).attr('numItems');
+          $('#blockIdController_'+bareId)[0].innerHTML='+';
+          $('#counterInfo_'+bareId)[0].innerHTML='('+numItems+' item'+(numItems==='1'?'':'s')+')';
+        })
+        $('.collapsibleBoxContents').on('shown.bs.collapse', function (ev) {
+          const bareId = $(ev.target).attr('controllerId');
+          // console.log(bareId);
+          $('#blockIdController_'+bareId)[0].innerHTML='-';
+          $('#counterInfo_'+bareId)[0].innerHTML='';
+        })
+      </script>
+
+{% endblock %}

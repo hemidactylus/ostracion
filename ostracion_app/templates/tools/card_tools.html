@@ -1,0 +1,65 @@
+{% import "tools/action_button_tools.html" as actionbuttontools %}
+
+{% macro box_card(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,icon_url,icon_subtitle,info,actions,color) %}
+  {{ generic_card(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,icon_url,icon_subtitle,info,actions,'right',color) }}
+{% endmacro %}
+
+{% macro file_card(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,icon_url,icon_subtitle,info,actions,color) %}
+  {{ generic_card(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,icon_url,icon_subtitle,info,actions,'left',color) }}
+{% endmacro %}
+
+{% macro action_card(title,subtitle,subtitleit,target_url,bgcolor,icon_url) %}
+  {{ generic_card(title,None,subtitle,subtitleit,None,target_url,icon_url,icon_subtitle,None,None,'left',bgcolor) }}
+{% endmacro %}
+
+{% macro generic_card(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,icon_url,icon_subtitle,info,actions,icon_side,bgcolor) %}
+        <div class="col-md-6">
+            <div class="jumbotron" style="padding: 5px; background-color: {{ bgcolor }}">
+                <div class="row">
+                    {% if icon_side=='left' %}
+                      {{ card_icon_section(icon_url,icon_subtitle,target_url) }}
+                    {% endif %}
+                    {{ card_text_section(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,info,actions) }}
+                    {% if icon_side=='right' %}
+                      {{ card_icon_section(icon_url,icon_subtitle,target_url) }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+{% endmacro %}
+
+{% macro card_icon_section(icon_url,icon_subtitle,target_url) %}
+                    <a href="{{ target_url }}">
+                      <div class="col" style="max-width: 110px;">
+                        <img src="{{ icon_url }}" class="rounded" width="100%">
+                        {% if icon_subtitle %}
+                          <p style="text-align: center; font-style: italic; font-size: 80%;">{{ icon_subtitle }}</p>
+                        {% endif %}
+                      </div>
+                    </a>
+{% endmacro %}
+
+{% macro card_text_section(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,info,actions) %}
+                    <div class="col">
+                        <a href="{{ target_url }}">
+                          <h6>{{ title }}
+                            {% if titleit %}
+                              <i>({{ titleit }})</i>
+                            {% endif %}
+                          </h6>
+                          {% if infratitlesmall %}
+                            <small>{{ infratitlesmall }}</small>
+                          {% endif %}
+                          <p>{{ subtitle }}
+                            {% if subtitleit %}
+                              <i>({{ subtitleit }})</i>
+                            {% endif %}
+                          </p>
+                        </a>
+                        {% if info or actions %}
+                          <p>
+                              {{ actionbuttontools.action_buttons(actions,info) }}
+                          </p>
+                        {% endif %}
+                    </div>
+{% endmacro %}

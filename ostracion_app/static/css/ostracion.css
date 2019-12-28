@@ -1,0 +1,39 @@
+a {
+ outline: 0;
+ text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+.tooltip-inner {
+  text-align: left;
+}
+
+.redeemable-ticket {
+  font-weight: bold
+}
+
+.unredeemable-ticket {
+  font-style: italic;
+  color: #606060;
+}
+
+.dirtree-box-jumbotron {
+  padding: 12px;
+  margin-bottom:5px;
+  border-width: 2px;
+  border-color: #000000;
+  border-style: solid;
+}
+
+.dirtree-child-element {
+  margin-left:3rem;
+  margin-top:0.5rem;
+}
+
+img.dirtree-element-image {
+  height:1.8rem;
+  vertical-align:middle;
+}

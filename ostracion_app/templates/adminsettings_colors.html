@@ -1,0 +1,75 @@
+{% import "tools/hero_tools.html" as herotools %}
+{% import "tools/form_tools.html" as formtools %}
+
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+              <form action="" method="post" name="colorsettings">
+
+                {{ form.hidden_tag() }}
+
+                {% for field in form %}
+                  {% if field.type in ['SubmitField','CSRFTokenField'] %}
+                    {# not handled in this loop #}
+                  {% elif field.type=='StringField' %}
+                    <div class="form-group">
+                      {% if wideIdToFormProperties[field.id]['group_caption'] %}
+                        <h5>{{ wideIdToFormProperties[field.id]['group_caption'] }}</h5>
+                      {% endif %}
+                      {{ field.label }} :
+                        <span class="badge" style="background-color: {{ wideIdToFormProperties[field.id]['richSetting']['value'] }}; padding-left:10px; padding-right: 10px; margin-right:5px;"> from this </span>
+                        <span class="badge" id="color_sampler_{{ field.id }}" style="background-color: {{ wideIdToFormProperties[field.id]['richSetting']['value'] }}; padding-left:10px; padding-right: 10px;"> to this </span>
+                      {{ field(class_="form-control",placeholder="Empty for default value",tabindex=loop.index) }}
+                      {% for error in field.errors %}
+                        <small class="form-text text-muted">{{ error }}</small>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    <h3>UNHANDLED FIELD TYPE {{ field.type }}!</h3>
+                  {% endif %}
+                {% endfor %}
+
+                {{ form.confirm(class_='btn btn-primary', style='margin-right: 25px;',tabindex= wideIdToFormProperties | length + 1 ) }}
+                <a href="#" class="btn btn-success" onclick="window.history.back()" tabindex="{{ wideIdToFormProperties | length + 2 }}">
+                  Cancel
+                </a>
+              </form>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+      function generateUpdateSamplerColor(colorId,defaultColor) {
+        function _usc(){
+          var newColor = $("#"+colorId).val();
+          if (newColor == ''){
+            $("#color_sampler_"+colorId).css({ "background-color": defaultColor});
+          } else {
+            var _nnc = (newColor[0]=='#') ? newColor : '#'+newColor;
+            $("#color_sampler_"+colorId).css({ "background-color": _nnc});
+          }
+        }
+        return _usc;
+      }
+
+      {% for wId,setDescriptor in wideIdToFormProperties.items() %}
+        $("#{{ wId }}").on({
+            change: generateUpdateSamplerColor("{{ wId }}","{{ setDescriptor['richSetting']['setting']['default_value'] }}"),
+            keyup: generateUpdateSamplerColor("{{ wId }}","{{ setDescriptor['richSetting']['setting']['default_value'] }}"),
+        })
+      {% endfor %}
+    </script>
+
+{% endblock %}

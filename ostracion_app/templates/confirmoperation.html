@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% import "tools/form_tools.html" as formtools %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+                {{ formtools.form_header(
+                    'Confirm operation',
+                    'Proceed only if you know what you are doing',
+                    icon_url=iconUrl,
+                ) }}
+
+                  <p class="lead">{{ confirmation.heading }}</p>
+
+                  <p>
+                      <a href="{{ confirmation.forwardToUrl }}" class="btn btn-success" style="margin-right: 25px;">
+                        Proceed
+                      </a>
+                      <a href="{{ confirmation.backToUrl }}" class="btn btn-primary">
+                        Cancel
+                      </a>
+                  </p>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
