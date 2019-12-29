@@ -16,6 +16,14 @@
     port: '{{ item }}'
   with_items: '{{ webserver_configuration.ports }}'
 
+# enable server name hash to 64 as instructed here:
+# https://gist.github.com/muhammadghazali/6c2b8c80d5528e3118613746e0041263
+- name: Fixing server_name_hash_bucket_size in nginx.conf to 64
+  lineinfile:
+    dest: "/etc/nginx/nginx.conf"
+    regexp: "server_names_hash_bucket_size"
+    line: "server_names_hash_bucket_size 64;"
+
 # # see: https://bugs.launchpad.net/ubuntu/+source/nginx/+bug/1581864
 # # and: https://stackoverflow.com/questions/42078674/nginx-service-failed-to-read-pid-from-file-run-nginx-pid-invalid-argument#42084804
 # - name: Mkdir to apply the nginx workaround

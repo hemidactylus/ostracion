@@ -30,9 +30,10 @@ def prepareTextualImageForView(db, user, imgText, imgPrefix):
         imgFilePath,
         imgFileTitle,
     )
+    print('imgFileName ',imgFileName)
     if (os.path.isfile(imgFileName) or
             createTransparentTextImage(
-                imgEmailText,
+                imgText,
                 imgFileName,
             )):
         return send_from_directory(
