@@ -1,0 +1,13 @@
+[uwsgi]
+module = wsgi_run:application
+
+master = true
+processes = {{ app_configuration.num_processes }}
+
+socket = /tmp/ostracion_webapp.sock
+chmod-socket = 777
+user = {{ webapp_username }}
+group = {{ webapp_username }}
+vacuum = true
+
+die-on-term = true

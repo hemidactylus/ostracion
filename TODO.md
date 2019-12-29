@@ -9,6 +9,7 @@ Write the playbook for an easy deploy and documentation on install in README.md
     use https in config
       -> test install letsencry stuff
     check the nginx workaround, still relevant?
+
     hsts & other headers
 
   Domain/IP

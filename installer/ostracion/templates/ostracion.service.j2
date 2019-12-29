@@ -1,0 +1,12 @@
+[Unit]
+Description=uWSGI instance to serve Ostracion web app
+After=network.target
+
+[Service]
+User={{ webapp_username }}
+Group={{ webapp_username }}
+WorkingDirectory=/home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion
+ExecStart=/home/{{ webapp_username }}/.virtualenvs/ostracion/bin/uwsgi --ini uwsgi_app.ini
+
+[Install]
+WantedBy=multi-user.target

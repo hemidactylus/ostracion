@@ -1,0 +1,17 @@
+server {
+    listen 80;
+    server_name 
+    {%- if app_configuration.domain_name is defined -%}
+        {{ " "+app_configuration.domain_name }}
+    {%- else -%}
+        {{ " "+hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}
+    {%- endif -%}
+    ;
+
+    client_max_body_size 128M;
+
+    location / {
+        include uwsgi_params;
+        uwsgi_pass unix:/tmp/ostracion_webapp.sock;
+    }
+}

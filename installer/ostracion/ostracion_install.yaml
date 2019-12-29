@@ -1,0 +1,20 @@
+- hosts: ostracion
+  become: true
+  become_method: sudo
+  vars_files:
+  #   - ../../access_vars.yml
+    - conf.yaml
+  #   - ../../conf.yml
+  #   - ../../credentials/linode_secrets.yml
+  #   - ../../utils/nginx/conf.yml
+  #   - ../../utils/git/conf.yml
+  #   - ../../utils/nvm/conf.yml
+  vars:
+      ansible_port: '{{ host_configuration.ssh_port }}'
+      ansible_user: '{{ host_configuration.username }}'
+      ansible_become_pass: '{{ host_configuration.password }}'
+      webapp_username: '{{ host_configuration.username }}'
+  tasks:
+    - import_tasks: modules/nginx.yaml
+    - import_tasks: modules/app_install.yaml
+    - import_tasks: modules/nginx_webapp.yaml

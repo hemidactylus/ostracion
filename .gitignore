@@ -3,4 +3,6 @@ sensitive_config.pyc
 ostracion_app/managed_files/*png
 ostracion_app/db/ostracion.db
 uwsgi_app.ini
+installer/hosts
+installer/ostracion/conf.yaml
 __pycache__

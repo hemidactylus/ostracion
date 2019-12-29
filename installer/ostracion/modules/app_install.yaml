@@ -1,0 +1,56 @@
+- name: Install Git, python3, gimp/imagemagick
+  become: true
+  become_method: sudo
+  apt:
+    update_cache: yes
+    name:
+        - python
+        - python-pip
+        - python3-pip
+        - git
+        - virtualenv
+        - gimp
+        - imagemagick
+
+- name: Creating the repositories directory as regular user
+  file:
+    path: '/home/{{ webapp_username }}/{{ app_configuration.base_dir }}'
+    state: directory
+    mode: "u+rwx,g+rwx,o-rx"
+    owner: '{{ webapp_username }}'
+    group: '{{ webapp_username }}'
+
+- name: "Cloning the repo"
+  become_user: '{{ webapp_username }}'
+  git:
+    repo: "https://github.com/hemidactylus/ostracion.git"
+    dest: '/home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion'
+
+- name: Creating the virtual-environments directory
+  become: false
+  file:
+    path: '/home/{{ webapp_username }}/.virtualenvs'
+    state: directory
+    mode: "u+rwx,g+rwx,o-rx"
+
+- name: "Creating the virtualenv"
+  become_user: '{{ webapp_username }}'
+  pip:
+    requirements: '/home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion/requirements.txt'
+    virtualenv: '/home/{{ webapp_username }}/.virtualenvs/ostracion'
+    virtualenv_python: "python{{ app_configuration.python_version }}"
+
+- name: Setting the venv custom python path
+  become_user: '{{ webapp_username }}'
+  lineinfile:
+    path: /home/{{ webapp_username }}/.virtualenvs/ostracion/lib/python{{ app_configuration.python_version }}/site-packages/custom_path.pth
+    create: yes
+    line: "/home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion"
+    mode: "u+rw,g+rw,o+r"
+
+- name: Invoking post-install script
+  become: false
+  shell: |
+    . /home/{{ webapp_username }}/.virtualenvs/ostracion/bin/activate
+    cd /home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion/post_install
+    ./postInstall.py

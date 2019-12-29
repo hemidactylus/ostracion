@@ -1,0 +1,37 @@
+- name: Creating the uwsgi_app.ini file
+  become: false
+  template:
+    src: templates/uwsgi_app.ini.j2
+    dest: /home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion/uwsgi_app.ini
+    mode: "u+rw,g+rw,o+r"
+
+- name: Creating the Ostracion service file for systemd
+  template:
+    src: templates/ostracion.service.j2
+    dest: /etc/systemd/system/ostracion.service
+    mode: "u+rw,g+r,o+r"
+
+- name: Enabling/restarting the Ostracion service
+  service:
+    name: ostracion.service
+    state: restarted
+    enabled: true
+
+- name: Creating the nginx server file for Ostracion
+  template:
+    src: templates/ostracion_webapp.j2
+    dest: /etc/nginx/sites-available/ostracion_webapp
+    mode: "u+rw,g+rw,o+r"
+
+- name: Symlinking the nginx server file as enabled
+  file:
+    src: /etc/nginx/sites-available/ostracion_webapp
+    dest: /etc/nginx/sites-enabled/ostracion_webapp
+    state: link
+
+- name: Restarting nginx
+  service:
+    daemon_reload: true
+    name: nginx
+    state: restarted
+    enabled: true
