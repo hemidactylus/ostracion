@@ -2,32 +2,12 @@
 
 ## Version 1.0
 
-            maxValidityHours = g.settings['behaviour']['behaviour_tickets'][
-                'max_ticket_validityhours']['value']
-            form.validityhours.data = applyDefault(
-                form.validityhours.data,
-                str(maxValidityHours) if maxValidityHours is not None else '',
-            )
-            maxMultiplicity = g.settings['behaviour']['behaviour_tickets'][
-                'max_ticket_multiplicity']['value']
-            form.multiplicity.data = applyDefault(
-                form.multiplicity.data,
-                str(maxMultiplicity) if maxMultiplicity is not None else '',
-            )
-
-
 ### Ansible
 
-Write the playbook for an easy deploy and documentation on install in README.md
-  TODOS:
-    use https in config
-      -> test install letsencry stuff
-    check the nginx workaround, still relevant?
+    Write the playbook for an easy deploy and
+    documentation on install in README.md
 
     hsts & other headers
-
-  Domain/IP
-  handler to restart nginx
 
 ## Maintenance (internals)
 

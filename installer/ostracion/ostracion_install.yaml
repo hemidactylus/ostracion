@@ -18,3 +18,5 @@
     - import_tasks: modules/nginx.yaml
     - import_tasks: modules/app_install.yaml
     - import_tasks: modules/nginx_webapp.yaml
+  handlers:
+    - include_tasks: handlers/nginx.yaml

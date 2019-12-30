@@ -8,7 +8,7 @@ server {
     {%- endif -%}
     ;
 
-    client_max_body_size 128M;
+    client_max_body_size {{ webserver_configuration.max_body_size | default('128M') }};
 
     location / {
         include uwsgi_params;

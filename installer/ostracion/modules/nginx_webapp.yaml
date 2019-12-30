@@ -22,16 +22,11 @@
     src: templates/ostracion_webapp.j2
     dest: /etc/nginx/sites-available/ostracion_webapp
     mode: "u+rw,g+rw,o+r"
+  notify: restart nginx
 
 - name: Symlinking the nginx server file as enabled
   file:
     src: /etc/nginx/sites-available/ostracion_webapp
     dest: /etc/nginx/sites-enabled/ostracion_webapp
     state: link
-
-- name: Restarting nginx
-  service:
-    daemon_reload: true
-    name: nginx
-    state: restarted
-    enabled: true
+  notify: restart nginx

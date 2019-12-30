@@ -6,6 +6,7 @@
     name:
       - nginx
       - ufw
+  notify: restart nginx
 
 - name: Opening webserver ports on the firewall
   become: true
@@ -23,6 +24,7 @@
     dest: "/etc/nginx/nginx.conf"
     regexp: "server_names_hash_bucket_size"
     line: "server_names_hash_bucket_size 64;"
+  notify: restart nginx
 
 # # see: https://bugs.launchpad.net/ubuntu/+source/nginx/+bug/1581864
 # # and: https://stackoverflow.com/questions/42078674/nginx-service-failed-to-read-pid-from-file-run-nginx-pid-invalid-argument#42084804
@@ -36,23 +38,18 @@
 #     src: files/override.conf
 #     dest: /etc/systemd/system/nginx.service.d/override.conf
 
-# - name: Adding the repo for letsencrypt
-#   apt_repository:
-#     repo: 'ppa:certbot/certbot'
-#     state: present
+- name: Adding the repo for letsencrypt
+  apt_repository:
+    repo: 'ppa:certbot/certbot'
+    state: present
+  when: webserver_configuration.use_https
 
-# - name: Installing letsencrypt stuff
-#   become: true
-#   become_method: sudo
-#   apt:
-#     update_cache: yes
-#     name:
-#       - software-properties-common
-#       - python-certbot-nginx
-
-- name: Restarting nginx
-  service:
-    daemon_reload: true
-    name: nginx
-    state: restarted
-    enabled: true
+- name: Installing letsencrypt stuff
+  become: true
+  become_method: sudo
+  apt:
+    update_cache: yes
+    name:
+      - software-properties-common
+      - python-certbot-nginx
+  when: webserver_configuration.use_https

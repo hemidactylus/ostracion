@@ -1,0 +1,34 @@
+host_configuration:
+  # username for ssh access to host and also for installation on it.
+  # you must be able to ssh to host with this user in a passwordless way.
+  # this user must be sudoer on host.
+  username: 'host_user'
+  # sudo password on host
+  password: 'sudo_password'
+  # port for ssh connection to host
+  ssh_port: '22'
+
+webserver_configuration:
+  ports:
+    - '80'
+    # if not planning to use https, the following can be removed
+    - '443'
+  # how big can a single body of a request from a client be
+  # (make it large to accept very large files in Ostracion)
+  max_body_size: '128M'
+  # set to True if
+  #   1. there is a domain_name and
+  #   2. you want to obtain and use an HTTPS certificate
+  use_https: true
+
+app_configuration:
+  # directory in host's home containing the Ostracion installation
+  base_dir: 'web_apps'
+  # must be Python 3, at least 3.5
+  python_version: '3.5'
+  # adjust according to the number of CPUs of host
+  num_processes: '4'
+  #
+  # if there is a domain name associated to host, use this line:
+  # (nginx configuration falls back to serving based on IP if absent)
+  domain_name: 'ostracion.your-domain.net'
