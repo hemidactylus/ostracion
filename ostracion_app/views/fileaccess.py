@@ -509,6 +509,22 @@ def fsMakeTicketView(fsPathString=''):
                     'direct',
                     additionalNulls=['None'],
                 )
+                maxValidityHours = g.settings['behaviour'][
+                    'behaviour_tickets']['max_ticket_validityhours']['value']
+                form.validityhours.data = applyDefault(
+                    form.validityhours.data,
+                    (str(maxValidityHours)
+                     if maxValidityHours is not None
+                     else ''),
+                )
+                maxMultiplicity = g.settings['behaviour'][
+                    'behaviour_tickets']['max_ticket_multiplicity']['value']
+                form.multiplicity.data = applyDefault(
+                    form.multiplicity.data,
+                    (str(maxMultiplicity)
+                     if maxMultiplicity is not None
+                     else ''),
+                )
                 return render_template(
                     'fsticket.html',
                     pageTitle='Create public file ticket',

@@ -24,8 +24,11 @@ class ConstrainedOptionalInt():
             self.message = message
 
     def __call__(self, form, field):
-        optValue = int(field.data) if field.data.strip() != '' else None
-        if not optionNumberLeq(self.maxValue, optValue):
+        try:
+            optValue = int(field.data) if field.data.strip() != '' else None
+            if not optionNumberLeq(self.maxValue, optValue):
+                raise ValidationError(self.message)
+        except Exception:
             raise ValidationError(self.message)
 
 

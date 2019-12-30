@@ -1357,6 +1357,12 @@ def adminUserIssueChangePasswordTicket(username):
                 form.name.data,
                 ticketName,
             )
+            maxValidityHours = g.settings['behaviour']['behaviour_tickets'][
+                'max_ticket_validityhours']['value']
+            form.validityhours.data = applyDefault(
+                form.validityhours.data,
+                str(maxValidityHours) if maxValidityHours is not None else '',
+            )
             return render_template(
                 'changepasswordticket.html',
                 user=user,
@@ -1485,6 +1491,12 @@ def adminNewUserInvitationView():
         form.name.data = applyDefault(
             form.name.data,
             'User-Invitation',
+        )
+        maxValidityHours = g.settings['behaviour']['behaviour_tickets'][
+            'max_ticket_validityhours']['value']
+        form.validityhours.data = applyDefault(
+            form.validityhours.data,
+            str(maxValidityHours) if maxValidityHours is not None else '',
         )
         return render_template(
             'adminnewuserinvitation.html',
