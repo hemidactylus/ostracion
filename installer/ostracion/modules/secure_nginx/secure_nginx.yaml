@@ -1,0 +1,13 @@
+- hosts: ostracion
+  become: true
+  become_method: sudo
+  vars_files:
+    - conf.yaml
+    - ../../conf.yaml
+  vars:
+      ansible_port: '{{ host_configuration.ssh_port }}'
+      ansible_user: '{{ host_configuration.username }}'
+      ansible_become_pass: '{{ host_configuration.password }}'
+      webapp_username: '{{ host_configuration.username }}'
+  tasks:
+    - import_tasks: tasks.yaml

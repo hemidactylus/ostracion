@@ -1,0 +1,122 @@
+- name: Installing required packages
+  apt:
+    name: '{{ apt.requisites }}'
+    state: latest
+    update_cache: yes
+
+- name: Upgrade certbot to the latest version
+  apt:
+    name: "certbot"
+    state: latest
+    update_cache: yes
+
+- name: Fetch certbot version
+  become: false
+  shell: certbot --version
+  register: certbot_version
+
+- name: Show certbot version
+  debug:
+    msg: '{{ certbot_version.stdout }}'
+
+- name: Adding the nginx source repo
+  shell: |
+    echo "deb http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" \
+        | sudo tee /etc/apt/sources.list.d/nginx.list
+  args:
+    creates: /etc/apt/sources.list.d/nginx.list
+
+- name: Add nginx source repo apt key
+  apt_key: 
+    url: 'https://nginx.org/keys/nginx_signing.key'
+    state: present
+
+- name: creating nginx conf backup directory
+  file:
+    path: '/home/{{ ansible_user }}/{{ nginx.backup_dir }}'
+    state: directory
+    mode: "u+rwx,g+rwx,o+rx"
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+
+- name: backup of current nginx setup files
+  archive:
+    path:
+      - '/etc/nginx/nginx.conf'
+      - '/etc/nginx/sites-available/*'
+    dest: "/home/{{ ansible_user }}/{{ nginx.backup_dir }}/{{ lookup('pipe','date +%Y_%m_%d__%H_%M_%S') }}.tar.gz"
+    format: gz
+
+- name: Updating nginx to the nginx-repo latest version
+  apt:
+    name: "nginx"
+    state: latest
+    update_cache: yes
+
+- name: Fetch nginx version
+  become: false
+  shell: nginx -v
+  register: nginx_version
+
+- name: Show nginx version
+  debug:
+    msg: '{{ nginx_version.stderr }}' # for some reason nginx outputs its version to stderr
+
+- name: Make sure sites-available is included in nginx.conf
+  lineinfile:
+    path: /etc/nginx/nginx.conf
+    insertafter: '/etc/nginx/conf.d/'
+    regexp: '/etc/nginx/sites-enabled/'
+    line: '    include /etc/nginx/sites-enabled/*;'
+
+- name: 'Adding strict SSL headers to {{ nginx.security_snippet_filename }}'
+  blockinfile:
+    path: '{{ nginx.security_snippet_filename }}'
+    marker: "    # {mark} ANSIBLE MANAGED BLOCK"
+    marker_begin: 'BEGIN_SSL_STRICT_HEADERS'
+    marker_end: 'END_SSL_STRICT_HEADERS'
+    create: yes
+    block: |
+      add_header X-Frame-Options "sameorigin" always;
+      add_header X-XSS-Protection "1" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header Strict-Transport-Security "max-age=3600; includeSubDomains" always;
+
+- name: Importing strict SSL headers into nginx.conf
+  lineinfile:
+    path: /etc/nginx/nginx.conf
+    insertafter: '/etc/nginx/sites-enabled/'
+    regexp: '{{ nginx.security_snippet_filename }}'
+    line: '    include {{ nginx.security_snippet_filename }};'
+
+# for lack of a better way of making the grep not complain in ansible when no lines match ...
+- name: Checking for nested add_header nginx directives
+  become: false
+  shell: grep -Hn add_header /etc/nginx/sites-available/* || FAILED=y
+  register: nested_add_header_s
+
+- name: Printing nested add_header directives found
+  debug:
+    msg: "[ 'WARNING: MANUALLY RE-INCLUDE SECURITY HEADER FILE WITH:', '    include {{ nginx.security_snippet_filename }};', 'IN FOLLOWING PLACES, see http://usercards.nextatlas.com/na_internal_documentation/security/nginx1/#remarks:' ] + {{ nested_add_header_s.stdout_lines }}"
+  when: nested_add_header_s.stdout_lines != []
+
+- name: creating letsencrypt conf backup directory
+  file:
+    path: '/home/{{ ansible_user }}/{{ certbot.backup_dir }}'
+    state: directory
+    mode: "u+rwx,g+rwx,o+rx"
+    owner: '{{ ansible_user }}'
+    group: '{{ ansible_user }}'
+
+- name: backup of current letsencrypt conf file
+  shell: "cp /etc/letsencrypt/options-ssl-nginx.conf /home/{{ ansible_user }}/{{ certbot.backup_dir }}/`date +%Y_%m_%d__%H_%M_%S`_options-ssl-nginx.conf"
+
+- name: Replace letsencrypt ssl options with stricter ones
+  copy:
+    src: files/options-ssl-nginx.conf
+    dest: /etc/letsencrypt/options-ssl-nginx.conf
+
+- name: Restarting nginx
+  service:
+    name: nginx
+    state: restarted

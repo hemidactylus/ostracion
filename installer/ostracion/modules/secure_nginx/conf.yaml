@@ -1,0 +1,13 @@
+apt:
+  requisites:
+    - curl
+    - gnupg2
+    - ca-certificates
+    - lsb-release
+
+nginx:
+  backup_dir: sys_backups/nginx_conf
+  security_snippet_filename: /etc/nginx/snippets/general-security-headers.conf
+
+certbot:
+  backup_dir: sys_backups/letsencrypt_ssl_options
