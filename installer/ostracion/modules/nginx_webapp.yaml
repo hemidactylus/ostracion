@@ -17,11 +17,22 @@
     state: restarted
     enabled: true
 
+- name: Check if the nginx server file exists
+  stat:
+    path: /etc/nginx/sites-available/ostracion_webapp
+  register: ostracion_nginx_server_file
+
+- name: Checking if Certbot already edited the nginx files
+  command: awk /Certbot$/ /etc/nginx/sites-available/ostracion_webapp
+  register: https_already_set_up
+  when: ostracion_nginx_server_file.stat.exists
+
 - name: Creating the nginx server file for Ostracion
   template:
     src: templates/ostracion_webapp.j2
     dest: /etc/nginx/sites-available/ostracion_webapp
     mode: "u+rw,g+rw,o+r"
+  when: not ostracion_nginx_server_file.stat.exists or https_already_set_up.stdout == ""
   notify: restart nginx
 
 - name: Symlinking the nginx server file as enabled
@@ -29,4 +40,5 @@
     src: /etc/nginx/sites-available/ostracion_webapp
     dest: /etc/nginx/sites-enabled/ostracion_webapp
     state: link
+  when: not ostracion_nginx_server_file.stat.exists or https_already_set_up.stdout == ""
   notify: restart nginx

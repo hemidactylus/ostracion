@@ -26,18 +26,6 @@
     line: "server_names_hash_bucket_size 64;"
   notify: restart nginx
 
-# # see: https://bugs.launchpad.net/ubuntu/+source/nginx/+bug/1581864
-# # and: https://stackoverflow.com/questions/42078674/nginx-service-failed-to-read-pid-from-file-run-nginx-pid-invalid-argument#42084804
-# - name: Mkdir to apply the nginx workaround
-#   file:
-#     dest: /etc/systemd/system/nginx.service.d
-#     state: directory
-
-# - name: Setting up the nginx workaround file
-#   copy:
-#     src: files/override.conf
-#     dest: /etc/systemd/system/nginx.service.d/override.conf
-
 - name: Adding the repo for letsencrypt
   apt_repository:
     repo: 'ppa:certbot/certbot'

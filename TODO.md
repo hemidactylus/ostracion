@@ -1,14 +1,5 @@
 # TODO for Ostracion
 
-## Version 1.0
-
-### Ansible
-
-    Write the playbook for an easy deploy and
-    documentation on install in README.md
-
-    hsts & other headers
-
 ## Maintenance (internals)
 
 ### Root box naming

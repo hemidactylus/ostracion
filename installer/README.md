@@ -113,6 +113,33 @@ installed automatically; moreover, the `nginx` configuration should be updated
 automatically by Certbot to make use of it. It is suggested to let Certbot
 handle the automatic redirect of HTTP to HTTPS.
 
+_NOTE_: Step one above will **not** touch the `nginx` server file
+`/etc/nginx/sites-available/ostracion_webapp` if it detects this step
+has been performed. To force regeneration of this file by re-running Step one,
+you have to manually delete it first (and then repeat the HTTPS Step four).
+
 ### Five: High-security HTTPS
 
-TO-DO
+At this point an additional step can be performed to bring the system to
+stricter security standards. These include the setup of HSTS, which is _not
+to be taken lightly_ as it implies a commitment to "never leave HTTPS anymore",
+so to speak, which can make it pretty difficult to go back to no-HSTS.
+
+That being said, this step will:
+
+- implement HSTS with a rather safe `max-age` of one hour (it can be increased
+  by changing the value of `max-age` in file
+  `ostracion/modules/secure_nginx/tasks.yaml`
+  from 3600 to a higher number of seconds);
+- Add the headers `X-Frame-Options`, `X-XSS-Protection` and `X-Content-Type-Options`
+  to protect against various type of injection attacks;
+- disable `TLSv1.0` leaving only `v1.1` and `v1.2`;
+- restrict the pool of cipher for SSL to disable older, vulnerable ciphers.
+
+This is done by a separate playbook that will, among other things, make sure
+the latest `nginx` is installed (it does so by switching to the `nginx` source
+repo for Ubuntu) and do a backup copy of all `nginx`-related files it touches.
+
+It is sufficient to run:
+
+    ansible-playbook -i hosts ostracion/modules/secure_nginx/secure_nginx.yaml
