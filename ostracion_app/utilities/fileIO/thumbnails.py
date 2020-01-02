@@ -137,6 +137,7 @@ def resizeToThumbnail(srcFile, dstFile, thumbnailFormat):
             for arg in (
                 'convert',
                 srcFile,
+                '-auto-orient',  # against in-picture rotation info for thb.
                 '-thumbnail' if rThumbArg is not None else None,
                 rThumbArg if rThumbArg is not None else None,
                 '-gravity',
