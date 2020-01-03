@@ -52,7 +52,7 @@
                     <div class="form-group">
                       {{ field.label(style="margin-bottom:0px;") }}
                       <small class="form-text text-muted" style="margin-top:0px;">{{ wideIdToFormProperties[field.id]['richSetting']['setting']['description'] }}</small>
-                      {{ field(class_="form-control",placeholder="DEFAULT VALUE FOLLOWS:\n %s" % wideIdToFormProperties[field.id]['richSetting']['setting']['default_value'],rows='36',tabindex=field_looper.index) }}
+                      {{ field(class_="form-control",placeholder="DEFAULT VALUE FOLLOWS:\n%s" % wideIdToFormProperties[field.id]['richSetting']['setting']['default_value'],rows='6' if wideIdToFormProperties[field.id]['richSetting']['setting']['type']=='short_text' else '36',tabindex=field_looper.index) }}
                       {% for error in field.errors %}
                         <small class="form-text text-muted">{{ error }}</small>
                       {% endfor %}

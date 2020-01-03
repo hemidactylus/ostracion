@@ -58,6 +58,11 @@ Tables and small screens: currently a disaster.
 
 ## TODOs for the next major release
 
+### External links
+
+in ls view, items of type 'bookmark' or so, with icon, title, subtitle
+which are just links to external urls
+
 ### Zip handling
 
 Users will be able to:

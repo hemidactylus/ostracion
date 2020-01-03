@@ -71,7 +71,7 @@ def _unrollSettingValueByType(ty, vaString):
         return int(vaString) != 0
     elif ty == 'option':
         return vaString
-    elif ty == 'text':
+    elif ty in {'text', 'short_text'}:
         return vaString
     elif ty == 'image':
         return vaString
@@ -97,7 +97,7 @@ def _informSettingValueByType(ty, vaString):
         return int(vaString) != 0
     elif ty == 'option':
         return vaString
-    elif ty == 'text':
+    elif ty in {'text', 'short_text'}:
         return vaString
     elif ty == 'image':
         return vaString
@@ -134,7 +134,7 @@ def _deformSettingValueByType(ty, vaFormData):
         return '1' if vaFormData else '0'
     elif ty == 'option':
         return vaFormData
-    elif ty == 'text':
+    elif ty in {'text', 'short_text'}:
         return vaFormData
     elif ty == 'image':
         return vaFormData

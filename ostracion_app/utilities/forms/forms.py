@@ -437,7 +437,7 @@ def generateGenericSettingsForm(behaviourGroupedSettings):
                         Length(max=maxIdentifierLength)
                     ]
                 )
-            elif gSetting['setting'].type in {'text'}:
+            elif gSetting['setting'].type in {'text', 'short_text'}:
                 qField = TextAreaField(
                     gSetting['setting'].title,
                     validators=[Length(max=maxStoredTextLength)]

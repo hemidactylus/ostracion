@@ -262,6 +262,7 @@ def lsView(lsPathString=''):
             user=user,
             thisBox=thisBox,
             boxNiceName=boxNiceName,
+            pageTitle=boxNiceName,
             boxChildrenCounter=boxChildrenCounter,
             boxActions=boxActions,
             boxPath=boxPath,

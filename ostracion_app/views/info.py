@@ -13,6 +13,7 @@ from flask import (
     g,
     send_from_directory,
     abort,
+    Response,
 )
 
 from config import (
@@ -221,6 +222,19 @@ def aboutView():
         ostracionVersion=ostracionVersion,
         **pageFeatures,
     )
+
+
+@app.route('/robots.txt')
+def robotsTxtView():
+    """Implementation of the robots.txt resource. Behave as per settings."""
+    returnRobotsTxt = g.settings['behaviour']['search'][
+        'serve_robots_txt']['value']
+    if returnRobotsTxt:
+        robotsTxtContents = g.settings['behaviour']['search'][
+            'robots_txt_body']['value']
+        return Response(robotsTxtContents, mimetype='text/plain')
+    else:
+        return abort(404)
 
 
 @app.route('/info/<dummyId>/dpo_email.png')

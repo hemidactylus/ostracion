@@ -1187,7 +1187,7 @@ initialDbValues = {
                                         '"anybody"}]}'
                                     ),
                 'group_id':         'search',
-                'group_title':      'Search and browsing',
+                'group_title':      'Resource publicity',
                 'group_ordering':   30,
                 'ordering':         5,
             },
@@ -1205,7 +1205,7 @@ initialDbValues = {
                 'default_value':    '1',
                 'metadata':         '',
                 'group_id':         'search',
-                'group_title':      'Search and browsing',
+                'group_title':      'Resource publicity',
                 'group_ordering':   30,
                 'ordering':         10,
             },
@@ -1227,7 +1227,7 @@ initialDbValues = {
                                         '"anybody"}]}'
                                     ),
                 'group_id':         'search',
-                'group_title':      'Search and browsing',
+                'group_title':      'Resource publicity',
                 'group_ordering':   30,
                 'ordering':         15,
             },
@@ -1245,9 +1245,40 @@ initialDbValues = {
                 'default_value':    '0',
                 'metadata':         '',
                 'group_id':         'search',
-                'group_title':      'Search and browsing',
+                'group_title':      'Resource publicity',
                 'group_ordering':   30,
                 'ordering':         20,
+            },
+            {
+                'id':               'serve_robots_txt',
+                'klass':            'behaviour',
+                'type':             'boolean',
+                'value':            '1',
+                'title':            'Provide robots.txt info',
+                'description':      (
+                                        'Serve file "robots.txt" when asked,'
+                                        ' i.e. respond to requests'
+                                        ' for "robots.txt"'
+                                    ),
+                'default_value':    '1',
+                'metadata':         '',
+                'group_id':         'search',
+                'group_title':      'Resource publicity',
+                'group_ordering':   30,
+                'ordering':         25,
+            },            {
+                'id':               'robots_txt_body',
+                'klass':            'behaviour',
+                'type':             'short_text',
+                'value':            '',
+                'title':            'robots.txt',
+                'description':      'Contents of file "robots.txt"',
+                'default_value':    'User-agent: *\nDisallow: /',
+                'metadata':         '',
+                'group_id':         'search',
+                'group_title':      'Resource publicity',
+                'group_ordering':   30,
+                'ordering':         30,
             },
             #
             {

@@ -13,7 +13,13 @@
 
     <link rel="stylesheet" href="/static/css/ostracion.css" type="text/css">
 
-    <title>{{ pageTitle | default('Ostracion') }}</title>
+    <title>
+      {% if pageTitle %}
+        {{ pageTitle }} | {{ g.settings.behaviour.behaviour_appearance.application_short_name.value }}
+      {% else %}
+        {{ g.settings.behaviour.behaviour_appearance.application_short_name.value }}
+      {% endif %}
+    </title>
   </head>
   <body>
 
