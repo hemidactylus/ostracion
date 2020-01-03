@@ -11,6 +11,7 @@
         - virtualenv
         - gimp
         - imagemagick
+  tags: app_update
 
 - name: Creating the repositories directory as regular user
   file:
@@ -19,12 +20,14 @@
     mode: "u+rwx,g+rwx,o-rx"
     owner: '{{ webapp_username }}'
     group: '{{ webapp_username }}'
+  tags: app_update
 
 - name: "Cloning the repo"
   become_user: '{{ webapp_username }}'
   git:
     repo: "https://github.com/hemidactylus/ostracion.git"
     dest: '/home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion'
+  tags: app_update
 
 - name: Creating the virtual-environments directory
   become: false
@@ -32,6 +35,7 @@
     path: '/home/{{ webapp_username }}/.virtualenvs'
     state: directory
     mode: "u+rwx,g+rwx,o-rx"
+  tags: app_update
 
 - name: "Creating the virtualenv"
   become_user: '{{ webapp_username }}'
@@ -39,6 +43,7 @@
     requirements: '/home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion/requirements.txt'
     virtualenv: '/home/{{ webapp_username }}/.virtualenvs/ostracion'
     virtualenv_python: "python{{ app_configuration.python_version }}"
+  tags: app_update
 
 - name: Setting the venv custom python path
   become_user: '{{ webapp_username }}'
@@ -47,6 +52,7 @@
     create: yes
     line: "/home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion"
     mode: "u+rw,g+rw,o+r"
+  tags: app_update
 
 - name: Invoking post-install script
   become: false
@@ -54,3 +60,4 @@
     . /home/{{ webapp_username }}/.virtualenvs/ostracion/bin/activate
     cd /home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion/post_install
     ./postInstall.py
+  tags: app_update

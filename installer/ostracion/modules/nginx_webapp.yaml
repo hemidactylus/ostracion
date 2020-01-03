@@ -16,6 +16,7 @@
     name: ostracion.service
     state: restarted
     enabled: true
+  tags: app_update
 
 - name: Check if the nginx server file exists
   stat:

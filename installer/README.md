@@ -22,6 +22,11 @@ ready to generate a certificate to run the domain using the HTTPS protocol:
 in this case, further security enhancements are available once HTTPS
 is set up.
 
+__NOTE__: please scroll to the bottom
+("Reinstalling Ostracion only") for an quick install run 
+limited to updating the Python code (e.g. after a
+new Ostracion release is available).
+
 _NOTE_: if the target system runs a different OS, uses a system
 daemon other than `systemd`, uses another Web server such as Apache,
 or anything - despair not: you can probably set up Ostracion all the same,
@@ -143,3 +148,14 @@ repo for Ubuntu) and do a backup copy of all `nginx`-related files it touches.
 It is sufficient to run:
 
     ansible-playbook -i hosts ostracion/modules/secure_nginx/secure_nginx.yaml
+
+## Reinstalling Ostracion only
+
+Assuming the infrastructure (`nginx`, HTTPS certificates and so on) is already
+in place, one can quickly run a Python-code-refresh-only run with:
+
+    ansible-playbook -i hosts ostracion/ostracion_install.yaml --tags app_update
+
+This performs all steps limited to re-deploying the current contents of the
+Ostracion repo, re-running the post-install script and restarting the system
+service running Ostracion.
