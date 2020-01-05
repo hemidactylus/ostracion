@@ -2,6 +2,15 @@
 
 ## Maintenance (internals)
 
+### A convention for 'system roles' (ASAP)
+
+to handle in the future roles such as calendar/(ticketer)/accounting ...
+with a convention and that the admins cannot delete/create them.
+Such roles cannot be given to boxes, only users.
+
+### Ansible, nginx restart target, why it seems nonexistent sometimes?
+(then, after various reruns of the ansible, all is ok)
+
 ### Root box naming
 
 'Root', '(root)' etc, are slapped in various places as literals.
@@ -58,10 +67,15 @@ Tables and small screens: currently a disaster.
 
 ## TODOs for the next major release
 
+### API / Command line tools to sync in either direction
+
 ### External links
 
 in ls view, items of type 'bookmark' or so, with icon, title, subtitle
 which are just links to external urls
+
+A separate table similar to boxes and files? Or an use of the 'nature'
+of boxes?
 
 ### Zip handling
 
