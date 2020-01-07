@@ -47,6 +47,12 @@ The following must be run in the project subdirectory `installer`.
 Copy the file `hosts_template` to `hosts` and edit it so that it reflects
 the public IP of the target machine.
 
+_NOTE_: if the installation is on localhost (e.g. on one's personal laptop
+for use in local network), one can use the hostfile `localhost_template`
+and start from the configuration template `conf_localhost_template.yaml`.
+Moreover, this Step one is, usually, the only one to perform
+in a local installation.
+
 Copy the file `ostracion/conf_template.yaml` to `ostracion/conf.yaml`
 and edit it as suggested by the comments therein, to reflect your `ssh`
 access details and some settings of the installation process.

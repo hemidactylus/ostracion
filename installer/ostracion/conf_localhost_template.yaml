@@ -1,0 +1,15 @@
+host_configuration:
+  username: 'local_user'
+  password: 'local_password'
+  ssh_port: '22'
+
+webserver_configuration:
+  ports:
+    - '80'
+  max_body_size: '512M'
+  use_https: false
+
+app_configuration:
+  base_dir: 'web_apps'
+  python_version: '3.5'
+  num_processes: '4'
