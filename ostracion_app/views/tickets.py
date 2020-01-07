@@ -724,7 +724,7 @@ def changePasswordUponTicket(db, user, issuer, richTicket):
                                     'metadata'].get('message') is None
                                 else '. Message on ticket: "%s"' % (
                                     richTicket['metadata'].get('message'),
-                                ),
+                                )
                             )
             return render_template(
                 'userchangepassword.html',
@@ -831,7 +831,7 @@ def createUserUponTicket(db, user, issuer, richTicket):
                         if richTicket['metadata'].get('message') is None
                         else '. Message on ticket: "%s"' % (
                             richTicket['metadata']['message']
-                        ),
+                        )
                     ),
                 ),
                 iconUrl=makeSettingImageUrl(g, 'user_images', 'user_icon'),
