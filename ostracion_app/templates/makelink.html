@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% import "tools/form_tools.html" as formtools %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+              <form method="post" enctype="multipart/form-data" action="">
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                  <label for="linkname">Name</label>
+                  {{ form.linkname(class_="form-control",tabindex=1) }}
+                  {% for error in form.linkname.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                <div class="form-group">
+                  <label for="linkdescription">Description</label>
+                  {{ form.linkdescription(class_="form-control",tabindex=2) }}
+                  {% for error in form.linkdescription.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                <div class="form-group">
+                  <label for="linktarget">Target URL</label>
+                  {{ form.linktarget(class_="form-control",tabindex=3) }}
+                  {% for error in form.linktarget.errors %}
+                    <small class="form-text text-muted">{{ error }}</small>
+                  {% endfor %}
+                </div>
+
+                <div class="form-group">
+                  <div class="custom-control custom-switch">
+                    {{ form.openinnewwindow(class_="custom-control-input",tabindex=3) }}
+                    <label class="custom-control-label" for="openinnewwindow">Prefer opening in new window</label>
+                    {% for error in form.openinnewwindow.errors %}
+                      <small class="form-text text-muted">{{ error }}</small>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                {{ form.save(class_='btn btn-primary', style='margin-right: 25px;',tabindex=5) }}
+                <a href="#" class="btn btn-success" onclick="window.history.back()" tabindex="6">
+                  Cancel
+                </a>
+              </form>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

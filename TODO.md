@@ -2,6 +2,8 @@
 
 ## Maintenance (internals)
 
+### makeFileInParent should check for permissions (hence have more arguments)
+
 ### A convention for 'system roles' (ASAP)
 
 to handle in the future roles such as calendar/(ticketer)/accounting ...
@@ -71,11 +73,24 @@ Tables and small screens: currently a disaster.
 
 ### External links
 
-in ls view, items of type 'bookmark' or so, with icon, title, subtitle
-which are just links to external urls
+In breadcrumbs, links should open (if so requested) in external window
 
-A separate table similar to boxes and files? Or an use of the 'nature'
-of boxes?
+ACTIONS IN THE CARD (to implement)
+  icon
+  metadata
+  move (...)
+  delete
+  + the issue with displaying/etc the thumbnail
+
+A separate table akin to FILES. Keep track of this in:
+ - name checks before saving/writing files
+ - deleting user material
+ - all ls views
+ - tree view
+ - display, must add explicitly jinja templates
+ - settings for link color
+ - search has more options now
+ - creation of links/editing/deletion has a fsdeletequeue to handle!
 
 ### Zip handling
 

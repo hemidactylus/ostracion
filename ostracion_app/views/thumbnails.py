@@ -50,6 +50,7 @@ from ostracion_app.utilities.database.userTools import (
 from ostracion_app.utilities.database.fileSystem import (
     getBoxFromPath,
     getFileFromParent,
+    getLinkFromParent,
 )
 
 from ostracion_app.utilities.database.settingsTools import (
@@ -121,6 +122,39 @@ def fileThumbnailView(dummyId, fsPathString):
     else:
         return redirect(
             pickFileThumbnail(file.mime_type)
+        )
+
+
+@app.route('/linkthumbnail/<dummyId>/<path:fsPathString>')
+def linkThumbnailView(dummyId, fsPathString=''):
+    """Route for access to thumbnail image files based on link path."""
+    user = g.user
+    lsPath = splitPathString(fsPathString)
+    boxPath, linkName = lsPath[:-1], lsPath[-1]
+    db = dbGetDatabase()
+    fileStorageDirectory = g.settings['system']['system_directories'][
+        'fs_directory']['value']
+    parentBox = getBoxFromPath(db, boxPath, user)
+    request._onErrorUrl = url_for(
+        'lsView',
+        lsPathString='/'.join(boxPath[1:]),
+    )
+    link = getLinkFromParent(db, parentBox, linkName, user)
+    if (link is not None and
+            link.icon_file_id is not None and
+            link.icon_file_id != ''):
+        filePhysicalPath, filePhysicalName = fileIdToSplitPath(
+            link.icon_file_id,
+            fileStorageDirectory=fileStorageDirectory,
+        )
+        return send_from_directory(
+            filePhysicalPath,
+            filePhysicalName,
+            mimetype=link.icon_mime_type,
+        )
+    else:
+        return redirect(
+            makeSettingImageUrl(g, 'app_images', 'external_link')
         )
 
 
@@ -257,6 +291,12 @@ def unsetIconView(mode, itemPathString=''):
             boxPath, fileName = fullPath[:-1], fullPath[-1]
             parentBox = getBoxFromPath(db, boxPath, user)
             thisItem = getFileFromParent(db, parentBox, fileName, user)
+        elif mode == 'l':
+            modeName = 'link'
+            fullPath = splitPathString(itemPathString)
+            boxPath, linkName = fullPath[:-1], fullPath[-1]
+            parentBox = getBoxFromPath(db, boxPath, user)
+            thisItem = getLinkFromParent(db, parentBox, linkName, user)
         elif mode == 'u':
             modeName = 'user'
             parentBox = None
@@ -297,7 +337,7 @@ def unsetIconView(mode, itemPathString=''):
         if not storageSuccess:
             raise OstracionError('Could not unset the icon')
         #
-        if mode in {'f', 'b'}:
+        if mode in {'f', 'b', 'l'}:
             return redirect(url_for(
                 'lsView',
                 lsPathString='/'.join(
@@ -318,7 +358,6 @@ def unsetIconView(mode, itemPathString=''):
             ))
         else:
             raise RuntimeError('Unknown mode encountered')
-            return redirect(url_for('lsView'))
 
 
 @app.route('/seticon/<mode>/<path:itemPathString>', methods=['GET', 'POST'])
@@ -376,6 +415,33 @@ def setIconView(mode, itemPathString=''):
                     appendedItems=[
                         {
                             'kind': 'file',
+                            'target': thisItem,
+                        },
+                        {
+                            'kind': 'link',
+                            'target': None,
+                            'name': 'Icon',
+                        }
+                    ],
+                ),
+            }
+        elif mode == 'l':
+            fullPath = splitPathString(itemPathString)
+            boxPath, linkName = fullPath[:-1], fullPath[-1]
+            request._onErrorUrl = url_for(
+                'lsView',
+                lsPathString='/'.join(boxPath[1:]),
+            )
+            parentBox = getBoxFromPath(db, boxPath, user)
+            thisItem = getLinkFromParent(db, parentBox, linkName, user)
+            itemName = thisItem.getName()
+            pageFeatures = {
+                'breadCrumbs': makeBreadCrumbs(
+                    splitPathString(itemPathString)[:-1],
+                    g,
+                    appendedItems=[
+                        {
+                            'kind': 'external_link',
                             'target': thisItem,
                         },
                         {
@@ -474,7 +540,7 @@ def setIconView(mode, itemPathString=''):
             if not storageSuccess:
                 raise OstracionError('Could not set the icon')
             #
-            if mode in {'f', 'b'}:
+            if mode in {'f', 'b', 'l'}:
                 return redirect(url_for(
                     'lsView',
                     lsPathString='/'.join(
@@ -499,6 +565,7 @@ def setIconView(mode, itemPathString=''):
             #
             titleMap = {
                 'f': 'Set File Icon',
+                'l': 'Set Link Icon',
                 'b': 'Set Box Icon',
                 'u': 'Set User Icon',
                 'au': 'Set User Icon (as admin)',
@@ -506,6 +573,7 @@ def setIconView(mode, itemPathString=''):
             }
             modeNameMap = {
                 'f': 'for file',
+                'l': 'for link',
                 'b': 'for box',
                 'u': 'for user',
                 'au': '(as admin) for user',
@@ -551,6 +619,12 @@ def setIconView(mode, itemPathString=''):
                     dummyId=thisItem.icon_file_id + '_',
                     fsPathString='/'.join(boxPath[1:] + [thisItem.name]),
                 )
+            elif mode == 'l':
+                finalPageFeatures['iconUrl'] = url_for(
+                    'linkThumbnailView',
+                    dummyId=thisItem.icon_file_id + '_',
+                    fsPathString='/'.join(boxPath[1:] + [thisItem.name]),
+                )
             #
             return render_template(
                 'uploadicon.html',
@@ -569,7 +643,7 @@ def determineThumbnailFormatByModeAndTarget(db, mode, target):
         Given e.g. 'u' and the user, or 'b' and the box, ...,
         find the appropriate thumbnail mode for the resizing calls.
     """
-    if mode in {'f', 'b'}:
+    if mode in {'f', 'b', 'l'}:
         return 'thumbnail'
     elif mode == 'u':
         return 'thumbnail'

@@ -150,6 +150,13 @@ def formatAppendedBreadcrumbItem(appendedItem, hasLink, collectedFsPath=None):
             ),
             'link': hasLink,
         }
+    elif appendedItem['kind'] == 'external_link':
+        return {
+            'name': appendedItem['target'].name,
+            'type': appendedItem['kind'],
+            'target': appendedItem['target'].target,
+            'link': True,
+        }
     elif appendedItem['kind'] == 'link':
         return {
             'name': appendedItem['name'],
@@ -334,6 +341,10 @@ def prepareBoxHeaderActions(db, box, boxPath, user, discardedActions=set()):
             'makeTextFileView',
             fsPathString='/'.join(boxPath)
         ) if canWriteFiles else None,
+        'make_link': url_for(
+            'makeLinkView',
+            fsPathString='/'.join(boxPath)
+        ) if canWriteFiles else None,
         'issue_upload_ticket': url_for(
             'makeTicketBoxUploadView',
             boxPathString='/'.join(boxPath)
@@ -416,6 +427,67 @@ def prepareFileInfo(db, file):
             {
                 'action': 'Metadata',
                 'actor': getUserFullName(db, file.metadata_username),
+            },
+        )
+        if infoItem['actor'] is not None
+    ]
+
+
+def prepareLinkActions(db, link, linkPath, parentBox, user,
+                       discardedActions=set(), prepareParentButton=False):
+    """ Calculate the actions on a link available to user (according to their
+        powers) for showing in the link-as-ls-item view.
+    """
+    lActions = {}
+    # active stuff
+    if userHasPermission(db, user, parentBox. permissions, 'w'):
+        lActions['icon'] = url_for(
+            'setIconView',
+            mode='l',
+            itemPathString='/'.join(linkPath),
+        )
+        lActions['metadata'] = url_for(
+            'fsMetadataView',
+            fsPathString='/'.join(linkPath),
+        )
+        lActions['delete'] = url_for(
+            'fsDeleteFileView',
+            fsPathString='/'.join(linkPath),
+        )
+        lActions['move'] = url_for(
+            'fsMoveFileView',
+            quotedFilePath=urllib.parse.quote_plus('/'.join(linkPath)),
+        )
+    #
+    if prepareParentButton:
+        lActions['parent'] = url_for(
+            'lsView',
+            lsPathString='/'.join(linkPath[:-1]),
+        )
+    #
+    return {
+        k: v
+        for k, v in lActions.items()
+        if k not in discardedActions
+    }
+
+
+def prepareLinkInfo(db, link):
+    """Calculate link information for display."""
+    return [
+        infoItem
+        for infoItem in (
+            {
+                'action': 'Created',
+                'actor': getUserFullName(db, link.creator_username),
+            },
+            {
+                'action': 'Icon',
+                'actor': getUserFullName(db, link.icon_file_id_username),
+            },
+            {
+                'action': 'Metadata',
+                'actor': getUserFullName(db, link.metadata_username),
             },
         )
         if infoItem['actor'] is not None

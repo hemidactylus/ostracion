@@ -76,6 +76,11 @@
                                     t
                                 </a>
                             {% endif %}
+                            {% if actions.make_link %}
+                                <a href="{{ actions.make_link }}" class="btn btn-primary" data-toggle="tooltip" title="New link">
+                                    L
+                                </a>
+                            {% endif %}
                             {% if actions.issue_upload_ticket %}
                                 <a href="{{ actions.issue_upload_ticket }}" class="btn btn-warning" data-toggle="tooltip" title="Issue upload ticket">
                                     T

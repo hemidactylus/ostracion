@@ -28,7 +28,7 @@
                         <h5>{{ wideIdToFormProperties[field.id]['group_caption'] }}</h5>
                       {% endif %}
                       {{ field.label }} :
-                        <span class="badge" style="background-color: {{ wideIdToFormProperties[field.id]['richSetting']['value'] }}; padding-left:10px; padding-right: 10px; margin-right:5px;"> from this </span>
+                        <span class="badge" style="background-color: {{ wideIdToFormProperties[field.id]['richSetting']['value'] }}; padding-left:10px; padding-right: 10px; margin-right:5px;"> from this ({{ wideIdToFormProperties[field.id]['richSetting']['value'] }}) </span>
                         <span class="badge" id="color_sampler_{{ field.id }}" style="background-color: {{ wideIdToFormProperties[field.id]['richSetting']['value'] }}; padding-left:10px; padding-right: 10px;"> to this </span>
                       {{ field(class_="form-control",placeholder="Empty for default value",tabindex=loop.index) }}
                       {% for error in field.errors %}

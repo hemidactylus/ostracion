@@ -74,6 +74,22 @@
           ) }}
         {% endfor %}
 
+        <!-- LINKS -->
+        {% for linkStructure in links %}
+          {{ cardtools.file_card(
+            title=linkStructure['link'].name,
+            titleit=None,
+            subtitle=linkStructure['link'].description,
+            subtitleit=linkStructure['link'].target,
+            infratitlesmall=None,
+            target_url=linkStructure['link'].target,
+            icon_url=url_for('linkThumbnailView',dummyId=linkStructure['link'].icon_file_id+'_',fsPathString='/'.join(linkStructure.path)),
+            icon_subtitle=linkStructure['link'].date.strftime('%b %d, %Y'),
+            info=linkStructure.info,
+            actions=linkStructure.actions,
+            color=g.settings['color']['navigation_colors']['link']['value'],
+          ) }}
+        {% endfor %}
       </div>
 
 {% endblock %}

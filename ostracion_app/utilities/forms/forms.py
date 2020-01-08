@@ -131,6 +131,33 @@ class MakeTextFileForm(FlaskForm):
     confirm = SubmitField('Create')
 
 
+class EditLinkForm(FlaskForm):
+    """New/edit link form (class)."""
+    linkname = StringField(
+        'LinkName',
+        validators=[
+            InputRequired(),
+            CharacterSelector(),
+            Length(max=maxIdentifierLength)
+        ]
+    )
+    linkdescription = StringField(
+        'LinkDescription',
+        validators=[Length(max=maxIdentifierLength)]
+    )
+    linktarget = StringField(
+        'LinkTarget',
+        validators=[
+            InputRequired(),
+            Length(max=maxIdentifierLength)
+        ]
+    )
+    openinnewwindow = BooleanField(
+        'OpenInNewWindow'
+    )
+    save = SubmitField('Save')
+
+
 class EditTextFileForm(FlaskForm):
     """Edit-text-file form (class)."""
     textformat = RadioField('Textfile format: ')

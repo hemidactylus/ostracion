@@ -639,6 +639,21 @@ initialDbValues = {
                 'group_ordering':   30,
                 'ordering':         55,
             },
+            {
+                'id':               'external_link',
+                'klass':            'image',
+                'type':             'image',
+                'value':            '',
+                'title':            'External link',
+                'description':      'Icon for external link',
+                'default_value':    'external_link.png',
+                'default_icon_mime_type':   'image/png',
+                'metadata':         '{"thumbnailFormat":"thumbnail"}',
+                'group_id':         'app_images',
+                'group_title':      'Application image settings',
+                'group_ordering':   30,
+                'ordering':         60,
+            },
             #
             {
                 'id':               'navbar_logo',
@@ -777,6 +792,20 @@ initialDbValues = {
                 'group_title':      'Navigation colors',
                 'group_ordering':   5,
                 'ordering':         10,
+            },
+            {
+                'id':               'link',
+                'klass':            'color',
+                'type':             'color',
+                'value':            '',
+                'title':            'Link Color',
+                'description':      'Color of link cards',
+                'default_value':    '#f0a0a0',
+                'metadata':         '',
+                'group_id':         'navigation_colors',
+                'group_title':      'Navigation colors',
+                'group_ordering':   5,
+                'ordering':         15,
             },
             #
             {

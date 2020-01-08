@@ -45,6 +45,7 @@ from ostracion_app.utilities.database.fileSystem import (
     updateBox,
     deleteBox,
     getFilesFromBox,
+    getLinksFromBox,
     getRootBox,
     isNameUnderParentBox,
     canDeleteBox,
@@ -57,7 +58,9 @@ from ostracion_app.utilities.viewTools.pathTools import (
     splitPathString,
     prepareBoxActions,
     prepareFileActions,
+    prepareLinkActions,
     prepareFileInfo,
+    prepareLinkInfo,
     prepareBoxInfo,
     prepareBoxHeaderActions,
     prepareRootTasks,
@@ -174,6 +177,25 @@ def lsView(lsPathString=''):
                 key=lambda f: (f.name.lower(), f.name),
             )
         ]
+        links = [
+            {
+                'link': link,
+                'path': boxPath + [link.name],
+                'info': prepareLinkInfo(db, link),
+                'actions': prepareLinkActions(
+                    db,
+                    link,
+                    boxPath + [link.name],
+                    thisBox,
+                    user
+                ),
+            }
+            for link in sorted(
+                getLinksFromBox(db, thisBox),
+                key=lambda l: (l.name.lower(), l.name),
+            )
+        ]
+        flashMessage('Info', 'Debug', str(links))
         #
         pathBCrumbs = makeBreadCrumbs(lsPath, g)
         boxNiceName = thisBox.box_name if thisBox.box_name != '' else None
@@ -271,6 +293,7 @@ def lsView(lsPathString=''):
             tasks=tasks,
             boxes=boxes,
             files=files,
+            links=links,
         )
     else:
         request._onErrorUrl = url_for(

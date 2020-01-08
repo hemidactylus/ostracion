@@ -33,6 +33,7 @@ from ostracion_app.utilities.database.fileSystem import (
     deleteFile,
     makeFileInParent,
     updateFileThumbnail,
+    updateLinkThumbnail,
     updateUserThumbnail,
     updateBoxThumbnail,
     isBoxNameUnderParentBox,
@@ -175,6 +176,9 @@ def storeFileAsThumbnail(db, fileToSave, mode, thumbnailFormat, targetItem,
     elif mode == 'f':
         if not userHasPermission(db, user, parentBox.permissions, 'w'):
             raise OstracionError('User has no icon permission on this item')
+    elif mode == 'l':
+        if not userHasPermission(db, user, parentBox.permissions, 'w'):
+            raise OstracionError('User has no icon permission on this item')
     elif mode == 'u':
         if user.username != targetItem.username:
             raise OstracionError('Insufficient permissions')
@@ -210,6 +214,15 @@ def storeFileAsThumbnail(db, fileToSave, mode, thumbnailFormat, targetItem,
         # un/set the icon ID
         if mode == 'f':
             fsDeleteQueue = updateFileThumbnail(
+                db,
+                targetItem,
+                thumbnailId,
+                thbMimeType,
+                user,
+                fileStorageDirectory=fileStorageDirectory
+            )
+        elif mode == 'l':
+            fsDeleteQueue = updateLinkThumbnail(
                 db,
                 targetItem,
                 thumbnailId,

@@ -27,10 +27,16 @@ def exceptionHandler(error):
 
         Preferentially redirects to request._onErrorUrl if it is set,
         otherwise falls back to "index".
+
+        NOTE: in development this is simply re-raising the error
+        for the debugger.
     """
-    flashableError = exceptionToFlashable(error)
-    flashMessage(**flashableError)
-    if hasattr(request, '_onErrorUrl'):
-        return redirect(request._onErrorUrl)
+    if app.config.get('DEVELOPMENT', False):
+        raise error
     else:
-        return redirect(url_for('lsView'))
+        flashableError = exceptionToFlashable(error)
+        flashMessage(**flashableError)
+        if hasattr(request, '_onErrorUrl'):
+            return redirect(request._onErrorUrl)
+        else:
+            return redirect(url_for('lsView'))

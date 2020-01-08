@@ -11,6 +11,7 @@
 
 from ostracion_app.utilities.models.Box import Box
 from ostracion_app.utilities.models.File import File
+from ostracion_app.utilities.models.Link import Link
 
 from ostracion_app.utilities.tools.dictTools import (
     recursivelyMergeDictionaries,
@@ -180,6 +181,21 @@ def getFilesFromBox(db, box):
     )
 
 
+def getLinksFromBox(db, box):
+    """ Perform a 'ls' call and return
+        all links found in a given box.
+    """
+    return (
+        Link(**linkDict)
+        for linkDict in dbRetrieveRecordsByKey(
+            db,
+            'links',
+            {'box_id': box.box_id},
+            dbTablesDesc=dbSchema,
+        )
+    )
+
+
 def getFileFromParent(
         db, parentBox, fileName,
         user, accountDeletionInProgress=False):
@@ -194,6 +210,24 @@ def getFileFromParent(
     )
     if fileDict is not None:
         return File(**fileDict)
+    else:
+        return None
+
+
+def getLinkFromParent(
+        db, parentBox, linkName,
+        user, accountDeletionInProgress=False):
+    """ Given a box and the name of a link supposedly contained
+        in it, return the link (or None).
+    """
+    linkDict = dbRetrieveRecordByKey(
+        db,
+        'links',
+        {'name': linkName, 'box_id': parentBox.box_id},
+        dbTablesDesc=dbSchema,
+    )
+    if linkDict is not None:
+        return Link(**linkDict)
     else:
         return None
 
@@ -333,6 +367,11 @@ def isNameUnderParentBox(db, parentBox, newName, excludedIds=[]):
         parentBox=parentBox,
         newName=newName,
         excludedIds=excludedIds,
+    ) or isLinkNameUnderParentBox(
+        db=db,
+        parentBox=parentBox,
+        newName=newName,
+        excludedIds=excludedIds,
     )
 
 
@@ -371,6 +410,25 @@ def isFileNameUnderParentBox(db, parentBox, newName, excludedIds=[]):
             dbTablesDesc=dbSchema,
         )
         if file['file_id'] not in exIds
+    )
+
+
+def isLinkNameUnderParentBox(db, parentBox, newName, excludedIds=[]):
+    """ Check if the proposed name is already a contained link.
+        User-agnostic: only gives a yes/no answer
+        to the question: can I use this as box/file/... name?
+        (hence it needs to know the complete list of contained items).
+    """
+    exIds = {p[1] for p in excludedIds if p[0] == 'link'}
+    return newName in (
+        link['name']
+        for link in dbRetrieveRecordsByKey(
+            db,
+            'links',
+            {'box_id': parentBox.box_id},
+            dbTablesDesc=dbSchema,
+        )
+        if link['link_id'] not in exIds
     )
 
 
@@ -540,6 +598,73 @@ def makeFileInParent(db, parentBox, newFile):
             db.commit()
         else:
             raise OstracionError('Name already exists')
+
+
+def saveLinkInParent(
+        db, user, parentBox, date, linkName, linkDescription,
+        linkTarget, linkOptions={}):
+    """ Create a new external link object in the specified box.
+
+        Return a dummy value (True upon success, but it is the errors
+        that are raised.)
+    """
+    if userHasPermission(db, user, parentBox.permissions, 'w'):
+        if not isNameUnderParentBox(db, parentBox, linkName):
+            newLink = Link(
+                box_id=parentBox.box_id,
+                name=linkName,
+                description=linkDescription,
+                icon_file_id='',
+                date=date,
+                creator_username=user.username,
+                icon_file_id_username=user.username,
+                icon_mime_type='',
+                metadata_username=user.username,
+                target=linkTarget,
+                metadata_dict=linkOptions,
+            )
+            dbAddRecordToTable(
+                db,
+                'links',
+                newLink.asDict(),
+                dbTablesDesc=dbSchema,
+            )
+            db.commit()
+        else:
+            raise OstracionError('Name already exists')
+    else:
+        raise OstracionError('User has no write permission')
+
+
+def updateLinkThumbnail(
+        db, link, tId, tMT, user, fileStorageDirectory,
+        accountDeletionInProgress=False, skipCommit=False):
+    """ Update the thumbnail info for a link.
+        Return a list of zero or one full paths for deletion."""
+    prevId = link.icon_file_id
+    if prevId != '':
+        delQueue = [fileIdToPath(
+            prevId,
+            fileStorageDirectory=fileStorageDirectory,
+        )]
+    else:
+        delQueue = []
+    #
+    link.icon_file_id = tId if tId is not None else ''
+    link.icon_mime_type = tMT if tMT is not None else ''
+    link.icon_file_id_username = (
+        user.username if user.is_authenticated else ''
+    ) if not accountDeletionInProgress else ''
+    dbUpdateRecordOnTable(
+        db,
+        'links',
+        link.asDict(),
+        dbTablesDesc=dbSchema,
+    )
+    #
+    if not skipCommit:
+        db.commit()
+    return delQueue
 
 
 def updateFileThumbnail(

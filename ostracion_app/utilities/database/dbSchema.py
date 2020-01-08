@@ -101,6 +101,42 @@ dbSchema = {
             ],
         },
     },
+    'links': {
+        'primary_key': [
+            ('link_id', 'TEXT'),
+        ],
+        'columns': [
+            ('box_id', 'TEXT'),
+            ('target', 'TEXT'),
+            ('metadata', 'TEXT'),
+            ('name', 'TEXT'),
+            ('description', 'TEXT'),
+            ('icon_file_id', 'TEXT'),
+            ('date', 'TIMESTAMP'),
+            ('creator_username', 'TEXT'),
+            ('icon_file_id_username', 'TEXT'),
+            ('icon_mime_type', 'TEXT'),
+            ('metadata_username', 'TEXT'),
+            #
+            ('dvector_name', 'TEXT'),
+            ('dvector_description', 'TEXT'),
+        ],
+        'indices': {
+            'links_box_id_index': [
+                ('box_id', 'ASC'),
+            ],
+        },
+        'foreign_keys': {
+            'boxes': [
+                [['box_id'], ['box_id']],
+            ],
+            'users': [
+                [['creator_username'], ['username']],
+                [['icon_file_id_username'], ['username']],
+                [['metadata_username'], ['username']],
+            ],
+        },
+    },
     'roles': {
         'primary_key': [
             ('role_id', 'TEXT'),
@@ -206,6 +242,7 @@ tableCreationOrderSequence = [
     'boxes',
     'roles',
     'files',
+    'links',
     'box_role_permissions',
     'user_roles',
     'settings',

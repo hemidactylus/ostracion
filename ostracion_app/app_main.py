@@ -32,6 +32,7 @@ import ostracion_app.views.logins
 import ostracion_app.views.thumbnails
 import ostracion_app.views.uploads
 import ostracion_app.views.fileaccess
+import ostracion_app.views.links
 import ostracion_app.views.boxaccess
 import ostracion_app.views.admin
 import ostracion_app.views.userprofile

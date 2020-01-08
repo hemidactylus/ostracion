@@ -15,4 +15,5 @@ if __name__ == '__main__':
     host = None
     if '-e' in sys.argv[1:]:
         host = '0.0.0.0'
+    app.config['DEVELOPMENT'] = True
     app.run(debug=True, host=host)
