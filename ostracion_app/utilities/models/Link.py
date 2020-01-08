@@ -60,5 +60,5 @@ class Link(DictableObject):
     def getId(self):
         return self.link_id
 
-    def getMetadata(self):
-        return json.loads(self.metadata)
+    def getMetadata(self, key, default=None):
+        return json.loads(self.metadata).get(key, default)

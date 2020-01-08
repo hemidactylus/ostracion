@@ -88,6 +88,7 @@
             info=linkStructure.info,
             actions=linkStructure.actions,
             color=g.settings['color']['navigation_colors']['link']['value'],
+            openinnewwindow=linkStructure['link'].getMetadata('open_in_new_window', True),
           ) }}
         {% endfor %}
       </div>

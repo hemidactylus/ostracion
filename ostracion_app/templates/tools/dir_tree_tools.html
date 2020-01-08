@@ -16,6 +16,9 @@
           {% if mode == 'file_move' and predicate %}
             <a href="{{ url_for('fsDoMoveFileView',quotedFilePath=src_obj_path,quotedDestBox=dst_obj_path) }}" class="btn btn-success btn-sm">V</a>
           {% endif %}
+          {% if mode == 'link_move' and predicate %}
+            <a href="{{ url_for('fsDoMoveLinkView',quotedLinkPath=src_obj_path,quotedDestBox=dst_obj_path) }}" class="btn btn-success btn-sm">V</a>
+          {% endif %}
           {% if mode == 'box_move' and predicate %}
             <a href="{{ url_for('fsDoMoveBoxView',quotedSrcBox=src_obj_path,quotedDestBox=dst_obj_path) }}" class="btn btn-success btn-sm">V</a>
           {% endif %}
@@ -44,6 +47,21 @@
             {% endif %}
           </div>
         {% endfor %}
+
+        {% for richLink in contents.links %}
+          <div class="dirtree-child-element">
+            {% if mode == 'tree_view' %}
+              <a href="{{ richLink.link.target }}" {%- if richLink.link.getMetadata('open_in_new_window', True) -%}target="_blank"{%- endif -%}>
+            {% endif %}
+              <img src="{{ url_for('linkThumbnailView',dummyId=richLink.link.icon_file_id+'_',fsPathString='/'.join(path+[richLink.link.name])) }}" class="dirtree-element-image rounded"/>
+              {{ richLink.link.name }}
+            {% if mode == 'tree_view' %}
+              </a>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+
         {% for childBox in contents.boxes %}
           <div class="dirtree-child-element">
             {{ recursive_tree_box(mode,src_obj_path,childBox.box,childBox.contents,childBox.path,childBox.depth,childBox.obj_path,childBox.predicate,colorShadeMap) }}

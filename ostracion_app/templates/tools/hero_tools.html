@@ -142,7 +142,7 @@
                                         </div>
                                         <div class="col-10">
                                             <div class="row">
-                                                <div class="col-1">Read</div>
+                                                <div class="col-2">Read</div>
                                                 <div class="col">
                                                     {% for role_id in permission_info.powers.r %}
                                                         <span class="badge badge-pill badge-success">{{ role_id }}</span>
@@ -150,7 +150,7 @@
                                                 </div>
                                             </div>
                                             <div class="row">
-                                                <div class="col-1">Write</div>
+                                                <div class="col-2">Write</div>
                                                 <div class="col">
                                                     {% for role_id in permission_info.powers.w %}
                                                         <span class="badge badge-pill badge-warning">{{ role_id }}</span>
@@ -158,7 +158,7 @@
                                                 </div>
                                             </div>
                                             <div class="row">
-                                                <div class="col-1">Create</div>
+                                                <div class="col-2">Create</div>
                                                 <div class="col">
                                                     {% for role_id in permission_info.powers.c %}
                                                         <span class="badge badge-pill badge-danger">{{ role_id }}</span>
@@ -188,7 +188,7 @@
                                         <div class="col-10">
                                             {% for pa in permission_info.assignments.native %}
                                                 <div class="row" style="font-weight: bold;">
-                                                    <div class="col-1">{{ pa.role_id }}</div>
+                                                    <div class="col-2">{{ pa.role_id }}</div>
                                                     <div class="col" style="font-family: monospace;">
                                                         {% if pa.r %}R{% else %}-{% endif %}
                                                         {% if pa.w %}W{% else %}-{% endif %}
@@ -198,7 +198,7 @@
                                             {% endfor %}
                                             {% for pa in permission_info.assignments.inherited %}
                                                 <div class="row" style="font-style: italic;">
-                                                    <div class="col-1">{{ pa.role_id }}</div>
+                                                    <div class="col-2">{{ pa.role_id }}</div>
                                                     <div class="col" style="font-family: monospace;">
                                                         {% if pa.r %}R{% else %}-{% endif %}
                                                         {% if pa.w %}W{% else %}-{% endif %}

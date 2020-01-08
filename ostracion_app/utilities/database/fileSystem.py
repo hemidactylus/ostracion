@@ -600,7 +600,87 @@ def makeFileInParent(db, parentBox, newFile):
             raise OstracionError('Name already exists')
 
 
-def saveLinkInParent(
+def updateLink(
+        db, boxPath, prevLinkName, newLink, user,
+        accountDeletionInProgress=False, skipCommit=False):
+    """ Update the fields of a link object on DB."""
+    #
+    # we check link_id is unchanged
+    parentBox = getBoxFromPath(
+        db,
+        boxPath,
+        user,
+        accountDeletionInProgress=accountDeletionInProgress,
+    )
+    prevLink = getLinkFromParent(
+        db,
+        parentBox,
+        prevLinkName,
+        user,
+        accountDeletionInProgress=accountDeletionInProgress,
+    )
+    if newLink.link_id != prevLink.link_id:
+        raise RuntimeError('Link ID mismatch')
+    else:
+        if (not accountDeletionInProgress and
+                not userHasPermission(db, user, parentBox.permissions, 'w')):
+            raise OstracionError('User is not allowed to edit link')
+        else:
+            if not isNameUnderParentBox(
+                    db, parentBox, newLink.name,
+                    excludedIds=[('link', prevLink.link_id)]):
+                newLinkItem = Link(**{
+                    k: v
+                    for k, v in newLink.asDict().items()
+                    if k not in {'dvector_name', 'dvector_description'}
+                })
+                dbUpdateRecordOnTable(
+                    db,
+                    'links',
+                    newLinkItem.asDict(),
+                    dbTablesDesc=dbSchema,
+                )
+                if not skipCommit:
+                    db.commit()
+            else:
+                raise OstracionError('Name already exists')
+
+
+def deleteLink(
+        db, parentBox, link, user, fileStorageDirectory,
+        skipCommit=False, accountDeletionInProgress=False):
+    """ Delete a link (either because permissions allow it
+        or the caller is working as part of an account deletion,
+        in which case the caller is responsible for lifting
+        permission checks).
+        Returns the filesystem delete queue.
+    """
+    if (accountDeletionInProgress or
+            userHasPermission(db, user, parentBox.permissions, 'w')):
+        #
+        fsDeleteQueue = (
+            [
+                fileIdToPath(
+                    link.icon_file_id,
+                    fileStorageDirectory=fileStorageDirectory,
+                )
+            ]
+            if link.icon_file_id != '' else []
+        )
+        dbDeleteRecordsByKey(
+            db,
+            'links',
+            {'link_id': link.link_id},
+            dbTablesDesc=dbSchema,
+        )
+        if not skipCommit:
+            db.commit()
+        return fsDeleteQueue
+    else:
+        raise OstracionError('User has no write permission')
+
+
+def makeLinkInParent(
         db, user, parentBox, date, linkName, linkDescription,
         linkTarget, linkOptions={}):
     """ Create a new external link object in the specified box.
@@ -763,8 +843,7 @@ def moveFile(
         fileStorageDirectory, skipCommit=False):
     """ Move a file between boxes: also
         check for w permission on both boxes,
-        check that no box in dstBox yields a name clash,
-        overwrite a file if exists with same name in dstBox."""
+        check that no box in dstBox yields a name clash."""
     if file.box_id != srcBox.box_id:
         raise OstracionError('Parent mismatch between file and source box')
     elif srcBox.box_id == dstBox.box_id:
@@ -776,24 +855,11 @@ def moveFile(
         ]):
             #
             fileName = file.name
-            if isBoxNameUnderParentBox(db, dstBox, fileName):
+            if isNameUnderParentBox(db, dstBox, linkName):
                 raise OstracionError(
-                    'Destination box contains a box with same name'
+                    'Destination box contains an item with same name'
                 )
             else:
-                #
-                fsDeletionQueue = []
-                numReplacements = 0
-                #
-                if isFileNameUnderParentBox(db, dstBox, fileName):
-                    # deal with the destructive overwriting
-                    prevFile = getFileFromParent(db, dstBox, fileName, user)
-                    fsDeletionQueue += deleteFile(
-                        db, dstBox, prevFile, user,
-                        fileStorageDirectory=fileStorageDirectory,
-                        skipCommit=True,
-                    )
-                    numReplacements += 1
                 # now can the actual MV be performed
                 newFile = recursivelyMergeDictionaries(
                     {'box_id': dstBox.box_id},
@@ -806,20 +872,10 @@ def moveFile(
                     dbTablesDesc=dbSchema,
                 )
                 #
-                flushFsDeleteQueue(fsDeletionQueue)
-                #
                 if not skipCommit:
                     db.commit()
                 #
                 messages = []
-                if numReplacements > 0:
-                    messages.append(
-                        'The operation has overwritten %i file%s.' % (
-                            numReplacements,
-                            '' if numReplacements == 1 else 's',
-                        )
-                    )
-                #
                 return messages
         else:
             raise OstracionError('User has no write permission')
@@ -890,3 +946,46 @@ def moveBox(db, box, srcBox, dstBox, user, skipCommit=False):
                                 if not skipCommit:
                                     db.commit()
                                 return []
+
+
+def moveLink(
+        db, link, srcBox, dstBox, user,
+        fileStorageDirectory, skipCommit=False):
+    """ Move a link between boxes: also
+        check for w permission on both boxes,
+        check that no item in dstBox yields a name clash."""
+    if link.box_id != srcBox.box_id:
+        raise OstracionError('Parent mismatch between link and source box')
+    elif srcBox.box_id == dstBox.box_id:
+        raise OstracionError('Source and destination are the same')
+    else:
+        if all([
+            userHasPermission(db, user, srcBox.permissions, 'w'),
+            userHasPermission(db, user, dstBox.permissions, 'w'),
+        ]):
+            #
+            linkName = link.name
+            if isNameUnderParentBox(db, dstBox, linkName):
+                raise OstracionError(
+                    'Destination box contains an item with same name'
+                )
+            else:
+                # now can the actual MV be performed
+                newLink = recursivelyMergeDictionaries(
+                    {'box_id': dstBox.box_id},
+                    defaultMap=link.asDict(),
+                )
+                dbUpdateRecordOnTable(
+                    db,
+                    'links',
+                    newLink,
+                    dbTablesDesc=dbSchema,
+                )
+                #
+                if not skipCommit:
+                    db.commit()
+                #
+                messages = []
+                return messages
+        else:
+            raise OstracionError('User has no write permission')

@@ -16,6 +16,7 @@ from ostracion_app.utilities.viewTools.pathTools import (
 from ostracion_app.utilities.database.fileSystem import (
     getBoxesFromParent,
     getFilesFromBox,
+    getLinksFromBox,
 )
 
 
@@ -43,11 +44,29 @@ def _collectTreeContentsFromBox(db, parentBox, user, admitFiles,
             )
             if predicate(fileRichMap)
         ]
+        links = [
+            recursivelyMergeDictionaries(
+                fileOrBoxEnricher(linkRichMap),
+                defaultMap=linkRichMap,
+            )
+            for linkRichMap in (
+                {
+                    'link': link,
+                }
+                for link in sorted(
+                    getLinksFromBox(db, parentBox),
+                    key=lambda li: li.name,
+                )
+            )
+            if predicate(linkRichMap)
+        ]
     else:
         files = []
+        links = []
     #
     return {
         'files': files,
+        'links': links,
         'boxes': [
             recursivelyMergeDictionaries(
                 fileOrBoxEnricher(boxPredicatedRichMap),

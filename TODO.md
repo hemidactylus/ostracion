@@ -83,14 +83,20 @@ ACTIONS IN THE CARD (to implement)
   + the issue with displaying/etc the thumbnail
 
 A separate table akin to FILES. Keep track of this in:
- - name checks before saving/writing files
- - deleting user material
- - all ls views
- - tree view
- - display, must add explicitly jinja templates
- - settings for link color
- - search has more options now
- - creation of links/editing/deletion has a fsdeletequeue to handle!
+    - deleting user material
+    - search has more options now
+    d tree view
+    d name checks before saving/writing files
+    d display, must add explicitly jinja templates
+    d settings for link color
+    d all ls views
+    d creation of links/editing/deletion has a fsdeletequeue to handle!
+
+MUCH DUPLICATION OF BOILERPLATE TO REDUCE
+there seems to emerge a notion of 'file-like'
+e.g. that can be moved, etc. See movelink two views VS move file
+OR ALL the checks done before move-file VS move-link (permissions etc)
+
 
 ### Zip handling
 

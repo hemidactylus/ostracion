@@ -4,32 +4,32 @@
   {{ generic_card(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,icon_url,icon_subtitle,info,actions,'right',color) }}
 {% endmacro %}
 
-{% macro file_card(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,icon_url,icon_subtitle,info,actions,color) %}
-  {{ generic_card(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,icon_url,icon_subtitle,info,actions,'left',color) }}
+{% macro file_card(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,icon_url,icon_subtitle,info,actions,color,openinnewwindow) %}
+  {{ generic_card(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,icon_url,icon_subtitle,info,actions,'left',color,openinnewwindow) }}
 {% endmacro %}
 
 {% macro action_card(title,subtitle,subtitleit,target_url,bgcolor,icon_url) %}
   {{ generic_card(title,None,subtitle,subtitleit,None,target_url,icon_url,icon_subtitle,None,None,'left',bgcolor) }}
 {% endmacro %}
 
-{% macro generic_card(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,icon_url,icon_subtitle,info,actions,icon_side,bgcolor) %}
+{% macro generic_card(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,icon_url,icon_subtitle,info,actions,icon_side,bgcolor,openinnewwindow=False) %}
         <div class="col-md-6">
             <div class="jumbotron" style="padding: 5px; background-color: {{ bgcolor }}">
                 <div class="row">
                     {% if icon_side=='left' %}
-                      {{ card_icon_section(icon_url,icon_subtitle,target_url) }}
+                      {{ card_icon_section(icon_url,icon_subtitle,target_url,openinnewwindow) }}
                     {% endif %}
-                    {{ card_text_section(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,info,actions) }}
+                    {{ card_text_section(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,openinnewwindow,info,actions) }}
                     {% if icon_side=='right' %}
-                      {{ card_icon_section(icon_url,icon_subtitle,target_url) }}
+                      {{ card_icon_section(icon_url,icon_subtitle,target_url,openinnewwindow) }}
                     {% endif %}
                 </div>
             </div>
         </div>
 {% endmacro %}
 
-{% macro card_icon_section(icon_url,icon_subtitle,target_url) %}
-                    <a href="{{ target_url }}">
+{% macro card_icon_section(icon_url,icon_subtitle,target_url,openinnewwindow) %}
+                    <a href="{{ target_url }}" {%- if openinnewwindow -%}target="_blank"{%- endif -%}>
                       <div class="col" style="max-width: 110px;">
                         <img src="{{ icon_url }}" class="rounded" width="100%">
                         {% if icon_subtitle %}
@@ -39,9 +39,9 @@
                     </a>
 {% endmacro %}
 
-{% macro card_text_section(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,info,actions) %}
+{% macro card_text_section(title,titleit,subtitle,subtitleit,infratitlesmall,target_url,openinnewwindow,info,actions) %}
                     <div class="col">
-                        <a href="{{ target_url }}">
+                        <a href="{{ target_url }}" {%- if openinnewwindow -%}target="_blank"{%- endif -%}>
                           <h6>{{ title }}
                             {% if titleit %}
                               <i>({{ titleit }})</i>

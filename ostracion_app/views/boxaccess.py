@@ -195,7 +195,6 @@ def lsView(lsPathString=''):
                 key=lambda l: (l.name.lower(), l.name),
             )
         ]
-        flashMessage('Info', 'Debug', str(links))
         #
         pathBCrumbs = makeBreadCrumbs(lsPath, g)
         boxNiceName = thisBox.box_name if thisBox.box_name != '' else None

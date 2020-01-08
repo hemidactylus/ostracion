@@ -7,7 +7,7 @@
         {% for itm in breadcrumb_items %}
           <li class="breadcrumb-item{% if loop.last %} active{% endif %}">
             {% if itm.link %}
-              <a href="{{ itm.target }}">
+              <a href="{{ itm.target }}" {%- if itm.open_in_new_window -%}target="_blank"{%- endif -%}>
             {% endif %}
               {% if itm.type!='file' and itm.type!='box' %}<i>{% endif %}
                 {% if itm.is_root_as_pic %}

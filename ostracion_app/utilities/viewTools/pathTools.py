@@ -156,6 +156,10 @@ def formatAppendedBreadcrumbItem(appendedItem, hasLink, collectedFsPath=None):
             'type': appendedItem['kind'],
             'target': appendedItem['target'].target,
             'link': True,
+            'open_in_new_window': appendedItem['target'].getMetadata(
+                'open_in_new_window',
+                True,
+            ),
         }
     elif appendedItem['kind'] == 'link':
         return {
@@ -447,16 +451,16 @@ def prepareLinkActions(db, link, linkPath, parentBox, user,
             itemPathString='/'.join(linkPath),
         )
         lActions['metadata'] = url_for(
-            'fsMetadataView',
+            'fsLinkMetadataView',
             fsPathString='/'.join(linkPath),
         )
         lActions['delete'] = url_for(
-            'fsDeleteFileView',
+            'fsDeleteLinkView',
             fsPathString='/'.join(linkPath),
         )
         lActions['move'] = url_for(
-            'fsMoveFileView',
-            quotedFilePath=urllib.parse.quote_plus('/'.join(linkPath)),
+            'fsMoveLinkView',
+            quotedLinkPath=urllib.parse.quote_plus('/'.join(linkPath)),
         )
     #
     if prepareParentButton:
