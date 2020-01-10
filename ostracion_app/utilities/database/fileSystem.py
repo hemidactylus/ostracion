@@ -690,16 +690,17 @@ def makeLinkInParent(
     """
     if userHasPermission(db, user, parentBox.permissions, 'w'):
         if not isNameUnderParentBox(db, parentBox, linkName):
+            userName = user.username if user.is_authenticated else ''
             newLink = Link(
                 box_id=parentBox.box_id,
                 name=linkName,
                 description=linkDescription,
                 icon_file_id='',
                 date=date,
-                creator_username=user.username,
-                icon_file_id_username=user.username,
+                creator_username=userName,
+                icon_file_id_username=userName,
                 icon_mime_type='',
-                metadata_username=user.username,
+                metadata_username=userName,
                 target=linkTarget,
                 metadata_dict=linkOptions,
             )

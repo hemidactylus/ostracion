@@ -4,6 +4,13 @@
 
 ### makeFileInParent should check for permissions (hence have more arguments)
 
+### External links
+
+MUCH DUPLICATION OF BOILERPLATE TO REDUCE
+there seems to emerge a notion of 'file-like'
+e.g. that can be moved, etc. See movelink two views VS move file
+OR ALL the checks done before move-file VS move-link (permissions etc)
+
 ### A convention for 'system roles' (ASAP)
 
 to handle in the future roles such as calendar/(ticketer)/accounting ...
@@ -78,33 +85,6 @@ Tables and small screens: currently a disaster.
 ## TODOs for the next major release
 
 ### API / Command line tools to sync in either direction
-
-### External links
-
-In breadcrumbs, links should open (if so requested) in external window
-
-ACTIONS IN THE CARD (to implement)
-  icon
-  metadata
-  move (...)
-  delete
-  + the issue with displaying/etc the thumbnail
-
-A separate table akin to FILES. Keep track of this in:
-    - deleting user material
-    d search has more options now
-    d tree view
-    d name checks before saving/writing files
-    d display, must add explicitly jinja templates
-    d settings for link color
-    d all ls views
-    d creation of links/editing/deletion has a fsdeletequeue to handle!
-
-MUCH DUPLICATION OF BOILERPLATE TO REDUCE
-there seems to emerge a notion of 'file-like'
-e.g. that can be moved, etc. See movelink two views VS move file
-OR ALL the checks done before move-file VS move-link (permissions etc)
-
 
 ### Zip handling
 

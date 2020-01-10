@@ -428,7 +428,7 @@ def explicitLoopSimilaritySearch(
             ]
         else:
             foundLinks = []
-        #        
+        #
         return {
             'files': foundFiles,
             'boxes': foundBoxes,

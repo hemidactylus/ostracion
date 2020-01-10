@@ -81,6 +81,7 @@ from ostracion_app.utilities.database.permissions import (
     userHasPermission,
 )
 
+
 @app.route('/mklink', methods=['GET', 'POST'])
 @app.route('/mklink/', methods=['GET', 'POST'])
 @app.route('/mklink/<path:fsPathString>', methods=['GET', 'POST'])
@@ -198,14 +199,16 @@ def fsLinkMetadataView(fsPathString=''):
                     'name': form.linkname.data,
                     'description': form.linkdescription.data,
                     'target': form.linktarget.data,
-                    'metadata_username': user.username,
+                    'metadata_username': (user.username
+                                          if user.is_authenticated
+                                          else ''),
                     'metadata_dict': {
                         'open_in_new_window': form.openinnewwindow.data,
                     },
                 },
                 defaultMap={
                     k: v
-                    for k,v in link.asDict().items()
+                    for k, v in link.asDict().items()
                     if k not in {'metadata'}
                 },
             )

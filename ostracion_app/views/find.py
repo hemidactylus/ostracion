@@ -114,7 +114,7 @@ def findView():
             additionalNulls=['None'],
         )
         noTargets = not(
-            form.searchTypeBoxes.data or 
+            form.searchTypeBoxes.data or
             form.searchTypeFiles.data or
             form.searchTypeLinks.data)
         if noTargets:

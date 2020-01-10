@@ -8,6 +8,7 @@ from ostracion_app.utilities.tools.dictTools import (
 
 from ostracion_app.utilities.models.Box import Box
 from ostracion_app.utilities.models.File import File
+from ostracion_app.utilities.models.Link import Link
 from ostracion_app.utilities.models.User import User
 from ostracion_app.utilities.models.UserRole import UserRole
 
@@ -36,13 +37,18 @@ from ostracion_app.utilities.database.fileSystem import (
     getBoxesFromParent,
     getFilesFromBox,
     deleteFile,
+    getLinksFromBox,
+    deleteLink,
     updateFileThumbnail,
     updateBoxThumbnail,
+    updateLinkThumbnail,
     isNameUnderParentBox,
     deleteBox,
     getFileFromParent,
+    getLinkFromParent,
     updateBox,
     updateFile,
+    updateLink,
     getBoxFromPath,
 )
 
@@ -185,6 +191,7 @@ def _traverseForAccountDeletion(db, parentBox, username, user,
                     file,
                     None,
                     None,
+                    user,
                     fileStorageDirectory=fileStorageDirectory,
                     accountDeletionInProgress=True,
                     skipCommit=True,
@@ -217,6 +224,60 @@ def _traverseForAccountDeletion(db, parentBox, username, user,
                     accountDeletionInProgress=True,
                     skipCommit=True,
                 )
+    #
+    for link in getLinksFromBox(db, parentBox):
+        if link.creator_username == username:
+            fsDeleteQueue += deleteLink(
+                db,
+                parentBox,
+                link,
+                None,
+                fileStorageDirectory=fileStorageDirectory,
+                skipCommit=True,
+                accountDeletionInProgress=True,
+            )
+        else:
+            if link.icon_file_id_username == username:
+                fsDeleteQueue += updateLinkThumbnail(
+                    db,
+                    link,
+                    None,
+                    None,
+                    user,
+                    fileStorageDirectory=fileStorageDirectory,
+                    accountDeletionInProgress=True,
+                    skipCommit=True,
+                )
+                iconedLink = getLinkFromParent(db, parentBox, link.name, None)
+            else:
+                iconedLink = link
+            # "iconed" as in "icon-wise fixed"
+            if iconedLink.metadata_username == username:
+                newLinkName = _findFirstAvailableDeletedObjectName(
+                    db,
+                    parentBox,
+                    prefix='REDACTED_LINK_'
+                )
+                newDescription = 'Link data redacted upon account deletion'
+                newLink = Link(**recursivelyMergeDictionaries(
+                    {
+                        'name': newLinkName,
+                        'description': newDescription,
+                        'target': '#',
+                        'metadata_username': '',
+                    },
+                    defaultMap=iconedLink.asDict(),
+                ))
+                updateLink(
+                    db,
+                    path,
+                    iconedLink.name,
+                    newLink,
+                    None,
+                    accountDeletionInProgress=True,
+                    skipCommit=True,
+                )
+    #
     for box in getBoxesFromParent(
             db, parentBox, None, accountDeletionInProgress=True):
         if box is not None and box.box_name != '':
