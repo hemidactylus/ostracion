@@ -193,7 +193,9 @@ def editTextFileView(fsPathString=''):
         newFile.type = fileProperties['file_type']
         newFile.size = fileProperties['file_size']
         newFile.textual_mode = form.textformat.data
-        newFile.editor_username = user.username
+        newFile.editor_username = (user.username
+                                   if user.is_authenticated
+                                   else '')
         updateFile(db, boxPath, file.name, newFile, user)
         #
         flashMessage('Info', 'Info', 'File "%s" saved.' % file.name)
