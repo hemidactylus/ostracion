@@ -14,6 +14,7 @@ from ostracion_app.utilities.database.dbSchema import (
 from ostracion_app.utilities.database.fileSystem import (
     getBoxFromPath,
     getFileFromParent,
+    getLinkFromParent,
 )
 
 from ostracion_app.utilities.tools.formatting import (
@@ -24,7 +25,9 @@ from ostracion_app.utilities.viewTools.pathTools import (
     isFileViewable,
     prepareBoxActions,
     prepareFileActions,
+    prepareLinkActions,
     prepareFileInfo,
+    prepareLinkInfo,
     prepareBoxInfo,
     describePathAsNiceString,
 )
@@ -64,6 +67,7 @@ def fsFind(db, searchTerm, user, options={}):
             searchTerm=searchTerm,
             searchBoxes=options.get('searchBoxes', True),
             searchFiles=options.get('searchFiles', True),
+            searchLinks=options.get('searchLinks', True),
             useDescription=options.get('useDescription', False),
         )
     else:
@@ -73,6 +77,7 @@ def fsFind(db, searchTerm, user, options={}):
             searchTerm=searchTerm,
             searchBoxes=options.get('searchBoxes', True),
             searchFiles=options.get('searchFiles', True),
+            searchLinks=options.get('searchLinks', True),
             caseSensitive=caseSensitive,
             useDescription=options.get('useDescription', False),
         )
@@ -84,6 +89,7 @@ def fsFind(db, searchTerm, user, options={}):
     #     searchTerm=searchTerm,
     #     searchBoxes=options.get('searchBoxes',True),
     #     searchFiles=options.get('searchFiles',True),
+    #     searchLinks=options.get('searchLinks', True),
     # )
 
     # we re-marshal the found items with a common enrich/equip/sort logic
@@ -115,14 +121,29 @@ def fsFind(db, searchTerm, user, options={}):
         )
         if bo is not None
     ]
+    foundLinks = [
+        li
+        for li in (
+            _resolveUponPermissions(
+                db,
+                _reduceLinkToPath(db, ls['item']),
+                user,
+                'link',
+                ls['score'],
+            )
+            for ls in fEngineResults['links']
+        )
+        if li is not None
+    ]
     foundItems = sorted(
-        foundFiles + foundBoxes,
+        foundFiles + foundBoxes + foundLinks,
         key=_searchResultSorterKey,
     )
     return {
         'counts': {
             'files': len(foundFiles),
             'boxes': len(foundBoxes),
+            'links': len(foundLinks),
         },
         'results': foundItems,
         'message': fEngineResults.get('message'),
@@ -132,13 +153,18 @@ def fsFind(db, searchTerm, user, options={}):
 def _searchResultSorterKey(fItem):
     """ Give a triple used to sort search result, regardless of
         search mode and details."""
+    if fItem['object_type'] == 'box':
+        lowerTitle = fItem['box'].title
+    elif fItem['object_type'] == 'file':
+        lowerTitle = fItem['file'].name.lower()
+    elif fItem['object_type'] == 'link':
+        lowerTitle = fItem['link'].name.lower()
+    else:
+        raise NotImplementedError('unknown object_type')
+    #
     return (
         -fItem['score'],
-        (
-            fItem['box'].title.lower()
-            if fItem['object_type'] == 'box'
-            else fItem['file'].name.lower()
-        ),
+        lowerTitle,
         -_sortPriorityByObjectTypeMap.get(fItem['object_type'], 0),
     )
 
@@ -194,6 +220,27 @@ def _resolveUponPermissions(db, richObject, user, mode, score):
                 return None
         else:
             return None
+    elif mode == 'link':
+        if pBox is not None:
+            nLink = getLinkFromParent(db, pBox, richObject['path'][-1], user)
+            if nLink is not None:
+                return {
+                    'path': richObject['path'][1:],
+                    'link': nLink,
+                    'actions': prepareLinkActions(
+                        db, nLink, richObject['path'][1:],
+                        pBox, user, prepareParentButton=True),
+                    'info': prepareLinkInfo(db, nLink),
+                    'parentInfo': 'Container box: "%s"' % (
+                        describePathAsNiceString(richObject['path'][1:-1])
+                    ),
+                    'object_type': mode,
+                    'score': score,
+                }
+            else:
+                return None
+        else:
+            return None
     else:
         raise NotImplementedError(
             'Unknown _resolveUponPermissions mode "%s"' % mode
@@ -222,6 +269,13 @@ def _reduceFileToPath(db, file):
     """ Given a file, calculate its full path and return it in a dict."""
     return {
         'path': _retraceBoxPath(db, file.box_id) + [file.name],
+    }
+
+
+def _reduceLinkToPath(db, link):
+    """ Given a link, calculate its full path and return it in a dict."""
+    return {
+        'path': _retraceBoxPath(db, link.box_id) + [link.name],
     }
 
 

@@ -9,6 +9,8 @@
   #   - ../../utils/nginx/conf.yml
   #   - ../../utils/git/conf.yml
   #   - ../../utils/nvm/conf.yml
+  handlers:
+    - include_tasks: handlers/nginx.yaml
   vars:
       ansible_port: '{{ host_configuration.ssh_port }}'
       ansible_user: '{{ host_configuration.username }}'
@@ -18,5 +20,3 @@
     - import_tasks: modules/nginx.yaml
     - import_tasks: modules/app_install.yaml
     - import_tasks: modules/nginx_webapp.yaml
-  handlers:
-    - include_tasks: handlers/nginx.yaml

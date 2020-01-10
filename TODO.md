@@ -10,6 +10,14 @@ to handle in the future roles such as calendar/(ticketer)/accounting ...
 with a convention and that the admins cannot delete/create them.
 Such roles cannot be given to boxes, only users.
 
+### Search:
+
+- Recap of search results
+    e.g. "2 boxes and 1 link found." Calculate it in code and pass it to template
+    (so to avoid zeroes and use proper connectors ", " vs "and ")
+- validation of 'at least one checkbox must be checked'
+    (search boxes/links/files)
+
 ### Ansible, nginx restart target, why it seems nonexistent sometimes?
 (then, after various reruns of the ansible, all is ok)
 
@@ -84,7 +92,7 @@ ACTIONS IN THE CARD (to implement)
 
 A separate table akin to FILES. Keep track of this in:
     - deleting user material
-    - search has more options now
+    d search has more options now
     d tree view
     d name checks before saving/writing files
     d display, must add explicitly jinja templates

@@ -34,22 +34,24 @@
                     {{ form.searchTypeBoxes(style="margin-right: 0.5rem;",tabindex=4) }}
                     {{ form.searchTypeFiles.label }}
                     {{ form.searchTypeFiles(tabindex=5) }}
+                    {{ form.searchTypeLinks.label }}
+                    {{ form.searchTypeLinks(tabindex=6) }}
                   </div>
                   <div class="form-group">
                     {{ form.searchMode.label(style="margin-bottom:0px; font-weight: bold;") }} :
                     {% for subfield in form.searchMode %}
                       <div class="form-check form-check-inline">
-                        {{ subfield(class_='form-check-input',tabindex=6) }}
+                        {{ subfield(class_='form-check-input',tabindex=7) }}
                         {{ subfield.label(class_='form-check-label') }}
                       </div>
                     {% endfor %}
                   </div>
                   <div class="form-group">
                     {{ form.searchFieldDescription.label }}
-                    {{ form.searchFieldDescription(tabindex=7) }}
+                    {{ form.searchFieldDescription(tabindex=8) }}
                   </div>
                   <div class="form-group">
-                    {{ form.submit(class_='btn btn-primary',tabindex=8) }}
+                    {{ form.submit(class_='btn btn-primary',tabindex=9) }}
                   </div>
                 </div>
 
@@ -62,8 +64,9 @@
                 {% if findResults.results %}
 
                   <p>
-                    {{ findResults.counts.boxes }} box{{ 'es' if findResults.counts.boxes != 1 else '' }}
-                    and {{ findResults.counts.files }} file{{ 's' if findResults.counts.files != 1 else '' }} found.
+                    {{ findResults.counts.boxes }} box{{ 'es' if findResults.counts.boxes != 1 else '' }},
+                    {{ findResults.counts.files }} file{{ 's' if findResults.counts.files != 1 else '' }}
+                    and {{ findResults.counts.links }} link{{ 's' if findResults.counts.links != 1 else '' }} found.
                     <small class="text-muted">
                       Search took {{ '%.3f' % elapsed }} seconds.
                     </small>
@@ -104,6 +107,21 @@
                           info=foundItemStructure.info,
                           actions=foundItemStructure.actions,
                           color=g.settings['color']['navigation_colors']['file']['value'],
+                        ) }}
+                      {% elif foundItemStructure.object_type == 'link' %}
+                        {{ cardtools.file_card(
+                          title=foundItemStructure['link'].name,
+                          titleit=None,
+                          subtitle=foundItemStructure['link'].description,
+                          subtitleit=foundItemStructure['link'].target,
+                          infratitlesmall=None,
+                          target_url=foundItemStructure['link'].target,
+                          icon_url=url_for('linkThumbnailView',dummyId=foundItemStructure['link'].icon_file_id+'_',fsPathString='/'.join(foundItemStructure.path)),
+                          icon_subtitle=foundItemStructure['link'].date.strftime('%b %d, %Y'),
+                          info=foundItemStructure.info,
+                          actions=foundItemStructure.actions,
+                          color=g.settings['color']['navigation_colors']['link']['value'],
+                          openinnewwindow=foundItemStructure['link'].getMetadata('open_in_new_window', True),
                         ) }}
                       {% else %}
                         <p>Unknown find result object_type {{ foundItemStructure.object_type }}</p>

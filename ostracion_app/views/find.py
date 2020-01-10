@@ -68,12 +68,14 @@ def findView():
         searchMode = form.searchMode.data
         searchBoxes = form.searchTypeBoxes.data
         searchFiles = form.searchTypeFiles.data
+        searchLinks = form.searchTypeLinks.data
         searchInDescription = form.searchFieldDescription.data
         searchTerm = form.text.data
         options = {
             'mode': searchMode,
             'searchBoxes': searchBoxes,
             'searchFiles': searchFiles,
+            'searchLinks': searchLinks,
             'useDescription': searchInDescription,
         }
         #
@@ -111,10 +113,14 @@ def findView():
             'sim_ci',
             additionalNulls=['None'],
         )
-        noTargets = not(form.searchTypeBoxes.data or form.searchTypeFiles.data)
+        noTargets = not(
+            form.searchTypeBoxes.data or 
+            form.searchTypeFiles.data or
+            form.searchTypeLinks.data)
         if noTargets:
             form.searchTypeBoxes.data = True
             form.searchTypeFiles.data = True
+            form.searchTypeLinks.data = True
         #
         pageFeatures = prepareTaskPageFeatures(
             toolsPageDescriptor,

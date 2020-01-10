@@ -497,6 +497,7 @@ class FindForm(FlaskForm):
     #
     searchTypeBoxes = BooleanField('Boxes')
     searchTypeFiles = BooleanField('Files')
+    searchTypeLinks = BooleanField('Links')
     #
     searchFieldDescription = BooleanField('Search in descriptions')
     #

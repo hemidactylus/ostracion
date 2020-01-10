@@ -7,6 +7,7 @@ import re
 
 from ostracion_app.utilities.models.Box import Box
 from ostracion_app.utilities.models.File import File
+from ostracion_app.utilities.models.Link import Link
 
 from ostracion_app.utilities.database.dbSchema import (
     dbSchema,
@@ -34,7 +35,8 @@ def escapeForSqlite(term):
     return term.replace('%', '\\%').replace('_', '\\_')
 
 
-def sqliteLikeSubstringSearch(db, searchTerm, searchBoxes, searchFiles):
+def sqliteLikeSubstringSearch(
+        db, searchTerm, searchBoxes, searchFiles, searchLinks):
     """ Perform a file/box search using the sqlite "like" operator.
 
         Limited, but fast. No other options available in this avenue.
@@ -145,7 +147,7 @@ def _itemSubstringMatchScore(
         Return zero iff NO MATCH
     """
     # preparation of source fields
-    if mode == 'file':
+    if mode in {'file', 'link'}:
         origTgtFields = [
             objDict['name'],
         ] + ([objDict['description']] if useDescription else [])
@@ -180,6 +182,7 @@ def explicitLoopSubstringSearch(
         searchTerm,
         searchBoxes=True,
         searchFiles=True,
+        searchLinks=True,
         caseSensitive=True,
         useDescription=False):
     """ Explicit loop over the files/boxes tables
@@ -207,58 +210,92 @@ def explicitLoopSubstringSearch(
             for tk in searchTokens
         ]
         #
-        foundFiles = [
-            ffRichItem
-            for ffRichItem in (
-                {
-                    'item': File(**fileDict),
-                    'score': _itemSubstringMatchScore(
-                        'file',
-                        tokenResLens,
-                        fileDict,
-                        caseSensitive,
-                        useDescription,
-                    ),
-                }
-                for fileDict in dbRetrieveAllRecords(
-                    db,
-                    'files',
-                    dbTablesDesc=dbSchema,
+        if searchFiles:
+            foundFiles = [
+                ffRichItem
+                for ffRichItem in (
+                    {
+                        'item': File(**fileDict),
+                        'score': _itemSubstringMatchScore(
+                            'file',
+                            tokenResLens,
+                            fileDict,
+                            caseSensitive,
+                            useDescription,
+                        ),
+                    }
+                    for fileDict in dbRetrieveAllRecords(
+                        db,
+                        'files',
+                        dbTablesDesc=dbSchema,
+                    )
                 )
-            )
-            if ffRichItem['score'] > 0
-        ]
-        foundBoxes = [
-            fbRichItem
-            for fbRichItem in (
-                {
-                    'item': Box(**boxDict),
-                    'score': _itemSubstringMatchScore(
-                        'box',
-                        tokenResLens,
-                        boxDict,
-                        caseSensitive,
-                        useDescription,
-                    ),
-                }
-                for boxDict in dbRetrieveAllRecords(
-                    db,
-                    'boxes',
-                    dbTablesDesc=dbSchema,
+                if ffRichItem['score'] > 0
+            ]
+        else:
+            foundFiles = []
+        #
+        if searchBoxes:
+            foundBoxes = [
+                fbRichItem
+                for fbRichItem in (
+                    {
+                        'item': Box(**boxDict),
+                        'score': _itemSubstringMatchScore(
+                            'box',
+                            tokenResLens,
+                            boxDict,
+                            caseSensitive,
+                            useDescription,
+                        ),
+                    }
+                    for boxDict in dbRetrieveAllRecords(
+                        db,
+                        'boxes',
+                        dbTablesDesc=dbSchema,
+                    )
+                    if boxDict['box_id'] != ''
                 )
-                if boxDict['box_id'] != ''
-            )
-            if fbRichItem['score'] > 0
-        ]
-
+                if fbRichItem['score'] > 0
+            ]
+        else:
+            foundBoxes = []
+        #
+        if searchLinks:
+            foundLinks = [
+                flRichItem
+                for flRichItem in (
+                    {
+                        'item': Link(**linkDict),
+                        'score': _itemSubstringMatchScore(
+                            'link',
+                            tokenResLens,
+                            linkDict,
+                            caseSensitive,
+                            useDescription,
+                        ),
+                    }
+                    for linkDict in dbRetrieveAllRecords(
+                        db,
+                        'links',
+                        dbTablesDesc=dbSchema,
+                    )
+                )
+                if flRichItem['score'] > 0
+            ]
+        else:
+            foundLinks = []
+        #
         return {
             'files': foundFiles,
             'boxes': foundBoxes,
+            'links': foundLinks,
         }
     else:
         return {
             'files': [],
             'boxes': [],
+            'links': [],
             'message': 'No search terms provided',
         }
 
@@ -281,7 +318,7 @@ def _itemSimilarityMatchScore(
         between the (dvectors of) search and the stuff
         extracted from the objDict (higher value ~ more similarity).
     """
-    if mode == 'file':
+    if mode in {'file', 'link'}:
         tgtSerializedDVectors = [
             objDict['dvector_name'],
         ] + ([objDict['dvector_description']] if useDescription else [])
@@ -309,6 +346,7 @@ def explicitLoopSimilaritySearch(
         searchTerm,
         searchBoxes=True,
         searchFiles=True,
+        searchLinks=True,
         useDescription=False):
     """ Explicit loop over files/boxes
         and use a 'similarity' logic to pick matching results.
@@ -318,55 +356,88 @@ def explicitLoopSimilaritySearch(
     searchTermDVector = textToDVector(searchTerm)
     if len(searchTermDVector) > 0:
         #
-        foundFiles = [
-            ffRichItem
-            for ffRichItem in (
-                {
-                    'item': File(**fileDict),
-                    'score': _itemSimilarityMatchScore(
-                        'file',
-                        searchTermDVector,
-                        fileDict,
-                        useDescription,
-                    ),
-                }
-                for fileDict in dbRetrieveAllRecords(
-                    db,
-                    'files',
-                    dbTablesDesc=dbSchema,
+        if searchFiles:
+            foundFiles = [
+                ffRichItem
+                for ffRichItem in (
+                    {
+                        'item': File(**fileDict),
+                        'score': _itemSimilarityMatchScore(
+                            'file',
+                            searchTermDVector,
+                            fileDict,
+                            useDescription,
+                        ),
+                    }
+                    for fileDict in dbRetrieveAllRecords(
+                        db,
+                        'files',
+                        dbTablesDesc=dbSchema,
+                    )
                 )
-            )
-            if ffRichItem['score'] >= similarityScoreThreshold
-        ]
-        foundBoxes = [
-            fbRichItem
-            for fbRichItem in (
-                {
-                    'item': Box(**boxDict),
-                    'score': _itemSimilarityMatchScore(
-                        'box',
-                        searchTermDVector,
-                        boxDict,
-                        useDescription,
-                    ),
-                }
-                for boxDict in dbRetrieveAllRecords(
-                    db,
-                    'boxes',
-                    dbTablesDesc=dbSchema,
+                if ffRichItem['score'] >= similarityScoreThreshold
+            ]
+        else:
+            foundFiles = []
+        #
+        if searchBoxes:
+            foundBoxes = [
+                fbRichItem
+                for fbRichItem in (
+                    {
+                        'item': Box(**boxDict),
+                        'score': _itemSimilarityMatchScore(
+                            'box',
+                            searchTermDVector,
+                            boxDict,
+                            useDescription,
+                        ),
+                    }
+                    for boxDict in dbRetrieveAllRecords(
+                        db,
+                        'boxes',
+                        dbTablesDesc=dbSchema,
+                    )
+                    if boxDict['box_id'] != ''
                 )
-                if boxDict['box_id'] != ''
-            )
-            if fbRichItem['score'] >= similarityScoreThreshold
-        ]
-
+                if fbRichItem['score'] >= similarityScoreThreshold
+            ]
+        else:
+            foundBoxes = []
+        #
+        if searchLinks:
+            foundLinks = [
+                flRichItem
+                for flRichItem in (
+                    {
+                        'item': Link(**linkDict),
+                        'score': _itemSimilarityMatchScore(
+                            'link',
+                            searchTermDVector,
+                            linkDict,
+                            useDescription,
+                        ),
+                    }
+                    for linkDict in dbRetrieveAllRecords(
+                        db,
+                        'links',
+                        dbTablesDesc=dbSchema,
+                    )
+                )
+                if flRichItem['score'] >= similarityScoreThreshold
+            ]
+        else:
+            foundLinks = []
+        #        
         return {
             'files': foundFiles,
             'boxes': foundBoxes,
+            'links': foundLinks,
         }
     else:
         return {
             'files': [],
             'boxes': [],
+            'links': [],
             'message': 'Not enough digits/letters in search term',
         }
