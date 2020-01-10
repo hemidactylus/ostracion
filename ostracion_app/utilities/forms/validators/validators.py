@@ -8,6 +8,10 @@ from ostracion_app.utilities.tools.comparisonTools import (
     optionNumberLeq,
 )
 
+from ostracion_app.utilities.tools.setNaming import (
+    humanFriendlyDescribeCharacterSet,
+)
+
 
 _defaultCharSet = set(
     '1234567890qwertyuiopasdfghjklzxcvbnmPOIUYTREWQLKJHGFDSAMNBVCXZ_-.'
@@ -37,7 +41,9 @@ class CharacterSelector():
     def __init__(self, characterSet=_defaultCharSet, message=None):
         self.characterSet = characterSet
         if message is None:
-            self.message = 'Invalid identifier'
+            self.message = 'Invalid identifier. Valid characters: %s .' % (
+                humanFriendlyDescribeCharacterSet(self.characterSet)
+            )
         else:
             self.message = message
 

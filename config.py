@@ -17,10 +17,10 @@ maxStoredTextLength = 65536
 similarityScoreThreshold = 0.15
 
 # reasonably unchanged definitions
-lowercaseAlphabet = 'qwertyuiopasdfghjklzxcvbnm'
+lowercaseAlphabet = set('qwertyuiopasdfghjklzxcvbnm')
 
 # version
-ostracionVersion = '1.0.0'
+ostracionVersion = '1.0.1'
 
 # directories
 templateDirectory = os.path.join(

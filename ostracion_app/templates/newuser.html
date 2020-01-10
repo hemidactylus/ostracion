@@ -34,7 +34,7 @@
                   {% endfor %}
                 </div>
                 <div class="form-group">
-                  <label for="email">Email</label>
+                  <label for="email">Email (empty if desired: never used)</label>
                   {{ form.email(class_="form-control",tabindex=3) }}
                   {% for error in form.email.errors %}
                     <small class="form-text text-muted">{{ error }}</small>
