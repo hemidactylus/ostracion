@@ -13,5 +13,8 @@ server {
     location / {
         include uwsgi_params;
         uwsgi_pass unix:/tmp/ostracion_webapp.sock;
+        # see https://kmiku7.github.io/2018/02/02/Solve-the-problem-of-uwsgi-uwsgi-response-write-body-do-TIMEOUT-error/
+        # for this one:
+        uwsgi_max_temp_file_size 0;
     }
 }
