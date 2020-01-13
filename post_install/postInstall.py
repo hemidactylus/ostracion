@@ -35,6 +35,8 @@ from ostracion_app.utilities.database.dbSchema import (
 
 from ostracion_app.utilities.tools.securityCodes import makeSecretKey
 
+from ostracion_app.utilities.models.Link import Link
+
 from config import (
     dbFullName,
     basedir,
@@ -165,7 +167,12 @@ if __name__ == '__main__':
                 if 'title' not in columns:
                     # must add 'title' and upgrade existing records
                     print('        * Adding "title" column')
-                    db.execute('ALTER TABLE links ADD COLUMN title TEXT;')
+                    db.execute(
+                        'ALTER TABLE links ADD COLUMN title TEXT;'
+                    )
+                    db.execute(
+                        'ALTER TABLE links ADD COLUMN dvector_title TEXT;'
+                    )
                     print('        * Upgrading entries ... ', end='')
                     #
                     tempSchema = recursivelyMergeDictionaries(
@@ -174,31 +181,31 @@ if __name__ == '__main__':
                                 'columns': [
                                     col
                                     for col in dbSchema[tName]['columns']
-                                    if col[0] != 'title'
+                                    if col[0] not in {'title', 'dvector_title'}
                                 ]
                             }
                         },
-                        defaultMap = {tName: dbSchema[tName]},
+                        defaultMap={tName: dbSchema[tName]},
                     )
                     for prevLinkEntryDict in dbRetrieveAllRecords(
                         db,
                         tName,
                         tempSchema,
                     ):
-                        a=1
                         print('<', end='')
-                        newLink = recursivelyMergeDictionaries(
-                            {'title': prevLinkEntryDict['name']},
-                            prevLinkEntryDict,
-                        )
-                        a=1
+                        newLink = Link(**(
+                            recursivelyMergeDictionaries(
+                                {'title': prevLinkEntryDict['name']},
+                                prevLinkEntryDict,
+                            )
+                        )).asDict()
+                        print(newLink)
                         dbUpdateRecordOnTable(
                             db,
                             tName,
                             newLink,
                             dbTablesDesc=dbSchema,
                         )
-                        a=1
                         print('*> ', end='')
                     #
                     print('\n          done.')

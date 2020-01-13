@@ -120,6 +120,7 @@ dbSchema = {
             ('metadata_username', 'TEXT'),
             #
             ('dvector_name', 'TEXT'),
+            ('dvector_title', 'TEXT'),
             ('dvector_description', 'TEXT'),
         ],
         'indices': {

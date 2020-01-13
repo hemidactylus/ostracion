@@ -147,9 +147,14 @@ def _itemSubstringMatchScore(
         Return zero iff NO MATCH
     """
     # preparation of source fields
-    if mode in {'file', 'link'}:
+    if mode == 'file':
         origTgtFields = [
             objDict['name'],
+        ] + ([objDict['description']] if useDescription else [])
+    elif mode == 'link':
+        origTgtFields = [
+            objDict['name'],
+            objDict['title'],
         ] + ([objDict['description']] if useDescription else [])
     elif mode == 'box':
         origTgtFields = [
@@ -318,9 +323,14 @@ def _itemSimilarityMatchScore(
         between the (dvectors of) search and the stuff
         extracted from the objDict (higher value ~ more similarity).
     """
-    if mode in {'file', 'link'}:
+    if mode == 'file':
         tgtSerializedDVectors = [
             objDict['dvector_name'],
+        ] + ([objDict['dvector_description']] if useDescription else [])
+    elif mode == 'link':
+        tgtSerializedDVectors = [
+            objDict['dvector_name'],
+            objDict['dvector_title'],
         ] + ([objDict['dvector_description']] if useDescription else [])
     elif mode == 'box':
         tgtSerializedDVectors = [

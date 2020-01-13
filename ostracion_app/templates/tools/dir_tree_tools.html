@@ -53,8 +53,8 @@
             {% if mode == 'tree_view' %}
               <a href="{{ richLink.link.target }}" {%- if richLink.link.getMetadata('open_in_new_window', True) -%}target="_blank"{%- endif -%}>
             {% endif %}
-              <img src="{{ url_for('linkThumbnailView',dummyId=richLink.link.icon_file_id+'_',fsPathString='/'.join(path+[richLink.link.name])) }}" class="dirtree-element-image rounded"/>
-              {{ richLink.link.name }}
+              <img src="{{ url_for('linkThumbnailView',dummyId=richLink.link.icon_file_id+'_',fsPathString='/'.join(path+[richLink.link.name])) }}" class="dirtree-element-image rounded" style="border-color: black; border-width: 2px; border-style: solid;"/>
+              {{ richLink.link.title }}
             {% if mode == 'tree_view' %}
               </a>
             {% endif %}

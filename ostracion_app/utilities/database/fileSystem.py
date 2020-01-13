@@ -632,7 +632,11 @@ def updateLink(
                 newLinkItem = Link(**{
                     k: v
                     for k, v in newLink.asDict().items()
-                    if k not in {'dvector_name', 'dvector_description'}
+                    if k not in {
+                        'dvector_name',
+                        'dvector_description',
+                        'dvector_title',
+                    }
                 })
                 dbUpdateRecordOnTable(
                     db,
@@ -681,7 +685,7 @@ def deleteLink(
 
 
 def makeLinkInParent(
-        db, user, parentBox, date, linkName, linkDescription,
+        db, user, parentBox, date, linkName, linkTitle, linkDescription,
         linkTarget, linkOptions={}):
     """ Create a new external link object in the specified box.
 
@@ -694,6 +698,7 @@ def makeLinkInParent(
             newLink = Link(
                 box_id=parentBox.box_id,
                 name=linkName,
+                title=linkTitle,
                 description=linkDescription,
                 icon_file_id='',
                 date=date,

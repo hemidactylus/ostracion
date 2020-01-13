@@ -109,6 +109,7 @@ def makeLinkView(fsPathString=''):
             parentBox=parentBox,
             date=datetime.now(),
             linkName=linkName,
+            linkTitle=linkTitle,
             linkDescription=linkDescription,
             linkTarget=linkTarget,
             linkOptions={
@@ -211,7 +212,8 @@ def fsLinkMetadataView(fsPathString=''):
                 defaultMap={
                     k: v
                     for k, v in link.asDict().items()
-                    if k not in {'metadata'}
+                    if k not in {'metadata', 'dvector_description',
+                                 'dvector_name', 'dvector_title'}
                 },
             )
         )

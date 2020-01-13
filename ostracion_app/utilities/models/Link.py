@@ -20,6 +20,7 @@ class Link(DictableObject):
                    'icon_file_id_username', 'icon_mime_type',
                    'metadata_username',
                    'dvector_name', 'dvector_description',
+                   'dvector_title',
                    'target', 'metadata']
 
     def __init__(self, **kwargs):
@@ -29,6 +30,10 @@ class Link(DictableObject):
         if 'dvector_name' not in kwargs:
             kwargs['dvector_name'] = serializeDVector(
                 textToDVector(kwargs['name'])
+            )
+        if 'dvector_title' not in kwargs:
+            kwargs['dvector_title'] = serializeDVector(
+                textToDVector(kwargs['title'])
             )
         if 'dvector_description' not in kwargs:
             kwargs['dvector_description'] = serializeDVector(

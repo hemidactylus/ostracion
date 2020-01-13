@@ -149,12 +149,14 @@ def quickFindView():
     searchMode = 'sim_ci'
     searchBoxes = True
     searchFiles = True
+    searchLinks = True
     searchInDescription = False
     searchTerm = form.quicktext.data if form.quicktext.data is not None else ''
     options = {
         'mode': searchMode,
         'searchBoxes': searchBoxes,
         'searchFiles': searchFiles,
+        'searchLinks': searchLinks,
         'useDescription': searchInDescription,
     }
     # recasting of the above default for the displayed form
@@ -162,6 +164,7 @@ def quickFindView():
     findForm.searchMode.data = searchMode
     findForm.searchTypeBoxes.data = searchBoxes
     findForm.searchTypeFiles.data = searchFiles
+    findForm.searchTypeLinks.data = searchLinks
     findForm.searchFieldDescription.data = searchInDescription
     findForm.text.data = searchTerm
     #

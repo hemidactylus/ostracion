@@ -60,7 +60,7 @@ def dbQueryColumns(db, tableName):
     rawResult = list(tableQuery)[0][0]
     fParen = rawResult.find('(')
     lParen = rawResult[::-1].find('(')
-    inDef = rawResult[fParen + 1 : -(lParen + 1)]
+    inDef = rawResult[fParen + 1:(-(lParen + 1))]
     parts = [
         pt
         for pt in (
@@ -73,7 +73,7 @@ def dbQueryColumns(db, tableName):
         if 'PRIMARY KEY' not in pt.upper()
     ]
     splitParts = [
-        tuple(p for p in pt.split(' ') if p!='')
+        tuple(p for p in pt.split(' ') if p != '')
         for pt in parts
     ]
     if any(len(sp) != 2 for sp in splitParts):
@@ -96,9 +96,11 @@ def dbCountRecords(db, tableName):
 def dbAddRecordToTable(db, tableName, recordDict, dbTablesDesc=None):
     """INSERT a row to a table."""
     colList = listColumns(tableName, dbTablesDesc=dbTablesDesc)
+    columnNames = ', '.join(listColumns(tableName, dbTablesDesc))
     #
-    insertStatement = 'INSERT INTO %s VALUES (%s)' % (
+    insertStatement = 'INSERT INTO %s (%s) VALUES (%s)' % (
         tableName,
+        columnNames,
         ', '.join(['?']*len(colList))
     )
     insertValues = tuple(recordDict[k] for k in colList)
@@ -246,7 +248,8 @@ def dbRetrieveAllRecords(db, tableName, dbTablesDesc=None):
         in no particular order.
     """
     cur = db.cursor()
-    selectStatement = 'SELECT * FROM %s' % (tableName)
+    columnNames = ', '.join(listColumns(tableName, dbTablesDesc))
+    selectStatement = 'SELECT %s FROM %s' % (columnNames, tableName)
     if DB_DEBUG:
         print('[dbRetrieveAllRecords] %s' % selectStatement)
     cur.execute(selectStatement)
