@@ -109,6 +109,7 @@ dbSchema = {
             ('box_id', 'TEXT'),
             ('target', 'TEXT'),
             ('metadata', 'TEXT'),
+            ('title', 'TEXT'),
             ('name', 'TEXT'),
             ('description', 'TEXT'),
             ('icon_file_id', 'TEXT'),

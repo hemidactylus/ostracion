@@ -141,6 +141,13 @@ class EditLinkForm(FlaskForm):
             Length(max=maxIdentifierLength)
         ]
     )
+    linktitle = StringField(
+        'LinkTitle',
+        validators=[
+            InputRequired(),
+            Length(max=maxIdentifierLength),
+        ]
+    )
     linkdescription = StringField(
         'LinkDescription',
         validators=[Length(max=maxIdentifierLength)]

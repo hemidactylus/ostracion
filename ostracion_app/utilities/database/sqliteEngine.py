@@ -49,6 +49,38 @@ def listColumns(tableName, dbTablesDesc=None):
     return colList
 
 
+def dbQueryColumns(db, tableName):
+    """ Perform an actual SQL query to obtain the
+        names of the existing columns in the table.
+    """
+    tableQuery = db.execute(
+        'SELECT sql FROM sqlite_master WHERE name=?;',
+        (tableName,),
+    )
+    rawResult = list(tableQuery)[0][0]
+    fParen = rawResult.find('(')
+    lParen = rawResult[::-1].find('(')
+    inDef = rawResult[fParen + 1 : -(lParen + 1)]
+    parts = [
+        pt
+        for pt in (
+            _pt.strip()
+            for _pt in inDef.replace('\n', ', ').replace('\t', ', ').split(',')
+        )
+        if pt != ''
+        if 'CREATE TABLE' not in pt.upper()
+        if 'FOREIGN KEY' not in pt.upper()
+        if 'PRIMARY KEY' not in pt.upper()
+    ]
+    splitParts = [
+        tuple(p for p in pt.split(' ') if p!='')
+        for pt in parts
+    ]
+    if any(len(sp) != 2 for sp in splitParts):
+        raise RuntimeError('Describe table parsed def pair split mismatch')
+    return dict(splitParts)
+
+
 def dbCountRecords(db, tableName):
     """ Count the rows in a table.
         Not particularly fast: uses a SELECT COUNT(*) internally
@@ -249,7 +281,12 @@ def dbRetrieveRecordsByKey(db, tableName, keys,
         for wc in whereClauses
     ]
     whereClause = ' AND '.join(fullWhereClauses)
-    selectStatement = 'SELECT * FROM %s WHERE %s' % (tableName, whereClause)
+    columnNames = ', '.join(listColumns(tableName, dbTablesDesc))
+    selectStatement = 'SELECT %s FROM %s WHERE %s' % (
+        columnNames,
+        tableName,
+        whereClause,
+    )
     if DB_DEBUG:
         print('[dbRetrieveRecordsByKey] %s' % selectStatement)
         print('[dbRetrieveRecordsByKey] %s' % ','.join(
@@ -291,7 +328,12 @@ def dbRetrieveRecordByKey(db, tableName, key, dbTablesDesc=None):
     cur = db.cursor()
     kNames, kValues = zip(*list(key.items()))
     whereClause = ' AND '.join('%s=?' % kn for kn in kNames)
-    selectStatement = 'SELECT * FROM %s WHERE %s' % (tableName, whereClause)
+    columnNames = ', '.join(listColumns(tableName, dbTablesDesc))
+    selectStatement = 'SELECT %s FROM %s WHERE %s' % (
+        columnNames,
+        tableName,
+        whereClause,
+    )
     if DB_DEBUG:
         print('[dbRetrieveRecordByKey] %s' % selectStatement)
         print('[dbRetrieveRecordByKey] %s' % ','.join(

@@ -24,6 +24,8 @@ from ostracion_app.utilities.database.sqliteEngine import (
     dbAddRecordToTable,
     dbUpdateRecordOnTable,
     dbTableExists,
+    dbQueryColumns,
+    dbRetrieveAllRecords,
     dbRetrieveRecordByKey,
 )
 from ostracion_app.utilities.database.dbSchema import (
@@ -157,4 +159,47 @@ if __name__ == '__main__':
                         print('done ', end='')
                     print('#')
                 print('        * done.')
+            elif tName == 'links':
+                # we may have to add a field
+                columns = dbQueryColumns(db, tName)
+                if 'title' not in columns:
+                    # must add 'title' and upgrade existing records
+                    print('        * Adding "title" column')
+                    db.execute('ALTER TABLE links ADD COLUMN title TEXT;')
+                    print('        * Upgrading entries ... ', end='')
+                    #
+                    tempSchema = recursivelyMergeDictionaries(
+                        {
+                            tName: {
+                                'columns': [
+                                    col
+                                    for col in dbSchema[tName]['columns']
+                                    if col[0] != 'title'
+                                ]
+                            }
+                        },
+                        defaultMap = {tName: dbSchema[tName]},
+                    )
+                    for prevLinkEntryDict in dbRetrieveAllRecords(
+                        db,
+                        tName,
+                        tempSchema,
+                    ):
+                        a=1
+                        print('<', end='')
+                        newLink = recursivelyMergeDictionaries(
+                            {'title': prevLinkEntryDict['name']},
+                            prevLinkEntryDict,
+                        )
+                        a=1
+                        dbUpdateRecordOnTable(
+                            db,
+                            tName,
+                            newLink,
+                            dbTablesDesc=dbSchema,
+                        )
+                        a=1
+                        print('*> ', end='')
+                    #
+                    print('\n          done.')
     db.commit()

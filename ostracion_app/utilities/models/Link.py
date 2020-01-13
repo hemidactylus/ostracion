@@ -15,6 +15,7 @@ from ostracion_app.utilities.textSimilarity.similarityTools import (
 
 class Link(DictableObject):
     namedFields = ['link_id', 'box_id', 'name', 'description',
+                   'title',
                    'icon_file_id', 'date', 'creator_username',
                    'icon_file_id_username', 'icon_mime_type',
                    'metadata_username',

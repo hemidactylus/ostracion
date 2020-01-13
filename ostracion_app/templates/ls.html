@@ -77,8 +77,8 @@
         <!-- LINKS -->
         {% for linkStructure in links %}
           {{ cardtools.file_card(
-            title=linkStructure['link'].name,
-            titleit=None,
+            title=linkStructure['link'].title,
+            titleit=linkStructure['link'].name,
             subtitle=linkStructure['link'].description,
             subtitleit=linkStructure['link'].target,
             infratitlesmall=None,

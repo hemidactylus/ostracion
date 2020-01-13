@@ -99,6 +99,7 @@ def makeLinkView(fsPathString=''):
     parentBox = getBoxFromPath(db, parentBoxPath, user)
     if form.validate_on_submit():
         linkName = secure_filename(form.linkname.data)
+        linkTitle = form.linktitle.data
         linkDescription = form.linkdescription.data
         linkTarget = form.linktarget.data
         openInNewWindow = form.openinnewwindow.data
@@ -130,7 +131,7 @@ def makeLinkView(fsPathString=''):
         )
         form.openinnewwindow.data = True
         return render_template(
-            'makelink.html',
+            'editlink.html',
             form=form,
             user=user,
             breadCrumbs=pathBCrumbs,
@@ -198,6 +199,7 @@ def fsLinkMetadataView(fsPathString=''):
                 {
                     'name': form.linkname.data,
                     'description': form.linkdescription.data,
+                    'title': form.linktitle.data,
                     'target': form.linktarget.data,
                     'metadata_username': (user.username
                                           if user.is_authenticated
@@ -223,6 +225,10 @@ def fsLinkMetadataView(fsPathString=''):
         form.linkdescription.data = applyDefault(
             form.linkdescription.data,
             link.description
+        )
+        form.linktitle.data = applyDefault(
+            form.linktitle.data,
+            link.title
         )
         form.linktarget.data = applyDefault(
             form.linktarget.data,
@@ -258,7 +264,7 @@ def fsLinkMetadataView(fsPathString=''):
             ),
         }
         return render_template(
-            'makelink.html',
+            'editlink.html',
             form=form,
             user=user,
             **pageFeatures,
