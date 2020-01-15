@@ -84,6 +84,8 @@ Tables and small screens: currently a disaster.
 
 ## TODOs for the next major release
 
+### "Terms and conditions" with compulsory acceptance before using the account?
+
 ### API / Command line tools to sync in either direction
 
 ### Zip handling

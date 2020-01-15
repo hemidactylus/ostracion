@@ -861,7 +861,7 @@ def moveFile(
         ]):
             #
             fileName = file.name
-            if isNameUnderParentBox(db, dstBox, linkName):
+            if isNameUnderParentBox(db, dstBox, fileName):
                 raise OstracionError(
                     'Destination box contains an item with same name'
                 )
