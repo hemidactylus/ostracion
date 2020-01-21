@@ -88,8 +88,17 @@ from ostracion_app.views.viewTools.adminPageTreeDescriptor import (
 
 @app.route('/favicon.ico')
 def faviconView():
-    """Default favicon route -> application logo."""
-    return redirect(g.applicationLogoUrl)
+    """ Default favicon route -> application logo.
+        In order to exploit the full settingThumbnailView
+        behaviour, including sending the right mime-type,
+        we directly call the route'd function here.
+    """
+    return settingThumbnailView(
+        g.settings['image']['ostracion_images'][
+            'navbar_logo']['setting'].value,
+        'ostracion_images',
+        'navbar_logo'
+    )
 
 
 @app.route('/filethumbnail/<dummyId>/<path:fsPathString>')
