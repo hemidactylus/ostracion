@@ -600,13 +600,17 @@ def uploadFilesUponTicket(db, user, issuer, richTicket):
                         richTicket,
                         numPunches=len(filesToUpload),
                     )
+                    makeThumbnails = g.settings['behaviour'][
+                        'behaviour_appearance']['extract_thumbnails']['value']
                     savingResult = saveAndAnalyseFilesInBox(
                         db=db,
                         files=filesToUpload,
                         parentBox=box,
                         user=issuer,
                         fileStorageDirectory=fileStorageDirectory,
-                        thumbnailFormat='thumbnail',
+                        thumbnailFormat=('thumbnail'
+                                         if makeThumbnails
+                                         else None),
                     )
                     flashMessage('Success', 'Info', savingResult)
                     return redirect(url_for(

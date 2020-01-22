@@ -50,10 +50,6 @@ Very ugly how it is now slapped in `uploads.py/editTextFileView`.
 Prepare proper settings place and as a test enable
 (later via settings) HTML view mode.
 
-### Setting for thumbnailing
-
-A settings to enable taking thumbnails of thumbnailables.
-
 ### Re-salting of password
 
 Password and re-salting: it is wrong to have this in the model and
@@ -85,6 +81,7 @@ Tables and small screens: currently a disaster.
 ## TODOs for the next major release
 
 ### "Terms and conditions" with compulsory acceptance before using the account?
+(as per new setting: "must new users accept before browsing?")
 
 ### API / Command line tools to sync in either direction
 
@@ -99,7 +96,7 @@ Users will be able to:
 
 A system-messages table (login protection alerts, etc).
 
-### "Windows on file system"
+### "WELLS, wormholes on file system"
 
 Boxes of type 'real fs'
 

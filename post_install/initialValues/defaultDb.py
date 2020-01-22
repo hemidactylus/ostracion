@@ -980,6 +980,23 @@ initialDbValues = {
                 'group_ordering':   5,
                 'ordering':         15,
             },
+            {
+                'id':               'extract_thumbnails',
+                'klass':            'behaviour',
+                'type':             'boolean',
+                'value':            '1',
+                'title':            'Extract file icons',
+                'description':      (
+                                        'Try to extract icons from uploaded '
+                                        'files (may make uploads slower)'
+                                    ),
+                'default_value':    '1',
+                'metadata':         '',
+                'group_id':         'behaviour_appearance',
+                'group_title':      'Appearance',
+                'group_ordering':   5,
+                'ordering':         20,
+            },
             #
             {
                 'id':               'logged_in_users_only',

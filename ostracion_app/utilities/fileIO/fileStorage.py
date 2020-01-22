@@ -128,7 +128,8 @@ def saveAndAnalyseFilesInBox(db, files, parentBox, user, thumbnailFormat,
                 newFile.type = fileProperties['file_type']
                 newFile.size = fileProperties['file_size']
                 #
-                if isImageMimeType(newFile.mime_type):
+                if (thumbnailFormat is not None and
+                        isImageMimeType(newFile.mime_type)):
                     # thumbnail preparation
                     fileThumbnailId, fileThumbnailMimeType = makeFileThumbnail(
                         newFile.file_id,

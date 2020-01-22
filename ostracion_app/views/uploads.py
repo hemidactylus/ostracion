@@ -107,13 +107,15 @@ def makeTextFileView(fsPathString=''):
                 'fileObject': savableFile,
             }
         ]
+        makeThumbnails = g.settings['behaviour']['behaviour_appearance'][
+            'extract_thumbnails']['value']
         savingResult = saveAndAnalyseFilesInBox(
             db=db,
             files=filesToUpload,
             parentBox=parentBox,
             user=user,
             fileStorageDirectory=fileStorageDirectory,
-            thumbnailFormat='thumbnail',
+            thumbnailFormat='thumbnail' if makeThumbnails else None,
             pastActionVerbForm='created',
         )
         flashMessage('Success', 'Info', savingResult)
@@ -281,13 +283,15 @@ def uploadSingleFileView(fsPathString=''):
                 'fileObject': uploadedFile,
             }
         ]
+        makeThumbnails = g.settings['behaviour']['behaviour_appearance'][
+            'extract_thumbnails']['value']
         savingResult = saveAndAnalyseFilesInBox(
             db=db,
             files=filesToUpload,
             parentBox=parentBox,
             user=user,
             fileStorageDirectory=fileStorageDirectory,
-            thumbnailFormat='thumbnail',
+            thumbnailFormat='thumbnail' if makeThumbnails else None,
         )
         flashMessage('Success', 'Info', savingResult)
         return redirect(url_for(
@@ -352,13 +356,15 @@ def uploadMultipleFilesView(fsPathString=''):
             }
             for uploadedFile in uploadedFiles
         ]
+        makeThumbnails = g.settings['behaviour']['behaviour_appearance'][
+            'extract_thumbnails']['value']
         savingResult = saveAndAnalyseFilesInBox(
             db=db,
             files=filesToUpload,
             parentBox=parentBox,
             user=user,
             fileStorageDirectory=fileStorageDirectory,
-            thumbnailFormat='thumbnail',
+            thumbnailFormat='thumbnail' if makeThumbnails else None,
         )
         flashMessage('Success', 'Info', savingResult)
         return redirect(url_for(
