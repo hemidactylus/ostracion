@@ -294,10 +294,6 @@ def _reduceBoxToPath(db, box):
 def describeFindResults(results):
     """ Given the find-results structure, prepare a textual
         nice description.
-
-        {{ findResults.counts.boxes }} box{{ 'es' if findResults.counts.boxes != 1 else '' }},
-                    {{ findResults.counts.files }} file{{ 's' if findResults.counts.files != 1 else '' }}
-                    and {{ findResults.counts.links }} link{{ 's' if findResults.counts.links != 1 else '' }} found.
     """
     foundCounts = [
         (results['counts']['boxes'], 'box', 'boxes'),

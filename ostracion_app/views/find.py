@@ -116,15 +116,6 @@ def findView():
             'sim_ci',
             additionalNulls=['None'],
         )
-        noTargets = not(
-            form.searchTypeBoxes.data or
-            form.searchTypeFiles.data or
-            form.searchTypeLinks.data)
-        if noTargets:
-            form.searchTypeBoxes.data = True
-            form.searchTypeFiles.data = True
-            form.searchTypeLinks.data = True
-        #
         pageFeatures = prepareTaskPageFeatures(
             toolsPageDescriptor,
             ['root', 'search'],

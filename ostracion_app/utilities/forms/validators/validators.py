@@ -142,3 +142,27 @@ class ColorString():
             if (len(colString) != 6 or
                     len(set(colString.lower()) - set('1234567890abcdef')) > 0):
                 raise ValidationError(self.message)
+
+
+class AtLeastOneChecked():
+    """
+        The subjected checkbox, with those other provided,
+        must yield at least one True.
+    """
+    def __init__(self, otherCheckboxNames, message=None):
+        self.otherCheckboxNames = otherCheckboxNames
+        if message is None:
+            self.message = 'Select at least one'
+        else:
+            self.message = message
+
+    def __call__(self, form, field):
+        s = field.data
+        if not s:
+            # we raise an error if the other provided checkboxes
+            # also have all a False value
+            if all([
+                not getattr(form, otherCheckboxName).data
+                for otherCheckboxName in self.otherCheckboxNames
+            ]):
+                raise ValidationError(self.message)

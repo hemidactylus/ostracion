@@ -163,90 +163,93 @@ def editTextFileView(fsPathString=''):
         'fs_directory']['value']
     parentBox = getBoxFromPath(db, boxPath, user)
     file = getFileFromParent(db, parentBox, fileName, user)
-    fileActions = prepareFileActions(
-        db,
-        file,
-        boxPath[1:] + [file.name],
-        parentBox,
-        user,
-        discardedActions={'text_edit'},
-    )
-    fileInfo = prepareFileInfo(db, file)
-    #
-    form = EditTextFileForm()
-    ##
-    form.textformat.choices = [
-        ('plain', 'Plain'),
-        ('markdown', 'Markdown'),
-    ]
-    ##
-    if form.validate_on_submit():
-        newcontents = form.filecontents.data
-        filePath = fileIdToPath(
-            file.file_id,
-            fileStorageDirectory=fileStorageDirectory,
-        )
-        with open(filePath, 'w') as openFile:
-            openFile.write('%s' % newcontents)
-        # file properties
-        fileProperties = determineFileProperties(filePath)
-        newFile = File(**file.asDict())
-        newFile.mime_type = fileProperties['file_mime_type']
-        newFile.type = fileProperties['file_type']
-        newFile.size = fileProperties['file_size']
-        newFile.textual_mode = form.textformat.data
-        newFile.editor_username = (user.username
-                                   if user.is_authenticated
-                                   else '')
-        updateFile(db, boxPath, file.name, newFile, user)
-        #
-        flashMessage('Info', 'Info', 'File "%s" saved.' % file.name)
-        return redirect(
-            url_for(
-                'lsView',
-                lsPathString='/'.join(boxPath[1:]),
-            )
-        )
+    if file is None:
+        raise OstracionError('File not found.')
     else:
-        form.filecontents.data = applyDefault(
-            form.filecontents.data,
-            open(
-                fileIdToPath(
-                    file.file_id,
-                    fileStorageDirectory=fileStorageDirectory,
+        fileActions = prepareFileActions(
+            db,
+            file,
+            boxPath[1:] + [file.name],
+            parentBox,
+            user,
+            discardedActions={'text_edit'},
+        )
+        fileInfo = prepareFileInfo(db, file)
+        #
+        form = EditTextFileForm()
+        ##
+        form.textformat.choices = [
+            ('plain', 'Plain'),
+            ('markdown', 'Markdown'),
+        ]
+        ##
+        if form.validate_on_submit():
+            newcontents = form.filecontents.data
+            filePath = fileIdToPath(
+                file.file_id,
+                fileStorageDirectory=fileStorageDirectory,
+            )
+            with open(filePath, 'w') as openFile:
+                openFile.write('%s' % newcontents)
+            # file properties
+            fileProperties = determineFileProperties(filePath)
+            newFile = File(**file.asDict())
+            newFile.mime_type = fileProperties['file_mime_type']
+            newFile.type = fileProperties['file_type']
+            newFile.size = fileProperties['file_size']
+            newFile.textual_mode = form.textformat.data
+            newFile.editor_username = (user.username
+                                       if user.is_authenticated
+                                       else '')
+            updateFile(db, boxPath, file.name, newFile, user)
+            #
+            flashMessage('Info', 'Info', 'File "%s" saved.' % file.name)
+            return redirect(
+                url_for(
+                    'lsView',
+                    lsPathString='/'.join(boxPath[1:]),
                 )
-            ).read(),
-        )
-        form.textformat.data = applyDefault(
-            form.textformat.data,
-            file.textual_mode,
-            additionalNulls=['None'],
-        )
-        pathBCrumbs = makeBreadCrumbs(
-            boxPath,
-            g,
-            appendedItems=[
-                {
-                    'kind': 'file',
-                    'target': file,
-                },
-                {
-                    'kind': 'link',
-                    'target': None,
-                    'name': 'Edit text',
-                }
-            ],
-        )
-        return render_template(
-            'edittextfile.html',
-            user=user,
-            form=form,
-            fileActions=fileActions,
-            fileInfo=fileInfo,
-            pageTitle='"%s" file edit' % file.name,
-            pageSubtitle='Click "Save" to commit the changes',
-            breadCrumbs=pathBCrumbs,
-        )
+            )
+        else:
+            form.filecontents.data = applyDefault(
+                form.filecontents.data,
+                open(
+                    fileIdToPath(
+                        file.file_id,
+                        fileStorageDirectory=fileStorageDirectory,
+                    )
+                ).read(),
+            )
+            form.textformat.data = applyDefault(
+                form.textformat.data,
+                file.textual_mode,
+                additionalNulls=['None'],
+            )
+            pathBCrumbs = makeBreadCrumbs(
+                boxPath,
+                g,
+                appendedItems=[
+                    {
+                        'kind': 'file',
+                        'target': file,
+                    },
+                    {
+                        'kind': 'link',
+                        'target': None,
+                        'name': 'Edit text',
+                    }
+                ],
+            )
+            return render_template(
+                'edittextfile.html',
+                user=user,
+                form=form,
+                fileActions=fileActions,
+                fileInfo=fileInfo,
+                pageTitle='"%s" file edit' % file.name,
+                pageSubtitle='Click "Save" to commit the changes',
+                breadCrumbs=pathBCrumbs,
+            )
 
 
 @app.route('/upl', methods=['GET', 'POST'])

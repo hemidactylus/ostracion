@@ -17,12 +17,6 @@ to handle in the future roles such as calendar/(ticketer)/accounting ...
 with a convention and that the admins cannot delete/create them.
 Such roles cannot be given to boxes, only users.
 
-### Search:
-
-- Recap of search results
-  - validation of 'at least one checkbox must be checked'
-      (search boxes/links/files)
-
 ### Ansible, nginx restart target, why it seems nonexistent sometimes?
 (then, after various reruns of the ansible, all is ok)
 

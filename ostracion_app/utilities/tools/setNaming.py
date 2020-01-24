@@ -96,7 +96,7 @@ def pickSingularPluralSentences(sentTriples, keepZeroes=True):
     return [
         '%i %s' % (
             trp[0],
-            trp[1 if trp[0]==1 else 2],
+            trp[1 if trp[0] == 1 else 2],
         )
         for trp in sentTriples
         if keepZeroes or trp[0] != 0

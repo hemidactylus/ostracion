@@ -27,7 +27,7 @@
                   <a href="#advancedSearchBlock" data-toggle="collapse" class="btn btn-secondary" tabindex="3">Options</a>
                 </div>
 
-                <div class="collapse" id="advancedSearchBlock">
+                <div class="collapse {%- if form.searchTypeBoxes.errors -%}show{%- endif -%}" id="advancedSearchBlock">
                   <div class="form-group">
                     <span style="margin-right: 0.5rem;"><b>Search for:</b></span>
                     {{ form.searchTypeBoxes.label }}
@@ -36,6 +36,9 @@
                     {{ form.searchTypeFiles(tabindex=5) }}
                     {{ form.searchTypeLinks.label }}
                     {{ form.searchTypeLinks(tabindex=6) }}
+                    {% for error in form.searchTypeBoxes.errors %}
+                      <small class="form-text text-muted">{{ error }}</small>
+                    {% endfor %}
                   </div>
                   <div class="form-group">
                     {{ form.searchMode.label(style="margin-bottom:0px; font-weight: bold;") }} :

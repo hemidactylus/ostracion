@@ -43,6 +43,7 @@ from ostracion_app.utilities.forms.validators.validators import (
     PositiveInteger,
     OptionalInteger,
     NonnegativeInteger,
+    AtLeastOneChecked,
 )
 
 
@@ -502,7 +503,9 @@ class FindForm(FlaskForm):
     """Search form (class), complete version."""
     text = StringField('Search term', validators=[Required()])
     #
-    searchTypeBoxes = BooleanField('Boxes')
+    searchTypeBoxes = BooleanField('Boxes', validators=[AtLeastOneChecked(
+        otherCheckboxNames=['searchTypeFiles', 'searchTypeLinks'],
+    )])
     searchTypeFiles = BooleanField('Files')
     searchTypeLinks = BooleanField('Links')
     #
