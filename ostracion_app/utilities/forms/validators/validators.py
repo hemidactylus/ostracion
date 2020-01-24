@@ -12,10 +12,7 @@ from ostracion_app.utilities.tools.setNaming import (
     humanFriendlyDescribeCharacterSet,
 )
 
-
-_defaultCharSet = set(
-    '1234567890qwertyuiopasdfghjklzxcvbnmPOIUYTREWQLKJHGFDSAMNBVCXZ_-.'
-)
+from config import usernameCharacterSet
 
 
 class ConstrainedOptionalInt():
@@ -38,7 +35,7 @@ class ConstrainedOptionalInt():
 
 class CharacterSelector():
     """<Some chars allowed> validator."""
-    def __init__(self, characterSet=_defaultCharSet, message=None):
+    def __init__(self, characterSet=usernameCharacterSet, message=None):
         self.characterSet = characterSet
         if message is None:
             self.message = 'Invalid identifier. Valid characters: %s .' % (

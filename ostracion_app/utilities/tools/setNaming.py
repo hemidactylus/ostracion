@@ -84,10 +84,3 @@ def humanFriendlyDescribeCharacterSet(cSet):
     leftoverSet, descriptions = _checkCharDescriptor(cSet, charDescriptorSets)
     leftoverDescriptions = _nameCharacters(leftoverSet)
     return _colloquialJoinClauses(descriptions + leftoverDescriptions)
-
-
-if __name__ == '__main__':
-    _defaultCharSet = set(
-        '1234567890qwertyuiopasdfghjklzxcvbnmPOIUYTREWQLKJHGFDSAMNBVCXZ_-.'
-    )
-    print(humanFriendlyDescribeCharacterSet(_defaultCharSet))

@@ -16,6 +16,11 @@ maxStoredTextLength = 65536
 # "find" tool, threshold for similarity search
 similarityScoreThreshold = 0.15
 
+# allowed characters for usernames
+usernameCharacterSet = set(
+    '1234567890qwertyuiopasdfghjklzxcvbnmPOIUYTREWQLKJHGFDSAMNBVCXZ_-.@'
+)
+
 # reasonably unchanged definitions
 lowercaseAlphabet = set('qwertyuiopasdfghjklzxcvbnm')
 
