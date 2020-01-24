@@ -15,6 +15,7 @@ def determineFileProperties(filepath):
     fileType = {
         'file_type': '',
         'file_mime_type': '',
+        'file_size': 0,
     }
     try:
         fileType['file_type'] = magic.from_file(filepath)

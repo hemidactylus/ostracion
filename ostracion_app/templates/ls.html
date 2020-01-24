@@ -63,7 +63,10 @@
             title=fileStructure['file'].name,
             titleit=None,
             subtitle=fileStructure['file'].description,
-            subtitleit='%s; %s' % (fileStructure['file'].type, fileStructure['nice_size']),
+            subtitleit='%s; %s' % (
+                fileStructure['file'].type if fileStructure['file'].type!='' else fileStructure['file'].mime_type,
+                fileStructure['nice_size'],
+            ),
             infratitlesmall=None,
             target_url=fileStructure.actions.view if fileStructure.actions.view else fileStructure.actions.download,
             icon_url=url_for('fileThumbnailView',dummyId=fileStructure['file'].icon_file_id+'_',fsPathString='/'.join(fileStructure.path)),
