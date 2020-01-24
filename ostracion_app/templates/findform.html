@@ -64,9 +64,7 @@
                 {% if findResults.results %}
 
                   <p>
-                    {{ findResults.counts.boxes }} box{{ 'es' if findResults.counts.boxes != 1 else '' }},
-                    {{ findResults.counts.files }} file{{ 's' if findResults.counts.files != 1 else '' }}
-                    and {{ findResults.counts.links }} link{{ 's' if findResults.counts.links != 1 else '' }} found.
+                    {{ resultsDescription }}
                     <small class="text-muted">
                       Search took {{ '%.3f' % elapsed }} seconds.
                     </small>

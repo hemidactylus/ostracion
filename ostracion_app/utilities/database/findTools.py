@@ -38,6 +38,11 @@ from ostracion_app.utilities.database.findEngines import (
     explicitLoopSimilaritySearch,
 )
 
+from ostracion_app.utilities.tools.setNaming import (
+    colloquialJoinClauses,
+    pickSingularPluralSentences,
+)
+
 # used by _searchResultSorterKey
 _sortPriorityByObjectTypeMap = {
     'file': 1,
@@ -284,6 +289,23 @@ def _reduceBoxToPath(db, box):
     return {
         'path': _retraceBoxPath(db, box.box_id),
     }
+
+
+def describeFindResults(results):
+    """ Given the find-results structure, prepare a textual
+        nice description.
+
+        {{ findResults.counts.boxes }} box{{ 'es' if findResults.counts.boxes != 1 else '' }},
+                    {{ findResults.counts.files }} file{{ 's' if findResults.counts.files != 1 else '' }}
+                    and {{ findResults.counts.links }} link{{ 's' if findResults.counts.links != 1 else '' }} found.
+    """
+    foundCounts = [
+        (results['counts']['boxes'], 'box', 'boxes'),
+        (results['counts']['files'], 'file', 'files'),
+        (results['counts']['links'], 'link', 'links'),
+    ]
+    foundParts = pickSingularPluralSentences(foundCounts, keepZeroes=False)
+    return '%s found.' % colloquialJoinClauses(foundParts)
 
 
 if __name__ == '__main__':

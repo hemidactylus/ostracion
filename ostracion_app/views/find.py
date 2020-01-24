@@ -34,6 +34,7 @@ from ostracion_app.utilities.database.dbTools import (
 
 from ostracion_app.utilities.database.findTools import (
     fsFind,
+    describeFindResults,
 )
 
 from ostracion_app.utilities.tools.formatting import (
@@ -86,6 +87,7 @@ def findView():
             user,
             options=options,
         )
+        resultsDescription = describeFindResults(findResults)
         elapsed = time.time() - initTime
         #
         pageFeatures = prepareTaskPageFeatures(
@@ -102,6 +104,7 @@ def findView():
             user=user,
             form=form,
             findResults=findResults,
+            resultsDescription=resultsDescription,
             elapsed=elapsed,
             searchTerm=searchTerm,
             **pageFeatures,
@@ -175,6 +178,7 @@ def quickFindView():
         user,
         options=options,
     )
+    resultsDescription = describeFindResults(findResults)
     elapsed = time.time() - initTime
     #
     return render_template(
@@ -199,6 +203,7 @@ def quickFindView():
             },
         ],
         findResults=findResults,
+        resultsDescription=resultsDescription,
         elapsed=elapsed,
         searchTerm=searchTerm,
     )

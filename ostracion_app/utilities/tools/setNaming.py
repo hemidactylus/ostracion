@@ -69,7 +69,7 @@ def _nameCharacters(residualSet):
     ]
 
 
-def _colloquialJoinClauses(clauses):
+def colloquialJoinClauses(clauses):
     """Join strings with commas and 'and' for the last two."""
     return ', '.join(
         clauses[:-2]
@@ -83,4 +83,21 @@ def humanFriendlyDescribeCharacterSet(cSet):
     """Transform a character set in a nice description."""
     leftoverSet, descriptions = _checkCharDescriptor(cSet, charDescriptorSets)
     leftoverDescriptions = _nameCharacters(leftoverSet)
-    return _colloquialJoinClauses(descriptions + leftoverDescriptions)
+    return colloquialJoinClauses(descriptions + leftoverDescriptions)
+
+
+def pickSingularPluralSentences(sentTriples, keepZeroes=True):
+    """ Given a list of triples
+            (count, singName, plurName)
+        make it into a list of strings
+            "<count> properName"
+        possibly discarding zero counts.
+    """
+    return [
+        '%i %s' % (
+            trp[0],
+            trp[1 if trp[0]==1 else 2],
+        )
+        for trp in sentTriples
+        if keepZeroes or trp[0] != 0
+    ]

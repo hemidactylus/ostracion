@@ -20,10 +20,8 @@ Such roles cannot be given to boxes, only users.
 ### Search:
 
 - Recap of search results
-    e.g. "2 boxes and 1 link found." Calculate it in code and pass it to template
-    (so to avoid zeroes and use proper connectors ", " vs "and ")
-- validation of 'at least one checkbox must be checked'
-    (search boxes/links/files)
+  - validation of 'at least one checkbox must be checked'
+      (search boxes/links/files)
 
 ### Ansible, nginx restart target, why it seems nonexistent sometimes?
 (then, after various reruns of the ansible, all is ok)
