@@ -27,6 +27,12 @@ from ostracion_app.utilities.database.permissions import (
     userIsAdmin,
 )
 
+from config import (
+    breadcrumbShowRootAsIcon,
+    rootBoxNiceName,
+    rootBoxNiceTitle,
+)
+
 from ostracion_app.utilities.fileIO.fileTypes import (
     isFileViewable,
     isFileTextEditable,
@@ -80,16 +86,12 @@ def makeBreadCrumbs(lsPath, g, appendedItems=[]):
         compute breadcrumbs.
     """
     bc = []
-    rootAsIcon = True
-    # ** Alternatively (to keep the '(root)' form when navbar visible): **
-    # rootAsIcon = g.settings['behaviour']['behaviour_appearance'][
-    #     'hide_navbar']['value']
     collectedPath = []
     for itmIndex, itm in enumerate(lsPath):
         collectedPath.append(itm)
         bc.append(
             {
-                'name': itm if itm != '' else '(root)',
+                'name': itm if itm != '' else rootBoxNiceTitle,
                 'type': 'box',
                 'target': url_for(
                     'lsView',
@@ -97,7 +99,7 @@ def makeBreadCrumbs(lsPath, g, appendedItems=[]):
                 ),
                 'link': (len(appendedItems) > 0 or
                          itmIndex + 1 != len(lsPath)),
-                'is_root_as_pic': itm == '' and rootAsIcon,
+                'is_root_as_pic': itm == '' and breadcrumbShowRootAsIcon,
             }
         )
     for aiIndex, appendedItem in enumerate(appendedItems):
@@ -113,9 +115,37 @@ def makeBreadCrumbs(lsPath, g, appendedItems=[]):
 def describePathAsNiceString(pth):
     """Reformat a path to cover the only-root case gracefully."""
     if len(pth) == 0:
-        return '(Root)'
+        return rootBoxNiceTitle
     else:
         return '/%s' % ('/'.join(pth))
+
+
+def describeRootBoxCaptions(g):
+    """Return a friendly title / subtitle pair for ls(root) display."""
+    appName = g.settings['behaviour']['behaviour_appearance'][
+        'application_long_name']['value']
+    appShortName = g.settings['behaviour']['behaviour_appearance'][
+        'application_short_name']['value']
+    return (
+        '%s, root box' % appShortName,
+        '%s' % appName,
+    )
+
+
+def describeBoxTitle(box):
+    """Format a nice title for a box"""
+    if box.box_id == '':
+        return rootBoxNiceTitle
+    else:
+        return box.title
+
+
+def describeBoxName(box):
+    """Format a nice name for a box"""
+    if box.box_id == '':
+        return rootBoxNiceName
+    else:
+        return box.box_name
 
 
 def collectAlongDescriptorTree(pDesc, pPath, collected=[]):
@@ -197,17 +227,13 @@ def prepareTaskPageFeatures(pageDescriptor, pagePath, g, appendedItems=[],
     # bcPages must be taken as [1:]
     # and thisPage is the inert part of the bcrumb
     # we add the 'root' starting point to all responses
-    rootAsIcon = True
-    # ** Alternatively (to keep the '(root)' form when navbar visible): **
-    # rootAsIcon = g.settings['behaviour']['behaviour_appearance'][
-    #     'hide_navbar']['value']
     breadCrumbs = [
         {
-            'name': '(root)',
+            'name': 'Root',
             'type': 'box',
             'target': url_for('lsView'),
             'link': True,
-            'is_root_as_pic': rootAsIcon,
+            'is_root_as_pic': breadcrumbShowRootAsIcon,
         }
     ] + [
         {

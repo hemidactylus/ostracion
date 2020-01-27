@@ -130,15 +130,21 @@ def enrichTicket(db, t, urlRoot):
             fsPathString='/'.join(metadata['path'][1:])
         )
     elif t.target_type == 'upload':
-        _target = metadata.get('box_name', metadata['box_id'])
-        target = _target if _target != '' else '(root)'
+        _target = metadata.get(
+            'box_title',
+            metadata.get('box_name', metadata['box_id']),
+        )
+        target = _target if _target != '' else 'Root'
         targetUrl = url_for(
             'lsView',
             lsPathString='/'.join(metadata['box_path'][1:])
         )
     elif t.target_type == 'gallery':
-        _target = metadata.get('box_name', metadata['box_id'])
-        target = _target if _target != '' else '(root)'
+        _target = metadata.get(
+            'box_title',
+            metadata.get('box_name', metadata['box_id']),
+        )
+        target = _target if _target != '' else 'Root'
         targetUrl = url_for(
             'fsGalleryView',
             fsPathString='/'.join(metadata['box_path'][1:])
@@ -256,6 +262,7 @@ def dbMakeGalleryTicket(db, ticketName, validityHours, multiplicity,
                 'box_id': box.box_id,
                 'box_path': boxPath,
                 'box_name': box.box_name,
+                'box_title': box.title,
                 'message': ticketMessage,
             }.items()
             if v is not None
@@ -302,6 +309,7 @@ def dbMakeUploadTicket(db, ticketName, validityHours, multiplicity,
             for k, v in {
                 'box_id': box.box_id,
                 'box_path': boxPath,
+                'box_title': box.title,
                 'box_name': box.box_name,
                 'message': ticketMessage,
             }.items()

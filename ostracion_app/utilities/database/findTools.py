@@ -29,7 +29,7 @@ from ostracion_app.utilities.viewTools.pathTools import (
     prepareFileInfo,
     prepareLinkInfo,
     prepareBoxInfo,
-    describePathAsNiceString,
+    describeBoxTitle,
 )
 
 from ostracion_app.utilities.database.findEngines import (
@@ -46,7 +46,8 @@ from ostracion_app.utilities.tools.setNaming import (
 # used by _searchResultSorterKey
 _sortPriorityByObjectTypeMap = {
     'file': 1,
-    'box': 2,
+    'link': 2,
+    'box': 3,
 }
 
 
@@ -196,7 +197,7 @@ def _resolveUponPermissions(db, richObject, user, mode, score):
                     pBox, user, prepareParentButton=True),
                 'info': prepareBoxInfo(db, nBox),
                 'parentInfo': 'Parent box: "%s"' % (
-                    describePathAsNiceString(richObject['path'][1:-1])
+                    describeBoxTitle(pBox),
                 ),
                 'object_type': mode,
                 'score': score,
@@ -216,7 +217,7 @@ def _resolveUponPermissions(db, richObject, user, mode, score):
                     'info': prepareFileInfo(db, nFile),
                     'nice_size': formatBytesSize(nFile.size),
                     'parentInfo': 'Container box: "%s"' % (
-                        describePathAsNiceString(richObject['path'][1:-1])
+                        describeBoxTitle(pBox),
                     ),
                     'object_type': mode,
                     'score': score,
@@ -237,7 +238,7 @@ def _resolveUponPermissions(db, richObject, user, mode, score):
                         pBox, user, prepareParentButton=True),
                     'info': prepareLinkInfo(db, nLink),
                     'parentInfo': 'Container box: "%s"' % (
-                        describePathAsNiceString(richObject['path'][1:-1])
+                        describeBoxTitle(pBox),
                     ),
                     'object_type': mode,
                     'score': score,

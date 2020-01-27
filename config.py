@@ -21,6 +21,12 @@ usernameCharacterSet = set(
     '1234567890qwertyuiopasdfghjklzxcvbnmPOIUYTREWQLKJHGFDSAMNBVCXZ_-.@'
 )
 
+# show root box as icon in breadcrumbs
+breadcrumbShowRootAsIcon = True
+# root box nice naming
+rootBoxNiceTitle = 'Root'
+rootBoxNiceName = 'root'
+
 # reasonably unchanged definitions
 lowercaseAlphabet = set('qwertyuiopasdfghjklzxcvbnm')
 

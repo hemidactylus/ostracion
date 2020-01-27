@@ -63,6 +63,7 @@ from ostracion_app.utilities.tools.treeTools import (
 from ostracion_app.utilities.viewTools.pathTools import (
     makeBreadCrumbs,
     splitPathString,
+    describeBoxTitle,
 )
 
 from ostracion_app.utilities.forms.forms import (
@@ -139,7 +140,7 @@ def makeLinkView(fsPathString=''):
             iconUrl=makeSettingImageUrl(g, 'app_images', 'external_link'),
             pageTitle='New link',
             pageSubtitle='Create a new link in "%s"' % (
-                parentBox.box_name if parentBox.box_id != '' else '(root)'
+                describeBoxTitle(parentBox)
             ),
         )
 
@@ -326,8 +327,8 @@ def fsMoveLinkView(quotedLinkPath):
         pageTitle='Select link destination',
         pageSubtitle=(('Choose the box to which link "%s" shall '
                        'be moved from "%s"') % (
-                        link.name,
-                        '/'.join(boxPath) if len(boxPath) > 1 else "Root",
+                        link.title,
+                        describeBoxTitle(parentBox),
                      )
         ),
         actions=None,

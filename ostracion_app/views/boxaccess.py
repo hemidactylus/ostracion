@@ -69,7 +69,9 @@ from ostracion_app.utilities.viewTools.pathTools import (
     prepareBoxInfo,
     prepareBoxHeaderActions,
     prepareRootTasks,
-    describePathAsNiceString,
+    describeBoxTitle,
+    describeBoxName,
+    describeRootBoxCaptions,
 )
 
 from ostracion_app.utilities.forms.forms import (
@@ -203,6 +205,11 @@ def lsView(lsPathString=''):
         #
         pathBCrumbs = makeBreadCrumbs(lsPath, g)
         boxNiceName = thisBox.box_name if thisBox.box_name != '' else None
+        if thisBox.box_id == '':
+            boxTitle, boxDescription = describeRootBoxCaptions(g)
+        else:
+            boxTitle = describeBoxTitle(thisBox)
+            boxDescription = thisBox.description
         #
         boxActions = prepareBoxHeaderActions(
             db,
@@ -279,7 +286,9 @@ def lsView(lsPathString=''):
             'ls.html',
             user=user,
             thisBox=thisBox,
+            boxTitle=boxTitle,
             boxNiceName=boxNiceName,
+            boxDescription=boxDescription,
             pageTitle=boxNiceName,
             boxChildrenCounter=boxChildrenCounter,
             boxActions=boxActions,
@@ -311,7 +320,7 @@ def makeBoxView(parentBoxPathString=''):
     db = dbGetDatabase()
     parentBoxPath = splitPathString(parentBoxPathString)
     parentBox = getBoxFromPath(db, parentBoxPath, user)
-    boxNiceName = parentBox.box_name if parentBox.box_name != '' else '(root)'
+    boxNiceName = describeBoxTitle(parentBox)
     request._onErrorUrl = url_for(
         'lsView',
         lsPathString='/'.join(parentBoxPath),
@@ -653,9 +662,7 @@ def makeTicketBoxGalleryView(boxPathString=''):
             lsPathString='/'.join(boxPath[1:]),
         ))
     else:
-        defaultName = 'Gallery-View-%s' % (
-            box.box_name if box.box_name != '' else '(root)',
-        )
+        defaultName = 'Gallery-View-%s' % describeBoxName(box)
         form.name.data = applyDefault(form.name.data, defaultName)
         form.ticketmessage.data = applyDefault(
             form.ticketmessage.data,
@@ -681,7 +688,7 @@ def makeTicketBoxGalleryView(boxPathString=''):
                           'an account, as a gallery. If setting a number of '
                           'accesses, keep in mind that every single-file view'
                           ' counts toward the total accesses.') % (
-                boxPathString if boxPathString != '' else '(root)',
+                describeBoxTitle(box)
             ),
             baseMultiplicityCaption='Number of granted accesses',
             user=user,
@@ -763,7 +770,7 @@ def makeTicketBoxUploadView(boxPathString=''):
             ))
         else:
             defaultName = 'Upload-To-%s' % (
-                box.box_name if box.box_name != '' else '(root)',
+                describeBoxName(box)
             )
             form.name.data = applyDefault(form.name.data, defaultName)
             form.ticketmessage.data = applyDefault(
@@ -788,9 +795,8 @@ def makeTicketBoxUploadView(boxPathString=''):
                 pageSubtitle=('Recipient(s) of the ticket will be able to '
                               'upload to "%s", without an account, on '
                               'your behalf.') % (
-                                    boxPathString
-                                    if boxPathString != ''
-                                    else '(root)'),
+                                    describeBoxTitle(box)
+                               ),
                 baseMultiplicityCaption='Number of granted file uploads',
                 user=user,
                 form=form,
@@ -870,8 +876,8 @@ def fsMoveBoxView(quotedSrcBox):
         pageTitle='Select box destination',
         pageSubtitle=('Choose the box to which box "%s" '
                       'shall be moved from "%s"') % (
-                            box.box_name,
-                            describePathAsNiceString(boxPath[1:-1]),
+                            describeBoxTitle(box),
+                            describeBoxTitle(parentBox),
                      ),
         actions=None,
         backToUrl=(None

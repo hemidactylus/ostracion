@@ -64,6 +64,7 @@ from ostracion_app.utilities.viewTools.pathTools import (
     splitPathString,
     prepareFileActions,
     prepareFileInfo,
+    describeBoxTitle,
 )
 
 from ostracion_app.utilities.forms.forms import (
@@ -141,7 +142,7 @@ def makeTextFileView(fsPathString=''):
             iconUrl=pickFileThumbnail('text/plain'),
             pageTitle='New text',
             pageSubtitle='Create a new text file in "%s"' % (
-                parentBox.box_name if parentBox.box_id != '' else '(root)'
+                describeBoxTitle(parentBox)
             ),
         )
 
@@ -318,7 +319,7 @@ def uploadSingleFileView(fsPathString=''):
             breadCrumbs=pathBCrumbs,
             pageTitle='Upload new file',
             pageSubtitle='Upload a new file to box "%s"' % (
-                parentBox.box_name if parentBox.box_id != '' else '(root)'
+                describeBoxTitle(parentBox)
             ),
             iconUrl=makeSettingImageUrl(g, 'app_images', 'single_upload'),
         )
@@ -391,7 +392,7 @@ def uploadMultipleFilesView(fsPathString=''):
             breadCrumbs=pathBCrumbs,
             pageTitle='Upload new files',
             pageSubtitle='Upload new files to box "%s"' % (
-                parentBox.box_name if parentBox.box_id != '' else '(root)'
+                describeBoxTitle(parentBox)
             ),
             iconUrl=makeSettingImageUrl(g, 'app_images', 'multiple_upload')
         )

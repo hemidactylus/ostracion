@@ -20,14 +20,6 @@ Such roles cannot be given to boxes, only users.
 ### Ansible, nginx restart target, why it seems nonexistent sometimes?
 (then, after various reruns of the ansible, all is ok)
 
-### Root box naming
-
-'Root', '(root)' etc, are slapped in various places as literals.
-Fix this. Cf. e.g. `fileaccess.py:581`.
-TO DO BETTER and also this raises the issue of leading '' in path arrays
-(sometimes present);
-and also name resolution and 'keep the object structure as long as you can'.
-
 ### Nonifystring
 
 The repeated logic of "None if empty string" in

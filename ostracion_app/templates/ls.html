@@ -6,9 +6,9 @@
 {% block content %}
 
       {{ herotools.image_hero(
-        title=thisBox.title,
+        title=boxTitle,
         titleit=boxNiceName,
-        subtitle=thisBox.description,
+        subtitle=boxDescription,
         subtitleit=boxChildrenCounter,
         icon_url=url_for('boxThumbnailView',dummyId=thisBox.icon_file_id+'_',boxPathString='/'.join(boxPath)),
         info_lines=None,

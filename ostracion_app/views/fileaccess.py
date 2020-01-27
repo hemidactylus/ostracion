@@ -63,6 +63,7 @@ from ostracion_app.utilities.viewTools.pathTools import (
     splitPathString,
     prepareFileActions,
     prepareFileInfo,
+    describeBoxTitle,
 )
 
 from ostracion_app.utilities.forms.forms import (
@@ -603,7 +604,7 @@ def fsMoveFileView(quotedFilePath):
         pageSubtitle=(('Choose the box to which file "%s" shall '
                        'be moved from "%s"') % (
                         file.name,
-                        '/'.join(boxPath) if len(boxPath) > 1 else "Root",
+                        describeBoxTitle(parentBox),
                      )
         ),
         actions=None,

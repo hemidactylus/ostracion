@@ -115,7 +115,9 @@
                           titleit=None,
                           subtitle=foundItemStructure['link'].description,
                           subtitleit=foundItemStructure['link'].target,
-                          infratitlesmall=None,
+                          infratitlesmall=foundItemStructure.parentInfo + (
+                            (' ; score: %.2f' % foundItemStructure.score) if g.settings['behaviour']['search']['show_search_results_scores']['value'] else ''
+                          ),
                           target_url=foundItemStructure['link'].target,
                           icon_url=url_for('linkThumbnailView',dummyId=foundItemStructure['link'].icon_file_id+'_',fsPathString='/'.join(foundItemStructure.path)),
                           icon_subtitle=foundItemStructure['link'].date.strftime('%b %d, %Y'),

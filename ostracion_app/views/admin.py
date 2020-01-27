@@ -95,6 +95,7 @@ from ostracion_app.utilities.viewTools.pathTools import (
     makeBreadCrumbs,
     splitPathString,
     prepareTaskPageFeatures,
+    describeBoxTitle,
 )
 
 from ostracion_app.utilities.database.fileSystem import (
@@ -1081,7 +1082,7 @@ def adminLsPermissionsView(lsPathString=''):
             thisBox.permissionHistory,
             thisBox.permissions,
         )
-        boxNiceName = thisBox.box_name if thisBox.box_name != '' else '(root)'
+        boxNiceName = describeBoxTitle(thisBox)
         pathBCrumbs = makeBreadCrumbs(
             boxPath,
             g,
@@ -1112,7 +1113,6 @@ def adminLsPermissionsView(lsPathString=''):
         return render_template(
             'adminboxpermissions.html',
             user=user,
-            # colorMap=colorMap,
             thisBox=thisBox,
             permissionInfo=permissionInfo,
             unmentionedRoleIds=unmentionedRoleIds,
