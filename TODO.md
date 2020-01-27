@@ -24,6 +24,9 @@ Such roles cannot be given to boxes, only users.
 
 'Root', '(root)' etc, are slapped in various places as literals.
 Fix this. Cf. e.g. `fileaccess.py:581`.
+TO DO BETTER and also this raises the issue of leading '' in path arrays
+(sometimes present);
+and also name resolution and 'keep the object structure as long as you can'.
 
 ### Nonifystring
 

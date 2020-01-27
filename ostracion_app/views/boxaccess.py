@@ -22,6 +22,11 @@ from ostracion_app.utilities.tools.formatting import (
     applyDefault,
 )
 
+from ostracion_app.utilities.tools.setNaming import (
+    colloquialJoinClauses,
+    pickSingularPluralSentences,
+)
+
 from ostracion_app.app_main import app
 
 from ostracion_app.utilities.viewTools.messageTools import flashMessage
@@ -256,27 +261,19 @@ def lsView(lsPathString=''):
         else:
             permissionInfo = None
         #
-        if len(boxes) > 0 or len(files) > 0:
-            boxChildrenCounter = ', '.join(
-                stc
-                for stc, cnt in (
-                    (
-                        '%i %s' % (
-                            len(oObjs),
-                            oNm if len(oObjs) == 1 else oNms,
-                        ),
-                        len(oObjs)
-                    )
-                    for oNm, oNms, oObjs in zip(
-                        ['box', 'file'],
-                        ['boxes', 'files'],
-                        [boxes, files],
-                    )
-                )
-                if cnt > 0
+        if len(boxes) + len(files) + len(links) > 0:
+            foundCounts = [
+                (len(boxes), 'box', 'boxes'),
+                (len(files), 'file', 'files'),
+                (len(links), 'link', 'links'),
+            ]
+            foundParts = pickSingularPluralSentences(
+                foundCounts,
+                keepZeroes=False,
             )
+            boxChildrenCounter = colloquialJoinClauses(foundParts)
         else:
-            boxChildrenCounter = None
+            boxChildrenCounter = 'no contents'
         #
         return render_template(
             'ls.html',
