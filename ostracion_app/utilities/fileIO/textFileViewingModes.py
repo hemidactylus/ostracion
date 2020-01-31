@@ -59,5 +59,5 @@ textFileViewingModes = {
         'index': 1,
         'title': 'Markdown',
         'contentPreparer': markdownTextFileContentModePreparer,
-    }
+    },
 }
