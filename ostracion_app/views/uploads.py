@@ -33,6 +33,10 @@ from ostracion_app.utilities.fileIO.postProcessing import (
     determineFileProperties,
 )
 
+from ostracion_app.utilities.fileIO.textFileViewingModes import (
+    textFileViewingModes,
+)
+
 from ostracion_app.utilities.database.fileSystem import (
     getBoxFromPath,
     getFileFromParent,
@@ -176,12 +180,13 @@ def editTextFileView(fsPathString=''):
             discardedActions={'text_edit'},
         )
         fileInfo = prepareFileInfo(db, file)
-        #
         form = EditTextFileForm()
-        ##
         form.textformat.choices = [
-            ('plain', 'Plain'),
-            ('markdown', 'Markdown'),
+            (mId, mDesc['title'])
+            for mId, mDesc in sorted(
+                textFileViewingModes.items(),
+                key=lambda kv: kv[1]['index'],
+            )
         ]
         ##
         if form.validate_on_submit():

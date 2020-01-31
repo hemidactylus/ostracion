@@ -11,12 +11,8 @@ from ostracion_app.utilities.fileIO.mimeTypeMaps import (
     textualEditableMimeTypes,
 )
 
-from ostracion_app.utilities.fileIO.physical import (
-    fileIdToPath,
-)
-
-from ostracion_app.utilities.tools.markdownTools import (
-    markdownToHtml,
+from ostracion_app.utilities.fileIO.textFileViewingModes import (
+    textFileViewingModes,
 )
 
 
@@ -49,25 +45,10 @@ def produceFileViewContents(file, mode, viewParameters, fileStorageDirectory):
         or by-ticket-view (in which case the image URL is different).
     """
     fViewClass = fileViewingClass(file)
-    if fViewClass == 'plain':
-        fileContents = {
-            'mode': 'plain',
-            'value': open(fileIdToPath(
-                file.file_id,
-                fileStorageDirectory=fileStorageDirectory,
-            )).read(),
-        }
-    elif fViewClass == 'markdown':
-        fileContents = {
-            'mode': 'markdown',
-            'value': markdownToHtml(
-                open(fileIdToPath(
-                    file.file_id,
-                    fileStorageDirectory=fileStorageDirectory,
-                )).read(),
-                replacements=[],
-            ),
-        }
+    if fViewClass in textFileViewingModes:
+        fileContents = textFileViewingModes[fViewClass][
+            'contentPreparer'](file, mode, viewParameters,
+                               fileStorageDirectory)
     elif fViewClass == 'image':
         if mode == 'fsview':
             imgValue = url_for(
