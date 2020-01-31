@@ -31,12 +31,6 @@ can be written better.
 The function 'determineThumbnailFormatByModeAndTarget' should not be in
 the thumbnails.py **view** code, rather in a tiny library file.
 
-### Text file view modes
-
-Very ugly how it is now slapped in `uploads.py/editTextFileView`.
-Prepare proper settings place and as a test enable
-(later via settings) HTML view mode.
-
 ### Re-salting of password
 
 Password and re-salting: it is wrong to have this in the model and
