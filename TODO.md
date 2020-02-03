@@ -26,11 +26,6 @@ The repeated logic of "None if empty string" in
 `fileAccess.py/fsMakeTicketView:467`
 can be written better.
 
-### determineThumbnailFormatByModeAndTarget
-
-The function 'determineThumbnailFormatByModeAndTarget' should not be in
-the thumbnails.py **view** code, rather in a tiny library file.
-
 ### Re-salting of password
 
 Password and re-salting: it is wrong to have this in the model and

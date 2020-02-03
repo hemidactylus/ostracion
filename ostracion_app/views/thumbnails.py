@@ -32,6 +32,10 @@ from ostracion_app.utilities.tools.dictTools import (
 
 from ostracion_app.utilities.viewTools.messageTools import flashMessage
 
+from ostracion_app.views.viewTools.thumbnailFormatFinder import (
+    determineThumbnailFormatByModeAndTarget,
+)
+
 from ostracion_app.utilities.forms.forms import (
     UploadIconForm,
 )
@@ -643,25 +647,3 @@ def setIconView(mode, itemPathString=''):
                 itemPathString=itemPathString,
                 **finalPageFeatures,
             )
-
-
-def determineThumbnailFormatByModeAndTarget(db, mode, target):
-    """ Helper function to get the 'thumbnail format'
-        before resizing an image.
-
-        Given e.g. 'u' and the user, or 'b' and the box, ...,
-        find the appropriate thumbnail mode for the resizing calls.
-    """
-    if mode in {'f', 'b', 'l'}:
-        return 'thumbnail'
-    elif mode == 'u':
-        return 'thumbnail'
-    elif mode == 'au':
-        return 'thumbnail'
-    elif mode == 's':
-        return target['metadata']['thumbnailFormat']
-    else:
-        raise NotImplementedError(
-            ('Unknown mode "%s" in '
-             'determineThumbnailFormatByModeAndTarget') % mode
-        )
