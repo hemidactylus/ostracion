@@ -469,11 +469,7 @@ def metadataBoxView(boxPathString=''):
                             'box_name': form.boxname.data,
                             'title': form.boxtitle.data,
                             'description': form.boxdescription.data,
-                            'metadata_username': (
-                                user.username
-                                if user.is_authenticated
-                                else ''
-                            ),
+                            'metadata_username': user.username,
                         },
                         defaultMap=box.asDict(),
                     )

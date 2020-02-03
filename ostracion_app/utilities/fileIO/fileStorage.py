@@ -77,7 +77,7 @@ def saveAndAnalyseFilesInBox(db, files, parentBox, user, thumbnailFormat,
         if not userHasPermission(db, user, parentBox.permissions, 'w'):
             raise OstracionError('User has no write permission on this box')
         else:
-            userName = user.username if user.is_authenticated else ''
+            userName = user.username
             fsDeletionQueue = []
             numReplacements = 0
             #

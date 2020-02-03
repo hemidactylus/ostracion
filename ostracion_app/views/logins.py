@@ -74,8 +74,13 @@ from ostracion_app.views.viewTools.loginTools import (
     loginSubtitle,
 )
 
+from ostracion_app.utilities.userTools.OstracionAnonymousUser import (
+    OstracionAnonymousUser,
+)
+
 # initialisation of login manager is here
 lm = LoginManager()
+lm.anonymous_user = OstracionAnonymousUser
 lm.init_app(app)
 
 # endpoints for which we lift the rerouting due to just-installed,

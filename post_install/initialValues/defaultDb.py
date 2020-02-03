@@ -24,6 +24,10 @@ from post_install.initialValues.tools import (
     getDefaultFilesystemDirectory,
 )
 
+from ostracion_app.utilities.userTools.anonymousRole import (
+    anonymousRoleDict,
+)
+
 initialDbValues = {
     'users': {
         'model': User,
@@ -75,14 +79,10 @@ initialDbValues = {
     'roles': {
         'model': Role,
         'values': [
+            anonymousRoleDict,
             {
                 'role_id':          'admin',
                 'description':      'Admin',
-                'system':           1,
-            },
-            {
-                'role_id':          'anonymous',
-                'description':      'Anonymous',
                 'system':           1,
             },
             {

@@ -72,14 +72,14 @@ def generalisedGetUserRoles(db, user):
     """ Look up the roles of the user
         taking into account the non-logged-in case.
     """
-    if user is not None and user.is_authenticated:
-        if user.roles is not None:
+    if user is not None:
+        if hasattr(user, 'roles') and user.roles is not None:
             return user.roles
         else:
             # the user object can have been created e.g.
             # during an user deletion request and not via the login
             # flask handler (whereupon it would get roles as well)
-            return list(dbGetUserRoles(db, user))
+            return list(dbGetUserRoles(db, user))            
     else:
         return [
             Role(**dbRetrieveRecordByKey(

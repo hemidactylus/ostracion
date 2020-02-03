@@ -694,7 +694,7 @@ def makeLinkInParent(
     """
     if userHasPermission(db, user, parentBox.permissions, 'w'):
         if not isNameUnderParentBox(db, parentBox, linkName):
-            userName = user.username if user.is_authenticated else ''
+            userName = user.username
             newLink = Link(
                 box_id=parentBox.box_id,
                 name=linkName,
@@ -738,9 +738,9 @@ def updateLinkThumbnail(
     #
     link.icon_file_id = tId if tId is not None else ''
     link.icon_mime_type = tMT if tMT is not None else ''
-    link.icon_file_id_username = (
-        user.username if user.is_authenticated else ''
-    ) if not accountDeletionInProgress else ''
+    link.icon_file_id_username = (user.username
+                                  if not accountDeletionInProgress
+                                  else '')
     dbUpdateRecordOnTable(
         db,
         'links',
@@ -769,9 +769,9 @@ def updateFileThumbnail(
     #
     file.icon_file_id = tId if tId is not None else ''
     file.icon_mime_type = tMT if tMT is not None else ''
-    file.icon_file_id_username = (
-        user.username if user.is_authenticated else ''
-    ) if not accountDeletionInProgress else ''
+    file.icon_file_id_username = (user.username
+                                  if not accountDeletionInProgress
+                                  else '')
     dbUpdateRecordOnTable(
         db,
         'files',
@@ -799,9 +799,7 @@ def updateUserThumbnail(
     #
     targetUser.icon_file_id = tId if tId is not None else ''
     targetUser.icon_mime_type = tMT if tMT is not None else ''
-    targetUser.icon_file_id_username = (
-        user.username
-    ) if user.is_authenticated else ''
+    targetUser.icon_file_id_username = user.username
     dbUpdateRecordOnTable(
         db,
         'users',
@@ -829,9 +827,9 @@ def updateBoxThumbnail(
     #
     box.icon_file_id = tId if tId is not None else ''
     box.icon_mime_type = tMT if tMT is not None else ''
-    box.icon_file_id_username = (
-        user.username if user.is_authenticated else ''
-    ) if not accountDeletionInProgress else ''
+    box.icon_file_id_username = (user.username
+                                 if not accountDeletionInProgress
+                                 else '')
     dbUpdateRecordOnTable(
         db,
         'boxes',

@@ -203,9 +203,7 @@ def fsLinkMetadataView(fsPathString=''):
                     'description': form.linkdescription.data,
                     'title': form.linktitle.data,
                     'target': form.linktarget.data,
-                    'metadata_username': (user.username
-                                          if user.is_authenticated
-                                          else ''),
+                    'metadata_username': user.username,
                     'metadata_dict': {
                         'open_in_new_window': form.openinnewwindow.data,
                     },

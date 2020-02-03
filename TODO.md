@@ -26,11 +26,6 @@ Password and re-salting: it is wrong to have this in the model and
 it is fragile to have it dependent on whether 'password' or 'password hash'
 is passed to the model class. Move it somewhere better.
 
-### Anonymous mixin
-
-Create and use a proper mixin for non-logged-in users - check it is
-going to be used everywhere.
-
 ### CSS
 
 Css-ification of all style elements in all templates for tidiness,
@@ -45,6 +40,11 @@ Tree viev: make all of it into a css style sheet.
 
 Tables and small screens: currently a disaster.
 
+### The markdown-with-images riddle
+
+When viewing a rendered markdown, if it embeds an image it is a mess
+since a rel path 'image.png' would inherint the fsv ("V") full url.
+Find an elegant solution.
 
 
 
