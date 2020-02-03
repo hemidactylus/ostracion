@@ -17,6 +17,39 @@ to handle in the future roles such as calendar/(ticketer)/accounting ...
 with a convention and that the admins cannot delete/create them.
 Such roles cannot be given to boxes, only users.
 
+More: roles should have several attributes:
+  (app+ means: accounting + ticketer and other sysconfigurations)
+                      adm   sys/app regular   anon
+  givable to boxes  |   Y     N           Y      Y
+  deletable         |   N     N           Y      N
+  givable to users  |   Y     Y           Y      N
+
+Check transpose:
+                      boxes |  deletable | users
+  [S]admin          |     Y            N       Y
+  
+  ticketer+...      |     N            N       Y
+  [app]accounting+..|
+  
+  [manual]          |     Y            Y       Y
+  [x]anonymous      |     Y            N       N  
+
+Features are then:
+  - givable to boxes
+  - deletable
+  - givable to users
+
+This should be done with a drastic change in primary keys,
+namely a double-field key (roleclass, roleid):
+    admin  (sys, 'admin')
+    anon   (sys, 'anonymous')
+    ticketer... (sys, 'ticketer')
+    ...
+
+EITHER THAT OR A STRICT UNIQUE-ID with a prefix system (bleah)
+AND NEVER USE THE ID IN DISPLAY + VISUAL CUES (e.g. colors)
+    
+
 ### Ansible, nginx restart target, why it seems nonexistent sometimes?
 (then, after various reruns of the ansible, all is ok)
 
