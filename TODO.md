@@ -20,12 +20,6 @@ Such roles cannot be given to boxes, only users.
 ### Ansible, nginx restart target, why it seems nonexistent sometimes?
 (then, after various reruns of the ansible, all is ok)
 
-### Nonifystring
-
-The repeated logic of "None if empty string" in
-`fileAccess.py/fsMakeTicketView:467`
-can be written better.
-
 ### Re-salting of password
 
 Password and re-salting: it is wrong to have this in the model and

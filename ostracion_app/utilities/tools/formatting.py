@@ -45,6 +45,21 @@ def applyDefault(value, default, additionalNulls=[]):
         return value
 
 
+def transformIfNotEmpty(txt, tformer=lambda t: t):
+    """ Given an input text, make it None if empty,
+        otherwise *try* to apply a transformer.
+
+        Useful for optional input of forms.
+    """
+    if txt == '':
+        return None
+    else:
+        try:
+            return tformer(txt)
+        except Exception:
+            return None
+
+
 def stripToAscii(txt):
     """ Remove non-ascii characters, trying to map ordinary
         non-ascii into their counterpart (such as accented letters)."""

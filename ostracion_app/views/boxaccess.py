@@ -20,6 +20,7 @@ from ostracion_app.utilities.tools.dictTools import (
 from ostracion_app.utilities.tools.formatting import (
     formatBytesSize,
     applyDefault,
+    transformIfNotEmpty,
 )
 
 from ostracion_app.utilities.tools.setNaming import (
@@ -204,7 +205,7 @@ def lsView(lsPathString=''):
         ]
         #
         pathBCrumbs = makeBreadCrumbs(lsPath, g)
-        boxNiceName = thisBox.box_name if thisBox.box_name != '' else None
+        boxNiceName = transformIfNotEmpty(thisBox.box_name)
         if thisBox.box_id == '':
             boxTitle, boxDescription = describeRootBoxCaptions(g)
         else:
@@ -635,15 +636,17 @@ def makeTicketBoxGalleryView(boxPathString=''):
         magicLink = dbMakeGalleryTicket(
             db=db,
             ticketName=form.name.data,
-            validityHours=(int(form.validityhours.data)
-                           if form.validityhours.data != ''
-                           else None),
-            multiplicity=(int(form.multiplicity.data)
-                          if form.multiplicity.data != ''
-                          else None),
-            ticketMessage=(form.ticketmessage.data
-                           if form.ticketmessage.data != ''
-                           else None),
+            validityHours=transformIfNotEmpty(
+                form.validityhours.data,
+                int
+            ),
+            multiplicity=transformIfNotEmpty(
+                form.multiplicity.data,
+                int
+            ),
+            ticketMessage=transformIfNotEmpty(
+                form.ticketmessage.data
+            ),
             box=box,
             boxPath=boxPath,
             user=user,
@@ -742,15 +745,17 @@ def makeTicketBoxUploadView(boxPathString=''):
             magicLink = dbMakeUploadTicket(
                 db=db,
                 ticketName=form.name.data,
-                validityHours=(int(form.validityhours.data)
-                               if form.validityhours.data != ''
-                               else None),
-                multiplicity=(int(form.multiplicity.data)
-                              if form.multiplicity.data != ''
-                              else None),
-                ticketMessage=(form.ticketmessage.data
-                               if form.ticketmessage.data != ''
-                               else None),
+                validityHours=transformIfNotEmpty(
+                    form.validityhours.data,
+                    int,
+                ),
+                multiplicity=transformIfNotEmpty(
+                    form.multiplicity.data,
+                    int,
+                ),
+                ticketMessage=transformIfNotEmpty(
+                    form.ticketmessage.data,
+                ),
                 box=box,
                 boxPath=boxPath,
                 user=user,

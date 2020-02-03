@@ -39,6 +39,7 @@ from ostracion_app.utilities.database.dbTools import (
 from ostracion_app.utilities.tools.formatting import (
     formatBytesSize,
     applyDefault,
+    transformIfNotEmpty,
 )
 
 from ostracion_app.utilities.models.File import File
@@ -472,15 +473,17 @@ def fsMakeTicketView(fsPathString=''):
                 magicLink = dbMakeFileTicket(
                     db=db,
                     ticketName=form.name.data,
-                    validityHours=(int(form.validityhours.data)
-                                   if form.validityhours.data != ''
-                                   else None),
-                    multiplicity=(int(form.multiplicity.data)
-                                  if form.multiplicity.data != ''
-                                  else None),
-                    ticketMessage=(form.ticketmessage.data
-                                   if form.ticketmessage.data != ''
-                                   else None),
+                    validityHours=transformIfNotEmpty(
+                        form.validityhours.data,
+                        int,
+                    ),
+                    multiplicity=transformIfNotEmpty(
+                        form.multiplicity.data,
+                        int,
+                    ),
+                    ticketMessage=transformIfNotEmpty(
+                        form.validityhours.data,
+                    ),
                     file=file,
                     fileMode=form.filemode.data,
                     lsPath=lsPath,

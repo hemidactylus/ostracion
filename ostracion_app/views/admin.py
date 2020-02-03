@@ -89,6 +89,7 @@ from ostracion_app.utilities.database.settingsTools import (
 
 from ostracion_app.utilities.tools.formatting import (
     applyDefault,
+    transformIfNotEmpty,
 )
 
 from ostracion_app.utilities.viewTools.pathTools import (
@@ -1296,12 +1297,13 @@ def adminUserIssueChangePasswordTicket(username):
         form = generateChangePasswordTicketForm(g.settings)
         if form.validate_on_submit():
             ticketName = form.name.data
-            ticketMessage = (form.ticketmessage.data
-                             if form.ticketmessage.data != ''
-                             else None)
-            validityHours = (None
-                             if form.validityhours.data == ''
-                             else int(form.validityhours.data))
+            ticketMessage = transformIfNotEmpty(
+                form.ticketmessage.data
+            ),
+            validityHours = form.ticketmessage.data(
+                form.validityhours.data,
+                int,
+            ),
             magicLink = dbMakeUserChangePasswordTicket(
                 db,
                 ticketName=ticketName,
@@ -1437,18 +1439,18 @@ def adminNewUserInvitationView():
             db,
             ticketName=form.name.data,
             validityHours=validityHours,
-            userName=(None
-                      if form.username.data == ''
-                      else form.username.data),
-            userFullName=(None
-                          if form.fullname.data == ''
-                          else form.fullname.data),
-            userEmail=(None
-                       if form.email.data == ''
-                       else form.email.data),
-            ticketMessage=(form.ticketmessage.data
-                           if form.ticketmessage.data != ''
-                           else None),
+            userName=transformIfNotEmpty(
+                form.username.data,
+            ),
+            userFullName=transformIfNotEmpty(
+                form.fullname.data,
+            ),
+            userEmail=transformIfNotEmpty(
+                form.email.data,
+            ),
+            ticketMessage=transformIfNotEmpty(
+                form.ticketmessage.data,
+            ),
             user=user,
             urlRoot=request.url_root,
             settings=g.settings,
