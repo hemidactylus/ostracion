@@ -141,16 +141,20 @@ dbSchema = {
     },
     'roles': {
         'primary_key': [
+            ('role_class', 'TEXT'),
             ('role_id', 'TEXT'),
         ],
         'columns': [
             ('description', 'TEXT'),
-            ('system', 'INTEGER'),
+            ('can_box', 'INTEGER'),
+            ('can_user', 'INTEGER'),
+            ('can_delete', 'INTEGER'),
         ],
     },
     'box_role_permissions': {
         'primary_key': [
             ('box_id', 'TEXT'),
+            ('role_class', 'TEXT'),
             ('role_id', 'TEXT'),
         ],
         'columns': [
@@ -163,13 +167,14 @@ dbSchema = {
                 [['box_id'], ['box_id']],
             ],
             'roles': [
-                [['role_id'], ['role_id']],
+                [['role_class', 'role_id'], ['role_class', 'role_id']],
             ],
         },
     },
     'user_roles': {
         'primary_key': [
             ('username', 'TEXT'),
+            ('role_class', 'TEXT'),
             ('role_id', 'TEXT'),
         ],
         'columns': [],
@@ -178,7 +183,7 @@ dbSchema = {
                 [['username'], ['username']],
             ],
             'roles': [
-                [['role_id'], ['role_id']],
+                [['role_class', 'role_id'], ['role_class', 'role_id']],
             ],
         },
     },

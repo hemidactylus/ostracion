@@ -35,9 +35,9 @@ Check transpose:
   [x]anonymous      |     Y            N       N  
 
 Features are then:
-  - givable to boxes
-  - deletable
-  - givable to users
+  - givable to boxes  : can_box
+  - deletable         : can_delete
+  - givable to users  : can_user
 
 This should be done with a drastic change in primary keys,
 namely a double-field key (roleclass, roleid):
@@ -45,10 +45,16 @@ namely a double-field key (roleclass, roleid):
     anon   (sys, 'anonymous')
     ticketer... (sys, 'ticketer')
     ...
+ROLE_CLASS can have:
+  system
+  manual
+  app
 
-EITHER THAT OR A STRICT UNIQUE-ID with a prefix system (bleah)
-AND NEVER USE THE ID IN DISPLAY + VISUAL CUES (e.g. colors)
-    
+TODO:
+1. box permissions, logic and using the pill, plus the combined r1+r2 how to show and stuff
+2. how to migrate from preexisting DB
+3:
+   == remove the 'accounting' role and make roles addable per postInstall as with settings
 
 ### Ansible, nginx restart target, why it seems nonexistent sometimes?
 (then, after various reruns of the ansible, all is ok)

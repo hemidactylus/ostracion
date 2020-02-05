@@ -81,14 +81,28 @@ initialDbValues = {
         'values': [
             anonymousRoleDict,
             {
+                'role_class': 'system',
                 'role_id':          'admin',
                 'description':      'Admin',
-                'system':           1,
+                'can_box': 1,
+                'can_user': 1,
+                'can_delete': 0,
             },
             {
+                'role_class': 'system',
                 'role_id':          'ticketer',
                 'description':      'Ticketer',
-                'system':           1,
+                'can_box': 0,
+                'can_user': 1,
+                'can_delete': 0,
+            },
+            {
+                'role_class': 'app',
+                'role_id':          'accounting',
+                'description':      'Accounting',
+                'can_box': 0,
+                'can_user': 1,
+                'can_delete': 0,
             },
         ],
     },
@@ -97,6 +111,7 @@ initialDbValues = {
         'values': [
             {
                 'username': 'admin',
+                'role_class': 'system',
                 'role_id': 'admin',
             },
         ],
@@ -106,6 +121,7 @@ initialDbValues = {
         'values': [
             {
                 'box_id': '',
+                'role_class': 'system',
                 'role_id': 'admin',
                 'r': 1,
                 'w': 1,
@@ -113,6 +129,7 @@ initialDbValues = {
             },
             {
                 'box_id': '',
+                'role_class': 'system',
                 'role_id': 'anonymous',
                 'r': 1,
                 'w': 0,

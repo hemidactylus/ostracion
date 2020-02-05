@@ -6,5 +6,8 @@
 anonymousRoleDict ={
     'role_id':          'anonymous',
     'description':      'Anonymous',
-    'system':           1,
+    'can_box': 1,
+    'can_user': 0,
+    'can_delete': 0,
+    'role_class': 'system',
 }

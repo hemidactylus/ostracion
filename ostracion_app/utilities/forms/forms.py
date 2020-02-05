@@ -30,6 +30,7 @@ from flask_wtf.file import (
 )
 
 from config import (
+    maxShortIdentifierLength,
     maxIdentifierLength,
     maxStoredTextLength,
     lowercaseAlphabet,
@@ -193,11 +194,15 @@ class EditRoleForm(FlaskForm):
     """Role information edit form (class)."""
     roleid = StringField(
         'Role ID',
-        validators=[InputRequired(), CharacterSelector(lowercaseAlphabet)]
+        validators=[
+            InputRequired(),
+            CharacterSelector(lowercaseAlphabet),
+            Length(max=maxShortIdentifierLength)
+        ]
     )
     roledescription = StringField(
         'Description',
-        validators=[Length(max=maxIdentifierLength)]
+        validators=[Length(max=maxShortIdentifierLength)]
     )
     confirm = SubmitField('Save')
 

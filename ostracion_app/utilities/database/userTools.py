@@ -133,7 +133,11 @@ def dbCreateUser(db, newUser, user):
         dbAddRecordToTable(
             db,
             'user_roles',
-            UserRole(username=newUser.username, role_id='ticketer').asDict(),
+            UserRole(
+                username=newUser.username,
+                role_class='system',
+                role_id='ticketer',
+            ).asDict(),
             dbTablesDesc=dbSchema,
         )
     #

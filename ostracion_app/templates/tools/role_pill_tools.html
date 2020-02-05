@@ -1,0 +1,29 @@
+{% macro rolePill(role, active=True) %}
+  <span 
+      class="badge
+      {% if active %}
+        {% if role.role_class == 'system' %}
+          badge-warning
+        {% elif role.role_class == 'app' %}
+          badge-success
+        {% elif role.role_class == 'manual' %}
+          badge-info
+        {% else %}
+          badge-dark
+        {% endif %}
+      {% else %}
+        badge-secondary
+      {% endif %}
+      badge-pill"
+      data-toggle="tooltip"
+      title="{{ role.role_class }}/{{ role.role_id }}"
+      >
+    {% if not active %}
+      <i>
+    {% endif %}
+      {{ role.description }}
+    {% if not active %}
+      </i>
+    {% endif %}
+  </span>
+{% endmacro %}

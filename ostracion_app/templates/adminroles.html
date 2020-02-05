@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "tools/form_tools.html" as formtools %}
+{% import "tools/role_pill_tools.html" as rolepilltools %}
 
 {% block content %}
     <div class="row">
@@ -27,27 +28,36 @@
                               <thead>
                                   <tr>
                                       <th class="col-sm-1">Role ID</th>
-                                      <th class="col-sm-1">System?</th>
-                                      <th class="col-sm-4">Description</th>
-                                      <th class="col-sm-4">Users</th>
+                                      <th class="col-sm-2">Description</th>
+                                      <th class="col-sm-2">Role class</th>
+                                      <th class="col-sm-5">Users</th>
                                       <th class="col-sm-2">Actions</th>
                                   </tr>
                               </thead>
                               <tbody>
                                 {% for roleDict in roles %}
                                   <tr>
-                                    <td>
+                                    <td style="font-family: monospace;">
                                       {{ roleDict.role.role_id }}
                                     </td>
                                     <td>
-                                      {% if roleDict.role.system %}
-                                        <b>Yes</b>
-                                      {% else %}
-                                        No
-                                      {% endif %}
+                                      {{ rolepilltools.rolePill(roleDict.role) }}
                                     </td>
                                     <td>
-                                      {{ roleDict.role.description }}
+                                      {% if roleDict.role.role_class == 'system' %}
+                                        <b>{{ roleDict.role.role_class }}</b>
+                                      {% else %}
+                                        {{ roleDict.role.role_class }}
+                                      {% endif %}
+                                      {% if roleDict.role.can_box %}
+                                        <span class="badge badge-dark" data-toggle="tooltip" title="Box-compatible">b</span>
+                                      {% endif %}
+                                      {% if roleDict.role.can_user %}
+                                        <span class="badge badge-dark" data-toggle="tooltip" title="User-compatible">u</span>
+                                      {% endif %}
+                                      {% if roleDict.role.can_delete %}
+                                        <span class="badge badge-dark" data-toggle="tooltip" title="Deletable {%- if not roleDict.canDelete %} (just not now){%- endif -%}">d</span>
+                                      {% endif %}
                                     </td>
                                     <td>
                                       {% for ur in roleDict.role_users %}
@@ -61,13 +71,13 @@
                                     </td>
                                     <td>
                                       <span>
-                                        <a href="{{ url_for('adminEditRole',roleId=roleDict.role.role_id) }}" class="btn btn-primary btn-md" data-toggle="tooltip" title="Edit">
+                                        <a href="{{ url_for('adminEditRole',roleClass=roleDict.role.role_class, roleId=roleDict.role.role_id) }}" class="btn btn-primary btn-md" data-toggle="tooltip" title="Edit">
                                           E
                                         </a>
                                       </span>
                                       {% if roleDict.canDelete %}
                                         <span>
-                                          <a href="{{ url_for('adminDeleteRoleView',roleId=roleDict.role.role_id) }}" class="btn btn-danger btn-md" data-toggle="tooltip" title="Delete">
+                                          <a href="{{ url_for('adminDeleteRoleView',roleClass=roleDict.role.role_class,roleId=roleDict.role.role_id) }}" class="btn btn-danger btn-md" data-toggle="tooltip" title="Delete">
                                             X
                                           </a>
                                         </span>

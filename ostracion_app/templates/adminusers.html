@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "tools/form_tools.html" as formtools %}
+{% import "tools/role_pill_tools.html" as rolepilltools %}
 
 {% block content %}
     <div class="row">
@@ -53,7 +54,7 @@
                                           <span class="badge badge-pill badge-danger">banned</span>
                                         {% endif %}
                                         {% if userDict.user.username==user.username %}
-                                          <span class="badge badge-pill badge-success">you</span>
+                                          <span>(you)</span>
                                         {% endif %}
                                         {% if userDict.is_current_user %}
                                           </b>
@@ -72,15 +73,7 @@
                                     </td>
                                     <td>
                                       {% for role in userDict.user.roles | sort %}
-                                        <span class="badge badge-success badge-pill">
-                                          {% if role.system != 0 %}
-                                            <b>
-                                          {% endif %}
-                                          {{ role.role_id }}
-                                          {% if role.system != 0 %}
-                                            </b>
-                                          {% endif %}
-                                        </span>
+                                        {{ rolepilltools.rolePill(role) }}
                                       {% endfor %}
                                     </td>
                                     <td>

@@ -1,3 +1,5 @@
+{% import "tools/role_pill_tools.html" as rolepilltools %}
+
 {% macro image_hero(
     title,titleit,subtitle,subtitleit,icon_url,info_lines,role_list,actions,
     permission_info,hideAdditionalInfo=True,backToUrl=None,showTaskButton=False
@@ -50,7 +52,7 @@
                             <p>
                                 <strong>Roles:</strong>
                                 {% for r in role_list %}
-                                    <span class="badge badge-pill badge-success">{{ r }}</span>
+                                    {{ rolepilltools.rolePill(r) }}
                                 {% endfor %}
                             </p>
                         {% endif %}

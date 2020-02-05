@@ -347,7 +347,7 @@ def prepareBoxHeaderActions(db, box, boxPath, user, discardedActions=set()):
     """ According to the user's power on a box, calculate
         the available actions for the heading of the box view.
     """
-    ticketerOrAdmin = (userHasRole(db, user, 'ticketer') or
+    ticketerOrAdmin = (userHasRole(db, user, 'system', 'ticketer') or
                        userIsAdmin(db, user))
     canWriteFiles = userHasPermission(db, user, box.permissions, 'w')
     canChangeBoxes = userHasPermission(db, user, box.permissions, 'c')

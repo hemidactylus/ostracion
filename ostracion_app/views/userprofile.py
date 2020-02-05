@@ -84,9 +84,9 @@ def userProfileView():
         },
     ]
     roleList = [
-        r.description
+        r
         for r in sorted(user.roles)
-        if r.role_id != 'anonymous'
+        if r.roleKey() != ('system', 'anonymous')
     ]
     pageFeatures = prepareTaskPageFeatures(
         userProfilePageDescriptor,

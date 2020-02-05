@@ -118,7 +118,7 @@ def userGuideView():
 
 
 @app.route('/info/adminguide')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminGuideView():
     """Guide to app for admins."""
     user = g.user

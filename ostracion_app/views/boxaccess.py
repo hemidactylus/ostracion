@@ -232,7 +232,7 @@ def lsView(lsPathString=''):
             permissionInfo = {
                 'powers': {
                     powK: [
-                        '+'.join(sorted(st))
+                        '+'.join('%s/%s' % _st for _st in sorted(st))
                         for st in thisBoxPermissionAlgebra[powK]
                     ]
                     for powK in {'r', 'w', 'c'}
@@ -248,6 +248,7 @@ def lsView(lsPathString=''):
                     ),
                     'native': [
                         {
+                            'role_class': brp.role_class,
                             'role_id': brp.role_id,
                             'r': brp.r,
                             'w': brp.w,
@@ -257,6 +258,7 @@ def lsView(lsPathString=''):
                     ],
                     'inherited': [
                         {
+                            'role_class': brp.role_class,
                             'role_id': brp.role_id,
                             'r': brp.r,
                             'w': brp.w,
@@ -359,6 +361,7 @@ def makeBoxView(parentBoxPathString=''):
             # of the setting 'r__', 'rwc', ...
             rootChildBRP = BoxRolePermission(
                 box_id=newBox.box_id,
+                role_class='system',
                 role_id='anonymous',
                 **rcPermSet,
             )

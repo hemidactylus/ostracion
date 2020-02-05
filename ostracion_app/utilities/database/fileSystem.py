@@ -27,7 +27,6 @@ from ostracion_app.utilities.database.sqliteEngine import (
 
 from ostracion_app.utilities.database.permissions import (
     dbGetBoxRolePermissions,
-    updateRolePermissionsDownPath,
     userHasPermission,
 )
 

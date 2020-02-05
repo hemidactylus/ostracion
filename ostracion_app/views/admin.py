@@ -92,6 +92,10 @@ from ostracion_app.utilities.tools.formatting import (
     transformIfNotEmpty,
 )
 
+from ostracion_app.utilities.tools.setNaming import (
+    colloquialJoinClauses,
+)
+
 from ostracion_app.utilities.viewTools.pathTools import (
     makeBreadCrumbs,
     splitPathString,
@@ -135,7 +139,7 @@ from ostracion_app.views.viewTools.adminPageTreeDescriptor import (
 
 
 @app.route('/adminhome')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminHomeView():
     """Main-page route for admin area."""
     user = g.user
@@ -156,7 +160,7 @@ def adminHomeView():
 
 
 @app.route('/adminsettings')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminHomeSettingsView():
     """Admin/Settings generic route."""
     user = g.user
@@ -178,7 +182,7 @@ def adminHomeSettingsView():
 
 
 @app.route('/adminsettings_generic/<settingType>', methods=['GET', 'POST'])
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminHomeSettingsGenericView(settingType):
     """Admin/Settings/<standard_settings> route, with one parameter."""
     user = g.user
@@ -335,7 +339,7 @@ def adminHomeSettingsGenericView(settingType):
 
 
 @app.route('/adminsettings_images')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminHomeSettingsImagesView():
     """Admin/Settings/Images route."""
     user = g.user
@@ -359,7 +363,7 @@ def adminHomeSettingsImagesView():
 
 
 @app.route('/adminsettings_colors', methods=['GET', 'POST'])
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminHomeSettingsColorsView():
     """Admin/Settings/Colors route."""
     user = g.user
@@ -440,7 +444,7 @@ def adminHomeSettingsColorsView():
 
 
 @app.route('/adminusers')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminHomeUsersView():
     """Admin/users route."""
     user = g.user
@@ -451,7 +455,7 @@ def adminHomeUsersView():
         u.setRoles([
             r
             for r in dbGetUserRoles(d, u)
-            if r.role_id != 'anonymous'
+            if r.roleKey() != ('system', 'anonymous')
         ])
         return {
             'user': u,
@@ -491,9 +495,9 @@ def adminHomeUsersView():
 
 
 @app.route('/adminuserroles/<username>')
-@app.route('/adminuserroles/<username>/<op>/<roleId>')
-@userRoleRequired({'admin'})
-def adminUserRolesView(username, op=None, roleId=None):
+@app.route('/adminuserroles/<username>/<op>/<roleClass>/<roleId>')
+@userRoleRequired({('system', 'admin')})
+def adminUserRolesView(username, op=None, roleClass=None, roleId=None):
     """Admin/Users/role-for-a-user route."""
     user = g.user
     db = dbGetDatabase()
@@ -503,14 +507,14 @@ def adminUserRolesView(username, op=None, roleId=None):
     targetUser.setRoles([
         r
         for r in dbGetUserRoles(db, targetUser)
-        if r.role_id != 'anonymous'
+        if r.roleKey() != ('system', 'anonymous')
     ])
-    grantedRoleIds = {r.role_id for r in targetUser.roles}
+    grantedRoleKeys = {r.roleKey() for r in targetUser.roles}
     # reaction to requested operations add/remove
     if op == 'add':
         # does the role exist? is it not anonymous?
         # is it not yet among the user roles?
-        roleToAdd = dbGetRole(db, roleId, user)
+        roleToAdd = dbGetRole(db, roleClass, roleId, user)
         if roleToAdd is None:
             request._onErrorUrl = url_for(
                 'adminUserRolesView',
@@ -521,7 +525,7 @@ def adminUserRolesView(username, op=None, roleId=None):
             dbGrantRoleToUser(db, roleToAdd, targetUser, user)
             return redirect(url_for('adminUserRolesView', username=username))
     elif op == 'del':
-        roleToRevoke = dbGetRole(db, roleId, user)
+        roleToRevoke = dbGetRole(db, roleClass, roleId, user)
         if roleToRevoke is None:
             request._onErrorUrl = url_for(
                 'adminUserRolesView',
@@ -535,21 +539,27 @@ def adminUserRolesView(username, op=None, roleId=None):
                 username=username,
             ))
 
-    def equipRole(db, r, grantedIds, user):
+    def equipRole(db, r, grantedKeys, user):
         return {
             'role': r,
-            'granted': r.role_id in grantedIds,
+            'granted': r.roleKey() in grantedKeys,
         }
 
     allRoles = [
-        equipRole(db, r, grantedRoleIds, user)
+        equipRole(db, r, grantedRoleKeys, user)
         for r in sorted(
             (
                 ro
                 for ro in dbGetAllRoles(db, user)
-                if ro.role_id != 'anonymous'
+                if ro.can_user != 0
             ),
-            key=lambda _r: (1-_r.system, _r.role_id.lower(), _r.role_id),
+            key=lambda _r: (
+                _r.can_delete,
+                _r.can_box,
+                _r.can_user,
+                _r.description.lower(),
+                _r.description
+            ),
         )
     ]
     #
@@ -577,7 +587,7 @@ def adminUserRolesView(username, op=None, roleId=None):
 
 
 @app.route('/adminroles')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminHomeRolesView():
     """Admin/Roles route."""
     user = g.user
@@ -593,12 +603,17 @@ def adminHomeRolesView():
             for u in sorted(
                 (
                     u
-                    for u in dbGetUsersByRole(d, rl.role_id, ur)
+                    for u in dbGetUsersByRole(
+                        d,
+                        rl.role_class,
+                        rl.role_id,
+                        ur,
+                    )
                 ),
                 key=lambda u: u.username,
             )
         ]
-        canDelete = rl.system == 0 and len(users) == 0
+        canDelete = rl.can_delete != 0 and len(users) == 0
         return {
             'role': rl,
             'role_users': users,
@@ -612,7 +627,10 @@ def adminHomeRolesView():
     )
     roles = [
         equipRole(db, role, user)
-        for role in sorted(dbGetAllRoles(db, user))
+        for role in sorted(
+            dbGetAllRoles(db, user),
+            key=lambda r: r.sortableTuple(),
+        )
     ]
     return render_template(
         'adminroles.html',
@@ -622,21 +640,21 @@ def adminHomeRolesView():
     )
 
 
-@app.route('/admindeleterole/<roleId>')
-@userRoleRequired({'admin'})
-def adminDeleteRoleView(roleId):
+@app.route('/admindeleterole/<roleClass>/<roleId>')
+@userRoleRequired({('system', 'admin')})
+def adminDeleteRoleView(roleClass, roleId):
     """Route to delete a role."""
     user = g.user
     db = dbGetDatabase()
     request._onErrorUrl = url_for('adminHomeRolesView')
-    dbDeleteRole(db, roleId, user)
+    dbDeleteRole(db, roleClass, roleId, user)
     return redirect(url_for('adminHomeRolesView'))
 
 
 @app.route('/adminnewrole', methods=['GET', 'POST'])
-@app.route('/admineditrole/<roleId>', methods=['GET', 'POST'])
-@userRoleRequired({'admin'})
-def adminEditRole(roleId=None):
+@app.route('/admineditrole/<roleClass>/<roleId>', methods=['GET', 'POST'])
+@userRoleRequired({('system', 'admin')})
+def adminEditRole(roleClass='manual', roleId=None):
     """Route to edit a role."""
     user = g.user
     db = dbGetDatabase()
@@ -647,15 +665,18 @@ def adminEditRole(roleId=None):
         # either overwrite or insert new, depending on roleId
         # (plus checks)
         role = Role(
+            role_class=roleClass,
             role_id=form.roleid.data,
             description=form.roledescription.data,
-            system=0,
+            can_delete=1,
+            can_user=1,
+            can_box=1,
         )
         if roleId is None:
             dbCreateRole(db, role, user)
         else:
             # updating
-            if role.role_id == roleId:
+            if role.roleKey() == (roleClass, roleId):
                 dbUpdateRole(db, role, user)
             else:
                 raise RuntimeError('Malformed request')
@@ -663,7 +684,7 @@ def adminEditRole(roleId=None):
     else:
         #
         if roleId is not None:
-            role = dbGetRole(db, roleId, user)
+            role = dbGetRole(db, roleClass, roleId, user)
             if role is None:
                 raise OstracionWarning('Could not retrieve role')
         else:
@@ -678,8 +699,35 @@ def adminEditRole(roleId=None):
                 form.roledescription.data,
                 role.description,
             )
+            _roleClass = role.role_class
+            _roleCanDelete = role.can_delete
+            _roleCanBox = role.can_box
+            _roleCanUser = role.can_user
+        else:
+            _roleClass = 'manual'
+            _roleCanDelete = 1
+            _roleCanBox = 1
+            _roleCanUser = 1
         #
         pageTitle = 'New role' if roleId is None else 'Edit role'
+        roleCans = colloquialJoinClauses([
+            sent
+            for sent in (
+                ('be associated to boxes with specific permissions'
+                 if _roleCanBox
+                 else None),
+                ('be attached to users to grant them permissions'
+                 if _roleCanUser
+                 else None),
+                'be deleted' if _roleCanDelete else None,
+            )
+            if sent is not None
+        ])
+        pageSubtitle = 'This "%s" role can %s.' % (
+            _roleClass,
+            roleCans,
+        )
+        # here the subtitle depending on what role this is
         pageFeatures = prepareTaskPageFeatures(
             adminPageDescriptor,
             ['root', 'roles'],
@@ -694,6 +742,7 @@ def adminEditRole(roleId=None):
                             k: v
                             for k, v in {
                                 'roleId': roleId,
+                                'roleClass': roleClass,
                             }.items()
                             if v is not None
                         }
@@ -703,8 +752,7 @@ def adminEditRole(roleId=None):
             ],
             overrides={
                 'pageTitle': pageTitle,
-                'pageSubtitle': ('The role can be attached to users '
-                                 'to grant them permissions'),
+                'pageSubtitle': pageSubtitle,
             },
         )
         #
@@ -719,7 +767,7 @@ def adminEditRole(roleId=None):
 
 
 @app.route('/adminedituser/<username>', methods=['POST', 'GET'])
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminEditUser(username):
     """Route to (admin-is-god) edit a user."""
     request._onErrorUrl = url_for('adminHomeUsersView')
@@ -790,7 +838,7 @@ def adminEditUser(username):
 
 
 @app.route('/adminnewuser', methods=['GET', 'POST'])
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminNewUserView():
     """Route to (admin-is-god) create a new user explicitly."""
     request._onErrorUrl = url_for('adminHomeUsersView')
@@ -862,7 +910,7 @@ def adminNewUserView():
 
 
 @app.route('/adminuserchangepassword/<username>', methods=['GET', 'POST'])
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminUserChangePasswordView(username):
     """Route to (admin-is-god) explicitly change the password of a user."""
     request._onErrorUrl = url_for('adminHomeUsersView')
@@ -962,7 +1010,7 @@ def adminUserChangePasswordView(username):
 
 
 @app.route('/adminbanuser/<username>/<int:state>')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminBanUserView(username, state):
     """Route to ban/unban a user."""
     request._onErrorUrl = url_for('adminHomeUsersView')
@@ -980,7 +1028,7 @@ def adminBanUserView(username, state):
 
 @app.route('/admindeleteuser/<username>')
 @app.route('/admindeleteuser/<username>/<int:confirm>')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminDeleteUserView(username, confirm=0):
     """ Route to delete a user.
         The need for a confirmation prompt is handled with
@@ -1064,7 +1112,7 @@ def adminDeleteUserView(username, confirm=0):
 @app.route('/adminlspermissions')
 @app.route('/adminlspermissions/')
 @app.route('/adminlspermissions/<path:lsPathString>')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminLsPermissionsView(lsPathString=''):
     """Route to view a box's permission as admin."""
     user = g.user
@@ -1093,18 +1141,18 @@ def adminLsPermissionsView(lsPathString=''):
                 'name': 'Permissions',
             }],
         )
-        mentionedRoleIds = {r.role_id for r in thisBox.permissions}
-        unmentionedRoleIds = sorted(
-            r.role_id
+        mentionedRoleKeys = {r.roleKey() for r in thisBox.permissions}
+        unmentionedRoleKeys = sorted(
+            r.roleKey()
             for r in dbGetAllRoles(db, user)
-            if r.role_id not in mentionedRoleIds
-            if r.role_id not in {'ticketer'}
+            if r.can_box != 0
+            if r.roleKey() not in mentionedRoleKeys
         )
         #
         permissionInfo = {
             'powers': {
                 powK: [
-                    '+'.join(sorted(st))
+                    '+'.join('%s/%s' % _st for _st in sorted(st))
                     for st in thisBoxPermissionAlgebra[powK]
                 ]
                 for powK in {'r', 'w', 'c'}
@@ -1116,7 +1164,7 @@ def adminLsPermissionsView(lsPathString=''):
             user=user,
             thisBox=thisBox,
             permissionInfo=permissionInfo,
-            unmentionedRoleIds=unmentionedRoleIds,
+            unmentionedRoleKeys=unmentionedRoleKeys,
             boxNiceName=boxNiceName,
             boxPath=boxPath[1:],
             breadCrumbs=pathBCrumbs,
@@ -1125,11 +1173,11 @@ def adminLsPermissionsView(lsPathString=''):
         raise OstracionError('Could not find box for permission editing')
 
 
-@app.route('/adminrmpermission/<roleId>/')
-@app.route('/adminrmpermission/<roleId>')
-@app.route('/adminrmpermission/<roleId>/<path:lsPathString>')
-@userRoleRequired({'admin'})
-def adminRmPermissionView(roleId, lsPathString=''):
+@app.route('/adminrmpermission/<roleClass>/<roleId>/')
+@app.route('/adminrmpermission/<roleClass>/<roleId>')
+@app.route('/adminrmpermission/<roleClass>/<roleId>/<path:lsPathString>')
+@userRoleRequired({('system', 'admin')})
+def adminRmPermissionView(roleClass, roleId, lsPathString=''):
     """Route to delete an explicit permission set from a box."""
     user = g.user
     boxPath = splitPathString(lsPathString)
@@ -1141,7 +1189,7 @@ def adminRmPermissionView(roleId, lsPathString=''):
     db = dbGetDatabase()
     thisBox = getBoxFromPath(db, boxPath, user)
     if thisBox is not None:
-        dbDeleteBoxRolePermission(db, thisBox.box_id, roleId, user)
+        dbDeleteBoxRolePermission(db, thisBox.box_id, roleClass, roleId, user)
         return redirect(url_for(
             'adminLsPermissionsView',
             lsPathString=lsPathString,
@@ -1150,11 +1198,11 @@ def adminRmPermissionView(roleId, lsPathString=''):
         raise OstracionError('Could not find box for permission removal')
 
 
-@app.route('/adminmkpermission/<roleId>/')
-@app.route('/adminmkpermission/<roleId>')
-@app.route('/adminmkpermission/<roleId>/<path:lsPathString>')
-@userRoleRequired({'admin'})
-def adminMkPermissionView(roleId, lsPathString=''):
+@app.route('/adminmkpermission/<roleClass>/<roleId>/')
+@app.route('/adminmkpermission/<roleClass>/<roleId>')
+@app.route('/adminmkpermission/<roleClass>/<roleId>/<path:lsPathString>')
+@userRoleRequired({('system', 'admin')})
+def adminMkPermissionView(roleClass, roleId, lsPathString=''):
     """Route to create an explicit permission set from a box."""
     user = g.user
     boxPath = splitPathString(lsPathString)
@@ -1170,7 +1218,7 @@ def adminMkPermissionView(roleId, lsPathString=''):
         requiredBRPermissions = [
             p
             for p in thisBox.permissions
-            if p.role_id == roleId
+            if p.roleKey() == (roleClass, roleId)
         ]
         if len(requiredBRPermissions) > 0:
             newPermission = BoxRolePermission(**(
@@ -1181,6 +1229,7 @@ def adminMkPermissionView(roleId, lsPathString=''):
             ))
         else:
             newPermission = BoxRolePermission(
+                role_class=roleClass,
                 role_id=roleId,
                 box_id=thisBox.box_id,
                 r=0,
@@ -1199,11 +1248,12 @@ def adminMkPermissionView(roleId, lsPathString=''):
         raise OstracionError('Could not find box for permission making')
 
 
-@app.route('/admintogglepermissionbit/<roleId>/<bit>/')
-@app.route('/admintogglepermissionbit/<roleId>/<bit>')
-@app.route('/admintogglepermissionbit/<roleId>/<bit>/<path:lsPathString>')
-@userRoleRequired({'admin'})
-def adminTogglePermissionBitView(roleId, bit, lsPathString=''):
+@app.route('/admintogglepermissionbit/<roleClass>/<roleId>/<bit>/')
+@app.route('/admintogglepermissionbit/<roleClass>/<roleId>/<bit>')
+@app.route('/admintogglepermissionbit/<roleClass>/'
+           '<roleId>/<bit>/<path:lsPathString>')
+@userRoleRequired({('system', 'admin')})
+def adminTogglePermissionBitView(roleClass, roleId, bit, lsPathString=''):
     """Route to alter single powers of a permission set of a box."""
     user = g.user
     boxPath = splitPathString(lsPathString)
@@ -1217,7 +1267,7 @@ def adminTogglePermissionBitView(roleId, bit, lsPathString=''):
     #
     if thisBox is not None:
         # we call a specific 'toggle' db util
-        dbToggleBoxRolePermissionBit(db, thisBox, roleId, bit, user)
+        dbToggleBoxRolePermissionBit(db, thisBox, roleClass, roleId, bit, user)
     else:
         raise OstracionError('Could not find box for permission editing')
     return redirect(url_for(
@@ -1227,7 +1277,7 @@ def adminTogglePermissionBitView(roleId, bit, lsPathString=''):
 
 
 @app.route('/admintickets/')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminHomeTicketsView():
     """Route for per-ticket-type specific admin pages."""
     request._onErrorUrl = url_for('adminHomeView')
@@ -1247,7 +1297,7 @@ def adminHomeTicketsView():
 
 
 @app.route('/adminuserinvitations/')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminUserInvitationsView():
     """Route to list user-invitation tickets."""
     request._onErrorUrl = url_for('adminHomeTicketsView')
@@ -1286,7 +1336,7 @@ def adminUserInvitationsView():
     '/adminuserissuechangepasswordticket/<username>',
     methods=['GET', 'POST'],
 )
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminUserIssueChangePasswordTicket(username):
     """Route to generate a change-password ticket."""
     request._onErrorUrl = url_for('adminHomeUsersView')
@@ -1377,7 +1427,7 @@ def adminUserIssueChangePasswordTicket(username):
 
 
 @app.route('/adminchangepasswordtickets')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminUserChangePasswordTicketsView():
     """Route to list password-change tickets."""
     request._onErrorUrl = url_for('adminHomeTicketsView')
@@ -1410,7 +1460,7 @@ def adminUserChangePasswordTicketsView():
 
 
 @app.route('/adminnewuserinvitation', methods=['GET', 'POST'])
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminNewUserInvitationView():
     """Route to generate a user-invitation ticket."""
     request._onErrorUrl = url_for('adminHomeTicketsView')
@@ -1509,7 +1559,7 @@ def adminNewUserInvitationView():
 
 
 @app.route('/adminuploadtickets/')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminUploadTicketsView():
     """Route to list upload-in-box tickets."""
     request._onErrorUrl = url_for('adminHomeTicketsView')
@@ -1542,7 +1592,7 @@ def adminUploadTicketsView():
 
 
 @app.route('/admingallerytickets/')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminGalleryTicketsView():
     """Route to list gallery tickets."""
     request._onErrorUrl = url_for('adminHomeTicketsView')
@@ -1575,7 +1625,7 @@ def adminGalleryTicketsView():
 
 
 @app.route('/adminfiletickets/')
-@userRoleRequired({'admin'})
+@userRoleRequired({('system', 'admin')})
 def adminFileTicketsView():
     """Route to list file tickets."""
     request._onErrorUrl = url_for('adminHomeTicketsView')

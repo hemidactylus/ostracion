@@ -31,7 +31,7 @@
             </li>
           {% endif %}
 
-          {% if user.is_authenticated and user.has_role('admin') %}
+          {% if user.is_authenticated and user.has_role('system', 'admin') %}
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('adminHomeView') }}">Admin area</a>
             </li>

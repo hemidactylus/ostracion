@@ -1,5 +1,6 @@
 {% import "tools/hero_tools.html" as herotools %}
 {% import "tools/form_tools.html" as formtools %}
+{% import "tools/role_pill_tools.html" as rolepilltools %}
 
 {% extends "base.html" %}
 
@@ -25,20 +26,12 @@
 
                       {% for roleItem in roleItems %}
                         {% if roleItem.granted %}
-                          <a href="{{ url_for('adminUserRolesView',username=targetUser.username,op='del',roleId=roleItem.role.role_id) }}">
-                            <span class="badge badge-pill badge-success">
-                              {% if roleItem.role.system %}<i>{% endif %}
-                                {{ roleItem.role.role_id }}
-                              {% if roleItem.role.system %}</i>{% endif %}
-                            </span>
+                          <a href="{{ url_for('adminUserRolesView',username=targetUser.username,op='del',roleClass=roleItem.role.role_class,roleId=roleItem.role.role_id) }}">
+                            {{ rolepilltools.rolePill(roleItem.role) }}
                           </a>
                         {% else %}
-                          <a href="{{ url_for('adminUserRolesView',username=targetUser.username,op='add',roleId=roleItem.role.role_id) }}">
-                            <span class="badge badge-pill badge-danger">
-                              {% if roleItem.role.system %}<i>{% endif %}
-                                {{ roleItem.role.role_id }}
-                              {% if roleItem.role.system %}</i>{% endif %}
-                            </span>
+                          <a href="{{ url_for('adminUserRolesView',username=targetUser.username,op='add',roleClass=roleItem.role.role_class,roleId=roleItem.role.role_id) }}">
+                            {{ rolepilltools.rolePill(roleItem.role, active=False) }}
                           </a>
                         {% endif %}
                       {% endfor %}

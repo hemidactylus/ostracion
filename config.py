@@ -8,6 +8,8 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # hard-constants
+# for short names/descriptions (e.g. role IDs, role descriptions)
+maxShortIdentifierLength = 32
 # for one-liner on-DB identifiers (box names, file descriptions, usernames etc)
 maxIdentifierLength = 512
 # for in-DB large blobs such as the markdown for info-page

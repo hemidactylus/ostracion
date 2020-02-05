@@ -102,7 +102,7 @@ class Box(DictableObject):
 
     def _setNativePermissionRoleIds(self, lastPermissionLayer):
         self.nativePermissionRoleIds = {
-            brp.role_id
+            brp.roleKey()
             for brp in lastPermissionLayer
         }
 
@@ -117,11 +117,11 @@ class Box(DictableObject):
             def selector(brp): return True
         elif mode == 'native':
             def selector(brp): return (
-                brp.role_id in self.nativePermissionRoleIds
+                brp.roleKey() in self.nativePermissionRoleIds
             )
         elif mode == 'inherited':
             def selector(brp): return (
-                brp.role_id not in self.nativePermissionRoleIds
+                brp.roleKey() not in self.nativePermissionRoleIds
             )
         else:
             raise RuntimeError('unknown mode')

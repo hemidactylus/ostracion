@@ -42,13 +42,13 @@
             </p></i>
 
             {% if thisBox.box_id!='' %}      
-              {% if unmentionedRoleIds %}
+              {% if unmentionedRoleKeys %}
                 <p>
                   <strong>Add new permission set for role:</strong>
-                  {% for role_id in unmentionedRoleIds %}
-                    <a href="{{ url_for('adminMkPermissionView',roleId=role_id,lsPathString='/'.join(boxPath)) }}">
+                  {% for unmRole in unmentionedRoleKeys %}
+                    <a href="{{ url_for('adminMkPermissionView',roleClass=unmRole[0],roleId=unmRole[1],lsPathString='/'.join(boxPath)) }}">
                       <span class="badge badge-pill badge-primary">
-                        {{ role_id }}
+                        {{ unmRole[0] }} / {{ unmRole[1] }}
                       </span>
                     </a>
                   {% endfor %}
@@ -74,25 +74,25 @@
                         {{ permissionButton(
                           isOn=brp.r,
                           isEnabled=thisBox.box_id!='',
-                          link=url_for('adminTogglePermissionBitView',roleId=brp.role_id,bit='r',lsPathString='/'.join(boxPath)),
+                          link=url_for('adminTogglePermissionBitView',roleClass=brp.role_class,roleId=brp.role_id,bit='r',lsPathString='/'.join(boxPath)),
                           symbol='R',
                         ) }}
                         {{ permissionButton(
                           isOn=brp.w,
                           isEnabled=thisBox.box_id!='',
-                          link=url_for('adminTogglePermissionBitView',roleId=brp.role_id,bit='w',lsPathString='/'.join(boxPath)),
+                          link=url_for('adminTogglePermissionBitView',roleClass=brp.role_class,roleId=brp.role_id,bit='w',lsPathString='/'.join(boxPath)),
                           symbol='W',
                         ) }}
                         {{ permissionButton(
                           isOn=brp.c,
                           isEnabled=thisBox.box_id!='',
-                          link=url_for('adminTogglePermissionBitView',roleId=brp.role_id,bit='c',lsPathString='/'.join(boxPath)),
+                          link=url_for('adminTogglePermissionBitView',roleClass=brp.role_class,roleId=brp.role_id,bit='c',lsPathString='/'.join(boxPath)),
                           symbol='C'
                         ) }}
                       </td>
                       <td>
                         {% if thisBox.box_id!='' %}
-                          <a href="{{ url_for('adminRmPermissionView',roleId=brp.role_id,lsPathString='/'.join(boxPath)) }}" class="btn btn-sm btn-danger">X</a>
+                          <a href="{{ url_for('adminRmPermissionView',roleClass=brp.role_class,roleId=brp.role_id,lsPathString='/'.join(boxPath)) }}" class="btn btn-sm btn-danger">X</a>
                         {% endif %}
                       </td>
                     </tr>
@@ -121,7 +121,7 @@
                       </td>
                       <td>
                         {% if brp.role_id!='admin' %}
-                          <a href="{{ url_for('adminMkPermissionView',roleId=brp.role_id,lsPathString='/'.join(boxPath)) }}" class="btn btn-sm btn-primary">M</a>
+                          <a href="{{ url_for('adminMkPermissionView',roleClass=brp.role_class,roleId=brp.role_id,lsPathString='/'.join(boxPath)) }}" class="btn btn-sm btn-primary">M</a>
                         {% endif %}
                       </td>
                     </tr>

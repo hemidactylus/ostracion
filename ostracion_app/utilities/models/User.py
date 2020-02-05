@@ -85,10 +85,10 @@ class User(DictableObject):
     def setRoles(self, roles):
         self.roles = roles
 
-    def has_role(self, roleId):
+    def has_role(self, roleClass, roleId):
         return (
             self.roles is not None and
-            any(r.role_id == roleId for r in self.roles)
+            any(r.roleKey() == (roleClass, roleId) for r in self.roles)
         )
 
     def get_id(self):
