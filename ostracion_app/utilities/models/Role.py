@@ -10,6 +10,7 @@ _roleClassSortingIndex = {
     'manual': 2,
 }
 
+
 class Role(DictableObject):
     namedFields = ['role_id', 'description', 'role_class',
                    'can_box', 'can_user', 'can_delete']

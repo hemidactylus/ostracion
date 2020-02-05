@@ -62,6 +62,7 @@ from ostracion_app.utilities.database.permissions import (
     dbDeleteBoxRolePermission,
     dbInsertBoxRolePermission,
     dbToggleBoxRolePermissionBit,
+    reformatBoxPermissionAlgebraIntoLists,
 )
 from ostracion_app.utilities.database.usernameChecks import (
     isUsername,
@@ -1142,29 +1143,49 @@ def adminLsPermissionsView(lsPathString=''):
             }],
         )
         mentionedRoleKeys = {r.roleKey() for r in thisBox.permissions}
-        unmentionedRoleKeys = sorted(
-            r.roleKey()
+        roleKeyToRoleMap = {
+            r.roleKey(): r
             for r in dbGetAllRoles(db, user)
             if r.can_box != 0
-            if r.roleKey() not in mentionedRoleKeys
-        )
-        #
-        permissionInfo = {
-            'powers': {
-                powK: [
-                    '+'.join('%s/%s' % _st for _st in sorted(st))
-                    for st in thisBoxPermissionAlgebra[powK]
-                ]
-                for powK in {'r', 'w', 'c'}
-            },
         }
+        unmentionedRoleKeys = [
+            rk_r[0]
+            for rk_r in sorted(
+                (
+                    (rK, r)
+                    for rK, r in roleKeyToRoleMap.items()
+                    if rK not in mentionedRoleKeys
+                ),
+                key=lambda rk_r: rk_r[1].sortableTuple(),
+            )
+        ]
+        #
+        structuredPermissionInfo = reformatBoxPermissionAlgebraIntoLists(
+            thisBoxPermissionAlgebra,
+            roleKeyToRoleMap,
+        )
+        permissionInfo = {
+            'powers': structuredPermissionInfo,
+        }
+        #
+        boxNativePermissions = sorted(
+            thisBox.listPermissions('native'),
+            key=lambda brp: roleKeyToRoleMap[brp.roleKey()].sortableTuple(),
+        )
+        boxInheritedPermissions = sorted(
+            thisBox.listPermissions('inherited'),
+            key=lambda brp: roleKeyToRoleMap[brp.roleKey()].sortableTuple(),
+        )
         #
         return render_template(
             'adminboxpermissions.html',
             user=user,
             thisBox=thisBox,
+            boxNativePermissions=boxNativePermissions,
+            boxInheritedPermissions=boxInheritedPermissions,
             permissionInfo=permissionInfo,
             unmentionedRoleKeys=unmentionedRoleKeys,
+            roleKeyToRoleMap=roleKeyToRoleMap,
             boxNiceName=boxNiceName,
             boxPath=boxPath[1:],
             breadCrumbs=pathBCrumbs,

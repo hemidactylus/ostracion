@@ -1,5 +1,6 @@
 {% import "tools/hero_tools.html" as herotools %}
 {% import "tools/card_tools.html" as cardtools %}
+{% import "tools/role_pill_tools.html" as rolepilltools %}
 
 {% macro permissionButton(isOn,isEnabled,link,symbol) %}
                         {% if isEnabled %}
@@ -47,9 +48,7 @@
                   <strong>Add new permission set for role:</strong>
                   {% for unmRole in unmentionedRoleKeys %}
                     <a href="{{ url_for('adminMkPermissionView',roleClass=unmRole[0],roleId=unmRole[1],lsPathString='/'.join(boxPath)) }}">
-                      <span class="badge badge-pill badge-primary">
-                        {{ unmRole[0] }} / {{ unmRole[1] }}
-                      </span>
+                      {{ rolepilltools.rolePill(roleKeyToRoleMap[unmRole]) }}
                     </a>
                   {% endfor %}
                 </p>
@@ -65,10 +64,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                  {% for brp in thisBox.listPermissions('native') | sort %}
+                  {% for brp in boxNativePermissions %}
                     <tr>
                       <td>
-                        {{ brp.role_id }}
+                        {{ rolepilltools.rolePill(roleKeyToRoleMap[brp.roleKey()]) }}
                       </td>
                       <td>
                         {{ permissionButton(
@@ -97,10 +96,11 @@
                       </td>
                     </tr>
                   {% endfor %}
-                  {% for brp in thisBox.listPermissions('inherited') | sort %}
+                  {% for brp in boxInheritedPermissions %}
                     <tr style="color: grey; font-style: italic;">
                       <td>
-                        <b>(Inherited)</b> {{ brp.role_id }}
+                        <b>(Inherited)</b>
+                        {{ rolepilltools.rolePill(roleKeyToRoleMap[brp.roleKey()]) }}
                       </td>
                       <td>
                         {{ permissionButton(

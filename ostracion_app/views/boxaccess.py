@@ -92,6 +92,8 @@ from ostracion_app.utilities.database.permissions import (
     userHasPermission,
     calculateBoxPermissionAlgebra,
     dbInsertBoxRolePermission,
+    dbGetAllRoles,
+    reformatBoxPermissionAlgebraIntoLists,
 )
 
 from ostracion_app.utilities.fileIO.physical import (
@@ -229,14 +231,19 @@ def lsView(lsPathString=''):
                 thisBox.permissionHistory,
                 thisBox.permissions,
             )
+            #
+            roleKeyToRoleMap = {
+                r.roleKey(): r
+                for r in dbGetAllRoles(db, user)
+                if r.can_box != 0
+            }
+            structuredPermissionInfo = reformatBoxPermissionAlgebraIntoLists(
+                thisBoxPermissionAlgebra,
+                roleKeyToRoleMap,
+            )
+            #
             permissionInfo = {
-                'powers': {
-                    powK: [
-                        '+'.join('%s/%s' % _st for _st in sorted(st))
-                        for st in thisBoxPermissionAlgebra[powK]
-                    ]
-                    for powK in {'r', 'w', 'c'}
-                },
+                'powers': structuredPermissionInfo,
                 'assignments': {
                     'edit_url': (
                         url_for(

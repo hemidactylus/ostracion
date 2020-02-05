@@ -51,9 +51,8 @@ ROLE_CLASS can have:
   app
 
 TODO:
-1. box permissions, logic and using the pill, plus the combined r1+r2 how to show and stuff
-2. how to migrate from preexisting DB
-3:
+1. how to migrate from preexisting DB
+2:
    == remove the 'accounting' role and make roles addable per postInstall as with settings
 
 ### Ansible, nginx restart target, why it seems nonexistent sometimes?

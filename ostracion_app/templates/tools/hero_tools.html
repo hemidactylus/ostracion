@@ -146,24 +146,45 @@
                                             <div class="row">
                                                 <div class="col-2">Read</div>
                                                 <div class="col">
-                                                    {% for role_id in permission_info.powers.r %}
-                                                        <span class="badge badge-pill badge-success">{{ role_id }}</span>
+                                                    {% for roleList in permission_info.powers.r %}
+                                                        <span style="margin: 5px; padding-top:5px; padding-bottom:5px;" class="badge badge-secondary">
+                                                            {% for role in roleList %}
+                                                                {{ rolepilltools.rolePill(role) }}
+                                                                {% if not loop.last %}
+                                                                    +
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </span>
                                                     {% endfor %}
                                                 </div>
                                             </div>
                                             <div class="row">
                                                 <div class="col-2">Write</div>
                                                 <div class="col">
-                                                    {% for role_id in permission_info.powers.w %}
-                                                        <span class="badge badge-pill badge-warning">{{ role_id }}</span>
+                                                    {% for roleList in permission_info.powers.w %}
+                                                        <span style="margin: 5px; padding-top:5px; padding-bottom:5px;" class="badge badge-secondary">
+                                                            {% for role in roleList %}
+                                                                {{ rolepilltools.rolePill(role) }}
+                                                                {% if not loop.last %}
+                                                                    +
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </span>
                                                     {% endfor %}
                                                 </div>
                                             </div>
                                             <div class="row">
                                                 <div class="col-2">Create</div>
                                                 <div class="col">
-                                                    {% for role_id in permission_info.powers.c %}
-                                                        <span class="badge badge-pill badge-danger">{{ role_id }}</span>
+                                                    {% for roleList in permission_info.powers.c %}
+                                                        <span style="margin: 5px; padding-top:5px; padding-bottom:5px;" class="badge badge-secondary">
+                                                            {% for role in roleList %}
+                                                                {{ rolepilltools.rolePill(role) }}
+                                                                {% if not loop.last %}
+                                                                    +
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </span>
                                                     {% endfor %}
                                                 </div>
                                             </div>

@@ -57,7 +57,9 @@ def userRoleRequired(roleKeys):
         def _decorated(*pargs, **kwargs):
             user = g.user
             if (user.is_authenticated and
-                    len(set(roleKeys) & {r.roleKey() for r in user.roles}) > 0):
+                    len(
+                        set(roleKeys) & {r.roleKey() for r in user.roles}
+                    ) > 0):
                 return epf(*pargs, **kwargs)
             else:
                 return abort(
@@ -92,7 +94,7 @@ def generalisedGetUserRoles(db, user):
             # the user object can have been created e.g.
             # during an user deletion request and not via the login
             # flask handler (whereupon it would get roles as well)
-            return list(dbGetUserRoles(db, user))            
+            return list(dbGetUserRoles(db, user))
     else:
         return [
             Role(**dbRetrieveRecordByKey(
@@ -698,4 +700,43 @@ def calculateBoxPermissionAlgebra(pHistory, boxPermissions):
         'r': finalReadAccessKeySets,
         'w': finalWriteAccessKeySets,
         'c': finalChangeAccessKeySets,
+    }
+
+
+def reformatBoxPermissionAlgebraIntoLists(permissionAlgebra, roleKeyToRoleMap):
+    """ Given a calculated permission algebra, make it into a sorted map
+            power -> list_of_combined_permissions -> list_of_roles
+        where
+            power = r, w, c
+            list_of_combined_permissions = each is a group of required roles
+            list_of_roles = a single 'permission' = [role1, role2 ...]
+        Do all this respecting sortings, both within and among the permissions.
+    """
+
+    def _sortableRoleSetKey(rSet):
+        return tuple(sorted(
+            roleKeyToRoleMap[rK].sortableTuple()
+            for rK in rSet
+        ))
+
+    def _sortRoleSetsIntoLists(rSets):
+        return sorted(
+            (
+                sorted(
+                    rSet,
+                    key=lambda rk: roleKeyToRoleMap[rk].sortableTuple(),
+                )
+                for rSet in rSets
+            ),
+            key=lambda rSet: (len(rSet), _sortableRoleSetKey(rSet))
+        )
+    return {
+        powK: [
+            [
+                roleKeyToRoleMap[rk]
+                for rk in rSet
+            ]
+            for rSet in _sortRoleSetsIntoLists(permissionAlgebra[powK])
+        ]
+        for powK in {'r', 'w', 'c'}
     }

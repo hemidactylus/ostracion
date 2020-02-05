@@ -3,7 +3,7 @@
     for all usages.
 """
 
-anonymousRoleDict ={
+anonymousRoleDict = {
     'role_id':          'anonymous',
     'description':      'Anonymous',
     'can_box': 1,
