@@ -125,6 +125,14 @@ is how the administrators control what anonymous
 users of Ostracion can and cannot do. _Note: for the permission algebra
 outlined below, every user is treated as belonging to this role._
 
+In addition, there are:
+
+- **app roles**, which cannot be tied to boxes
+but only to users, which enable said users to access the apps;
+- **user-specific roles**, automatically attached to each single user
+(and not attachable to other users), handy if the administrato wants
+to define per-user access rights to boxes.
+
 ### How box permissions and roles combine for a user
 
 In general, administrators can set permissions for all roles on all boxes,

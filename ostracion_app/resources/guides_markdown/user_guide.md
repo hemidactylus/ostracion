@@ -56,7 +56,11 @@ as "family", "friends", "colleagues" and so on) and, for each
 box, specify permissions granted to roles: thus, a user inherit a certain
 set of permission on each box. Moreover, unless explicit 
 permissions are set on a box, those of the parent box are
-automatically inherited.
+automatically inherited. In particular, to each user
+corresponds a _user-specific role_, a role that is automatically
+and unchangeably given to the user and that the administrators
+can use to set user-specific access permissions (which combine
+with the other).
 
 (Notes: 1. _The permissions on root box are special and cannot be 
 altered._ 2. _Non-logged in visitors are automatically assigned

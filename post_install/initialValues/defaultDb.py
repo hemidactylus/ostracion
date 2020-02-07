@@ -104,6 +104,15 @@ initialDbValues = {
                 'can_user': 1,
                 'can_delete': 0,
             },
+            #
+            {
+                'role_class': 'user',
+                'role_id':          'admin',
+                'description':      'admin user-role',
+                'can_box': 1,
+                'can_user': 0,
+                'can_delete': 0,
+            },
         ],
     },
     'user_roles': {
@@ -112,6 +121,11 @@ initialDbValues = {
             {
                 'username': 'admin',
                 'role_class': 'system',
+                'role_id': 'admin',
+            },
+            {
+                'username': 'admin',
+                'role_class': 'user',
                 'role_id': 'admin',
             },
         ],

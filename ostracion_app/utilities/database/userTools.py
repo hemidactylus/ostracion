@@ -10,6 +10,7 @@ from ostracion_app.utilities.models.Box import Box
 from ostracion_app.utilities.models.File import File
 from ostracion_app.utilities.models.Link import Link
 from ostracion_app.utilities.models.User import User
+from ostracion_app.utilities.models.Role import Role
 from ostracion_app.utilities.models.UserRole import UserRole
 
 from ostracion_app.utilities.exceptions.exceptions import (
@@ -72,9 +73,9 @@ def dbGetUser(db, username):
     return User(**userDict) if userDict is not None else None
 
 
-def dbGetAllUsers(db, user):
+def dbGetAllUsers(db, user, accountDeletionInProgress=False):
     """Get a listing of all existing users (except the '' system user)."""
-    if userIsAdmin(db, user):
+    if accountDeletionInProgress or userIsAdmin(db, user):
         return (
             User(**u)
             for u in dbRetrieveAllRecords(
@@ -140,6 +141,30 @@ def dbCreateUser(db, newUser, user):
             ).asDict(),
             dbTablesDesc=dbSchema,
         )
+    # user-tied role handling
+    dbAddRecordToTable(
+        db,
+        'roles',
+        Role(
+            role_id=newUser.username,
+            description='%s user-role' % newUser.username,
+            role_class='user',
+            can_box=1,
+            can_user=0,
+            can_delete=0,
+        ).asDict(),
+        dbTablesDesc=dbSchema,
+    )
+    dbAddRecordToTable(
+        db,
+        'user_roles',
+        UserRole(
+            username=newUser.username,
+            role_class='user',
+            role_id=newUser.username,
+        ).asDict(),
+        dbTablesDesc=dbSchema,
+    )
     #
     db.commit()
 
@@ -403,7 +428,8 @@ def dbDeleteUser(db, username, user, fileStorageDirectory):
                         {'username': username},
                         dbTablesDesc=dbSchema,
                     )
-                    for u in dbGetAllUsers(db, user):
+                    for u in dbGetAllUsers(db, user,
+                                           accountDeletionInProgress=True):
                         if u.username != username:
                             if u.icon_file_id_username == username:
                                 if u.icon_file_id != '':
@@ -423,7 +449,21 @@ def dbDeleteUser(db, username, user, fileStorageDirectory):
                                     user,
                                     skipCommit=True,
                                 )
-                    # 3. finally, delete the user
+                    # 3. delete user-specific role association from boxes
+                    dbDeleteRecordsByKey(
+                        db,
+                        'box_role_permissions',
+                        {'role_class': 'user', 'role_id': username},
+                        dbTablesDesc=dbSchema,
+                    )
+                    # 4. delete user-specific role
+                    dbDeleteRecordsByKey(
+                        db,
+                        'roles',
+                        {'role_class': 'user', 'role_id': username},
+                        dbTablesDesc=dbSchema
+                    )
+                    # 5. finally, delete the user
                     dbDeleteRecordsByKey(
                         db,
                         'users',

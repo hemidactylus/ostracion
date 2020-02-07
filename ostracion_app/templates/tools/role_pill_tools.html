@@ -8,6 +8,8 @@
           badge-success
         {% elif role.role_class == 'manual' %}
           badge-info
+        {% elif role.role_class == 'user' %}
+          badge-primary
         {% else %}
           badge-dark
         {% endif %}

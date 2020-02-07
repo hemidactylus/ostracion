@@ -13,45 +13,11 @@ OR ALL the checks done before move-file VS move-link (permissions etc)
 
 ### A convention for 'system roles' (ASAP)
 
-to handle in the future roles such as calendar/(ticketer)/accounting ...
-with a convention and that the admins cannot delete/create them.
-Such roles cannot be given to boxes, only users.
-
-More: roles should have several attributes:
-  (app+ means: accounting + ticketer and other sysconfigurations)
-                      adm   sys/app regular   anon
-  givable to boxes  |   Y     N           Y      Y
-  deletable         |   N     N           Y      N
-  givable to users  |   Y     Y           Y      N
-
-Check transpose:
-                      boxes |  deletable | users
-  [S]admin          |     Y            N       Y
-  
-  ticketer+...      |     N            N       Y
-  [app]accounting+..|
-  
-  [manual]          |     Y            Y       Y
-  [x]anonymous      |     Y            N       N  
-
-Features are then:
-  - givable to boxes  : can_box
-  - deletable         : can_delete
-  - givable to users  : can_user
-
-This should be done with a drastic change in primary keys,
-namely a double-field key (roleclass, roleid):
-    admin  (sys, 'admin')
-    anon   (sys, 'anonymous')
-    ticketer... (sys, 'ticketer')
-    ...
-ROLE_CLASS can have:
-  system
-  manual
-  app
-
 TODO:
 1. how to migrate from preexisting DB
+  - creation of a user-role per each user
+  - adding system roles in postInstall
+  - keeping box/user role attributions
 2:
    == remove the 'accounting' role and make roles addable per postInstall as with settings
 

@@ -211,7 +211,7 @@
                                         <div class="col-10">
                                             {% for pa in permission_info.assignments.native %}
                                                 <div class="row" style="font-weight: bold;">
-                                                    <div class="col-2">{{ pa.role_id }}</div>
+                                                    <div class="col-2">{{ rolepilltools.rolePill(pa.role) }}</div>
                                                     <div class="col" style="font-family: monospace;">
                                                         {% if pa.r %}R{% else %}-{% endif %}
                                                         {% if pa.w %}W{% else %}-{% endif %}
@@ -221,7 +221,7 @@
                                             {% endfor %}
                                             {% for pa in permission_info.assignments.inherited %}
                                                 <div class="row" style="font-style: italic;">
-                                                    <div class="col-2">{{ pa.role_id }}</div>
+                                                    <div class="col-2">{{ rolepilltools.rolePill(pa.role, active=False) }}</div>
                                                     <div class="col" style="font-family: monospace;">
                                                         {% if pa.r %}R{% else %}-{% endif %}
                                                         {% if pa.w %}W{% else %}-{% endif %}

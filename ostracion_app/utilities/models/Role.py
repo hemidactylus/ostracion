@@ -8,6 +8,7 @@ _roleClassSortingIndex = {
     'system': 0,
     'app': 1,
     'manual': 2,
+    'user': 3,
 }
 
 
