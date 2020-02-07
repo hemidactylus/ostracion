@@ -54,6 +54,21 @@
     mode: "u+rw,g+rw,o+r"
   tags: app_update
 
+- name: Stopping the Ostracion service
+  service:
+    name: ostracion.service
+    state: stopped
+    enabled: true
+  tags: app_update
+
+- name: Making a backup copy of the database (DELETE IT BY HAND LATER)
+  become_user: '{{ webapp_username }}'
+  copy:
+    remote_src: true
+    src: /home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion/ostracion_app/db/ostracion.db
+    dest: /home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion/ostracion_app/db/BACKUP_ostracion.db
+  tags: app_update
+
 - name: Invoking post-install script
   become: false
   shell: |
