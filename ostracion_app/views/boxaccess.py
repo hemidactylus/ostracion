@@ -260,7 +260,10 @@ def lsView(lsPathString=''):
                             'r': brp.r,
                             'w': brp.w,
                             'c': brp.c,
-                            'role': roleKeyToRoleMap[(brp.role_class, brp.role_id)],
+                            'role': roleKeyToRoleMap[(
+                                brp.role_class,
+                                brp.role_id,
+                            )],
                         }
                         for brp in sorted(thisBox.listPermissions('native'))
                     ],
@@ -271,7 +274,10 @@ def lsView(lsPathString=''):
                             'r': brp.r,
                             'w': brp.w,
                             'c': brp.c,
-                            'role': roleKeyToRoleMap[(brp.role_class, brp.role_id)],
+                            'role': roleKeyToRoleMap[(
+                                brp.role_class,
+                                brp.role_id,
+                            )],
                         }
                         for brp in sorted(thisBox.listPermissions('inherited'))
                     ],

@@ -209,4 +209,112 @@ if __name__ == '__main__':
                         print('*> ', end='')
                     #
                     print('\n          done.')
+            elif tName == 'roles':
+                # we add new roles, only if they do not exist at all
+                tcontents = initialDbValues.get(tName)
+                print('        * Refreshing')
+                for item in tcontents['values']:
+                    model = tcontents['model'](**item)
+                    print('            - %s : ' % model, end='')
+                    itemDictFound = dbRetrieveRecordByKey(
+                        db,
+                        tName,
+                        {
+                            'role_class': item['role_class'],
+                            'role_id': item['role_id'],
+                        },
+                        dbTablesDesc=dbSchema,
+                    )
+                    if itemDictFound is None:
+                        # new: insert
+                        print('inserting... ', end='')
+                        dbAddRecordToTable(
+                            db,
+                            tName,
+                            model.asDict(),
+                            dbTablesDesc=dbSchema,
+                        )
+                        print('done ', end='')
+                    else:
+                        print('already present ', end='')
+                    print('#')
+                print('        * done.')
+        # regardless of whether the table was new or not,
+        # some on-table checks and finalisations
+        if tName == 'roles':
+            print('        * Checking user-roles')
+            # for each existing user, make sure the user/role exists
+            for userDict in dbRetrieveAllRecords(
+                db,
+                'users',
+                dbTablesDesc=dbSchema,
+            ):
+                if userDict['username'] != '':
+                    print(
+                        '            - "%s" : ' % userDict['username'],
+                        end='',
+                    )
+                    # existence of the role
+                    itemDictFound = dbRetrieveRecordByKey(
+                        db,
+                        tName,
+                        {
+                            'role_class': 'user',
+                            'role_id': userDict['username'],
+                        },
+                        dbTablesDesc=dbSchema,
+                    )
+                    if itemDictFound is None:
+                        print('adding role ... ', end='')
+                        userRole = initialDbValues[tName]['model'](**{
+                            'role_class': 'user',
+                            'role_id': userDict['username'],
+                            'description': '%s user-role' % (
+                                userDict['username']
+                            ),
+                            'can_box': 1,
+                            'can_user': 0,
+                            'can_delete': 0,
+                        })
+                        dbAddRecordToTable(
+                            db,
+                            tName,
+                            userRole.asDict(),
+                            dbTablesDesc=dbSchema,
+                        )
+                        print('done ', end='')
+                    else:
+                        print('already present ', end='')
+                    # existence of the user-role entry
+                    relItemDictFound = dbRetrieveRecordByKey(
+                        db,
+                        'user_roles',
+                        {
+                            'role_class': 'user',
+                            'role_id': userDict['username'],
+                            'username': userDict['username'],
+                        },
+                        dbTablesDesc=dbSchema,
+                    )
+                    if relItemDictFound is None:
+                        print('adding user_role ... ', end='')
+                        relModel = initialDbValues['user_roles']['model']
+                        relUserRole = relModel(**{
+                            'role_class': 'user',
+                            'role_id': userDict['username'],
+                            'username': userDict['username'],
+                        })
+                        dbAddRecordToTable(
+                            db,
+                            'user_roles',
+                            relUserRole.asDict(),
+                            dbTablesDesc=dbSchema,
+                        )
+                        print('done ', end='')
+                    else:
+                        print('already present ', end='')
+                    print('#')
+            #
+            print('        * done.')
+    # all done.
     db.commit()
