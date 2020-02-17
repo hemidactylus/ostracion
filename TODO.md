@@ -21,6 +21,125 @@ TODO:
 2:
    == remove the 'accounting' role and make roles addable per postInstall as with settings
 
+ON MASTER
+    'roles': {
+        'primary_key': [
+            ('role_id', 'TEXT'),
+        ],
+        'columns': [
+            ('description', 'TEXT'),
+            ('system', 'INTEGER'),
+        ],
+    },
+    'box_role_permissions': {
+        'primary_key': [
+            ('box_id', 'TEXT'),
+            ('role_id', 'TEXT'),
+        ],
+        'columns': [
+            ('r', 'INTEGER'),
+            ('w', 'INTEGER'),
+            ('c', 'INTEGER'),
+        ],
+        'foreign_keys': {
+            'boxes': [
+                [['box_id'], ['box_id']],
+            ],
+            'roles': [
+                [['role_id'], ['role_id']],
+            ],
+        },
+    },
+    'user_roles': {
+        'primary_key': [
+            ('username', 'TEXT'),
+            ('role_id', 'TEXT'),
+        ],
+        'columns': [],
+        'foreign_keys': {
+            'users': [
+                [['username'], ['username']],
+            ],
+            'roles': [
+                [['role_id'], ['role_id']],
+            ],
+        },
+    },
+
+ON BRANCH
+    'roles': {
+        'primary_key': [
+            ('role_class', 'TEXT'),
+            ('role_id', 'TEXT'),
+        ],
+        'columns': [
+            ('description', 'TEXT'),
+            ('can_box', 'INTEGER'),
+            ('can_user', 'INTEGER'),
+            ('can_delete', 'INTEGER'),
+        ],
+    },
+    'box_role_permissions': {
+        'primary_key': [
+            ('box_id', 'TEXT'),
+            ('role_class', 'TEXT'),
+            ('role_id', 'TEXT'),
+        ],
+        'columns': [
+            ('r', 'INTEGER'),
+            ('w', 'INTEGER'),
+            ('c', 'INTEGER'),
+        ],
+        'foreign_keys': {
+            'boxes': [
+                [['box_id'], ['box_id']],
+            ],
+            'roles': [
+                [['role_class', 'role_id'], ['role_class', 'role_id']],
+            ],
+        },
+    },
+    'user_roles': {
+        'primary_key': [
+            ('username', 'TEXT'),
+            ('role_class', 'TEXT'),
+            ('role_id', 'TEXT'),
+        ],
+        'columns': [],
+        'foreign_keys': {
+            'users': [
+                [['username'], ['username']],
+            ],
+            'roles': [
+                [['role_class', 'role_id'], ['role_class', 'role_id']],
+            ],
+        },
+    },
+
+Before anything else, in a separate module:
+  - if 'roles' exists and has NO role_class => do the translation
+  - The translation goes as:
+    - use a special schema which combines legacy (by hand) + modern
+    - create three tables XXX_transitional in order as given below
+    - move item by item under some rules:
+        roles:
+          role_id <-- role_id
+          role_class <-- 'system' if system else 'manual'
+          system DIES
+          description <-- description
+          can_box     <-- 0 if system/ticketer else 1
+          can_user    <-- 0 if system/anonymous else 1
+          can_delete  <-- 0 if system else 1
+        box_role_permissions:
+          lookup the previous table to know how to add
+          role_class when copying the records
+        user_roles:
+          same as previous table
+    - drop the three original tables
+    - rename the transitionals back to original names
+      (with cur.execute("ALTER TABLE `foo` RENAME TO `bar`") ... see https://stackoverflow.com/questions/426495/how-do-you-rename-a-table-in-sqlite-3-0#426512)
+  - proceed with everything else
+
 ### Ansible, nginx restart target, why it seems nonexistent sometimes?
 (then, after various reruns of the ansible, all is ok)
 

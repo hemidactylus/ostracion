@@ -47,6 +47,7 @@ from ostracion_app.utilities.tools.formatting import (
 )
 
 from post_install.initialValues.defaultDb import initialDbValues
+from post_install.specialFixers.roleFixer import fixRoleTablesAddingRoleClass
 
 sensitiveConfigFileTemplate = applyReplacementPairs(
     open(
@@ -90,6 +91,9 @@ if __name__ == '__main__':
     )
     db = dbOpenDatabase(dbFullName)
     print('done.')
+    # special pre-everything fixes if patches are needed
+    fixRoleTablesAddingRoleClass(db)
+    #
     print(' * Creating tables')
     for tName, tContents in sorted(
             dbSchema.items(),
@@ -241,7 +245,7 @@ if __name__ == '__main__':
                 print('        * done.')
         # regardless of whether the table was new or not,
         # some on-table checks and finalisations
-        if tName == 'roles':
+        if tName == 'user_roles':
             print('        * Checking user-roles')
             # for each existing user, make sure the user/role exists
             for userDict in dbRetrieveAllRecords(
@@ -257,7 +261,7 @@ if __name__ == '__main__':
                     # existence of the role
                     itemDictFound = dbRetrieveRecordByKey(
                         db,
-                        tName,
+                        'roles',
                         {
                             'role_class': 'user',
                             'role_id': userDict['username'],
@@ -266,7 +270,7 @@ if __name__ == '__main__':
                     )
                     if itemDictFound is None:
                         print('adding role ... ', end='')
-                        userRole = initialDbValues[tName]['model'](**{
+                        userRole = initialDbValues['roles']['model'](**{
                             'role_class': 'user',
                             'role_id': userDict['username'],
                             'description': '%s user-role' % (
@@ -278,7 +282,7 @@ if __name__ == '__main__':
                         })
                         dbAddRecordToTable(
                             db,
-                            tName,
+                            'roles',
                             userRole.asDict(),
                             dbTablesDesc=dbSchema,
                         )
