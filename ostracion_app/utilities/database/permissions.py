@@ -542,20 +542,17 @@ def userHasPermission(db, user, permissions, permissionBit):
 
 
 def dbGetAllRoles(db, user):
-    """ Get all available roles.
-        Only users with the admin role can do this.
+    """ Get all available roles for a given user.
+        This has to be accessible to anyone.
     """
-    if userIsAdmin(db, user):
-        return (
-            Role(**r)
-            for r in dbRetrieveAllRecords(
-                db,
-                'roles',
-                dbTablesDesc=dbSchema,
-            )
+    return (
+        Role(**r)
+        for r in dbRetrieveAllRecords(
+            db,
+            'roles',
+            dbTablesDesc=dbSchema,
         )
-    else:
-        raise OstracionError('Insufficient permissions')
+    )
 
 
 def _accumulateReadabilityLayers(roleKeySets, pathsToAccumulate):
