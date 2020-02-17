@@ -210,6 +210,26 @@ def fixRoleTablesAddingRoleClass(db):
             print('re-created.')
         print('     * done re-creating tables.')
         # we populate the recreated tables with the temporary tables' contents
+        print('     * repopulating tables ...')
+        for srcTName, srcSchema in sorted(
+                legacySchema.items(),
+                key=lambda tnc: tableCreationOrder[tnc[0]]):
+            print('         - "%s" ... ' % srcTName)
+            for recordIndex, record in enumerate(dbRetrieveAllRecords(
+                db,
+                tempTableName(srcTName),
+                dbTablesDesc=targetSchema,
+            )):
+                print('             record [%i] ... ' % recordIndex, end='')
+                dbAddRecordToTable(
+                    db,
+                    srcTName,
+                    record,
+                    dbTablesDesc=dbSchema,
+                )
+                print('inserted.')
+            print('         - done "%s"' % srcTName)
+        print('     * done repopulating tables.')
         # we drop the temporary tables
         print('     * dropping temporary tables ...')
         for srcTName, srcSchema in sorted(
