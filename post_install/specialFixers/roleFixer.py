@@ -9,11 +9,9 @@ from ostracion_app.utilities.tools.dictTools import (
 )
 
 from ostracion_app.utilities.database.sqliteEngine import (
-    # dbOpenDatabase,
     dbCreateTable,
     dbAddRecordToTable,
-    # dbUpdateRecordOnTable,
-    # dbTableExists,
+    dbTableExists,
     dbQueryColumns,
     dbRetrieveAllRecords,
     dbRetrieveRecordByKey,
@@ -81,6 +79,7 @@ def determineRoleClass(legacyRoleRecord):
     isSystem = legacyRoleRecord['system'] != 0
     return 'system' if isSystem else 'manual'
 
+
 def convertRoleRelatedRecord(db, legacySchema,
                              srcTableName, inRecord):
     if srcTableName == 'roles':
@@ -132,8 +131,13 @@ def fixRoleTablesAddingRoleClass(db):
 
         Returns whether it did something or not as a bool
     """
-    roleColumns = dbQueryColumns(db, 'roles')
-    mustAct = 'role_class' not in roleColumns and 'system' in roleColumns
+    rolesTableExists = dbTableExists(db, 'roles')
+    roleColumns = dbQueryColumns(db, 'roles') if rolesTableExists else {}
+    mustAct = all([
+        rolesTableExists,
+        'role_class' not in roleColumns,
+        'system' in roleColumns,
+    ])
     if not mustAct:
         return False
     else:

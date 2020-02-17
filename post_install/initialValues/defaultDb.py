@@ -104,22 +104,6 @@ initialDbValues = {
                 'can_user': 1,
                 'can_delete': 0,
             },
-            {
-                'role_class': 'app',
-                'role_id':          'fancyapper',
-                'description':      'Fancy App',
-                'can_box': 0,
-                'can_user': 1,
-                'can_delete': 0,
-            },
-            {
-                'role_class': 'system',
-                'role_id':          'zipimporter',
-                'description':      'Zip Importer',
-                'can_box': 0,
-                'can_user': 1,
-                'can_delete': 0,
-            },
         ],
     },
     'user_roles': {
@@ -128,11 +112,6 @@ initialDbValues = {
             {
                 'username': 'admin',
                 'role_class': 'system',
-                'role_id': 'admin',
-            },
-            {
-                'username': 'admin',
-                'role_class': 'user',
                 'role_id': 'admin',
             },
         ],
