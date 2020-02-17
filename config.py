@@ -33,7 +33,7 @@ rootBoxNiceName = 'root'
 lowercaseAlphabet = set('qwertyuiopasdfghjklzxcvbnm')
 
 # version
-ostracionVersion = '1.0.1'
+ostracionVersion = '1.1.0'
 
 # directories
 templateDirectory = os.path.join(
