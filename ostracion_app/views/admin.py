@@ -1370,11 +1370,11 @@ def adminUserIssueChangePasswordTicket(username):
             ticketName = form.name.data
             ticketMessage = transformIfNotEmpty(
                 form.ticketmessage.data
-            ),
-            validityHours = form.ticketmessage.data(
+            )
+            validityHours = transformIfNotEmpty(
                 form.validityhours.data,
                 int,
-            ),
+            )
             magicLink = dbMakeUserChangePasswordTicket(
                 db,
                 ticketName=ticketName,

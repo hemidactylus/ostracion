@@ -564,7 +564,8 @@ def prepareFileActions(db, file, filePath, parentBox, user,
         )
     # ticketing of files
     if user.is_authenticated:
-        if userIsAdmin(db, user) or userHasRole(db, user, 'ticketer'):
+        if (userIsAdmin(db, user) or
+                userHasRole(db, user, 'system', 'ticketer')):
             fActions['ticket'] = url_for(
                 'fsMakeTicketView',
                 fsPathString='/'.join(filePath),
