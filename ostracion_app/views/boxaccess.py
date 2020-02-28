@@ -618,7 +618,7 @@ def dirTreeView(includeFiles=0):
     '/makegalleryticketbox/<path:boxPathString>',
     methods=['GET', 'POST'],
 )
-@userRoleRequired({'admin', 'ticketer'})
+@userRoleRequired({('system', 'admin'), ('system', 'ticketer')})
 def makeTicketBoxGalleryView(boxPathString=''):
     """Make-gallery-ticket-of-box route."""
     user = g.user
@@ -722,7 +722,7 @@ def makeTicketBoxGalleryView(boxPathString=''):
     '/maketicketboxuploadview/<path:boxPathString>',
     methods=['GET', 'POST'],
 )
-@userRoleRequired({'admin', 'ticketer'})
+@userRoleRequired({('system', 'admin'), ('system', 'ticketer')})
 def makeTicketBoxUploadView(boxPathString=''):
     """Make-upload-ticket (to a box) route."""
     user = g.user

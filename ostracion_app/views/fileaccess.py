@@ -430,7 +430,7 @@ def fsMetadataView(fsPathString=''):
 @app.route('/maketicketfile/<path:fsPathString>', methods=['GET', 'POST'])
 @app.route('/maketicketfile', methods=['GET', 'POST'])
 @app.route('/maketicketfile/', methods=['GET', 'POST'])
-@userRoleRequired({'admin', 'ticketer'})
+@userRoleRequired({('system', 'admin'), ('system', 'ticketer')})
 def fsMakeTicketView(fsPathString=''):
     """Create-file-ticket (file-read) view."""
     user = g.user
