@@ -31,12 +31,23 @@ def fileIdToPath(fileId, fileStorageDirectory):
     )
 
 
+def temporarySplitFileName(tempFileDirectory):
+    """
+        Generate a fullpath temporary filename,
+        returnig it in the form (directory, filetitle)
+    """
+    mkDirP(tempFileDirectory)
+    return (
+        tempFileDirectory,
+        uuid4().hex,
+    )
+
+
 def temporaryFileName(tempFileDirectory):
     """Generate a fullpath temporary filename."""
     mkDirP(tempFileDirectory)
     return os.path.join(
-        tempFileDirectory,
-        uuid4().hex,
+        *temporarySplitFileName(tempFileDirectory)
     )
 
 

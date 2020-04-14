@@ -54,7 +54,19 @@ Find an elegant solution.
 Users will be able to:
 
 1. download box (+children)
-2. upload zip (creates children)
+2. upload zip (creates children, with all trouble of overwrites and
+               intertype overnamings)
+
+Formats:
+1. zip
+2. tar(/.gz)
+
+Current status:
+       zip                  targz
+down   X, no emptydirs      -
+uplo   -                    -
+
+(size is approximated due to links being rendered as files)
 
 ### Messages
 

@@ -14,7 +14,8 @@ messageClassNormalizer = {
 }
 
 
-def flashMessage(msgClass=None, msgHeading='', msgBody=None, pillText=None):
+def flashMessage(msgClass=None, msgHeading='', msgBody=None,
+                 pillText=None, url=None):
     """Enqueue a flashed structured message for use by the render template."""
     nMsgClass = messageClassNormalizer.get(msgClass, 'primary')
     if msgBody is not None:
@@ -23,4 +24,5 @@ def flashMessage(msgClass=None, msgHeading='', msgBody=None, pillText=None):
             'heading': msgHeading,
             'body': msgBody,
             'pillText': pillText,
+            'url': url,
         })

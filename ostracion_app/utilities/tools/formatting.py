@@ -17,6 +17,11 @@ byteFormatClasses = [
 ]
 
 
+def bytesToMiB(b):
+    """Convert bytes to MiB."""
+    return b / (KBYTE ** 2.0)
+
+
 def formatBytesSize(nBytes):
     """ Convert a size in bytes into a human-friendly string with unit.
         Implemented with an ugly loop and mutable states.

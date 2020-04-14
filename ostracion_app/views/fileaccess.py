@@ -482,7 +482,7 @@ def fsMakeTicketView(fsPathString=''):
                         int,
                     ),
                     ticketMessage=transformIfNotEmpty(
-                        form.validityhours.data,
+                        form.ticketmessage.data,
                     ),
                     file=file,
                     fileMode=form.filemode.data,

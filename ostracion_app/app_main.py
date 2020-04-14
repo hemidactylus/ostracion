@@ -41,3 +41,4 @@ import ostracion_app.views.tickets
 import ostracion_app.views.find
 import ostracion_app.views.errors
 import ostracion_app.views.tools
+import ostracion_app.views.archives

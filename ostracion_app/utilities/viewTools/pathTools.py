@@ -343,7 +343,21 @@ def prepareBoxInfo(db, box):
     ]
 
 
-def prepareBoxHeaderActions(db, box, boxPath, user, discardedActions=set()):
+def userCanDownloadArchive(db, user, settingsMap):
+    """
+        Regardless the exact reason, calculate if the provided user
+        has the archive-download power.
+    """
+    return any([
+        userIsAdmin(db, user),
+        user.is_authenticated and userHasRole(db, user, 'system', 'archiver'),
+        settingsMap['behaviour']['archives'][
+            'anonymous_is_archiver']['value'],
+    ])
+
+
+def prepareBoxHeaderActions(db, box, boxPath, user,
+                            settingsMap, discardedActions=set()):
     """ According to the user's power on a box, calculate
         the available actions for the heading of the box view.
     """
@@ -354,6 +368,7 @@ def prepareBoxHeaderActions(db, box, boxPath, user, discardedActions=set()):
     canIssueUploadTicket = ((canWriteFiles and ticketerOrAdmin) or
                             userIsAdmin(db, user))
     canIssueGalleryTicket = ticketerOrAdmin
+    canDownloadArchive = userCanDownloadArchive(db, user, settingsMap)
     boxActions = {
         'mkbox': url_for(
             'makeBoxView',
@@ -387,6 +402,10 @@ def prepareBoxHeaderActions(db, box, boxPath, user, discardedActions=set()):
             'makeTicketBoxGalleryView',
             boxPathString='/'.join(boxPath)
         ) if canIssueGalleryTicket else None,
+        'download_box': url_for(
+            'downloadBoxView',
+            boxPathString='/'.join(boxPath)
+        ) if canDownloadArchive else None,
     }
     return {
         k: v

@@ -97,6 +97,14 @@ initialDbValues = {
                 'can_delete': 0,
             },
             {
+                'role_class': 'system',
+                'role_id':          'archiver',
+                'description':      'Archiver',
+                'can_box': 0,
+                'can_user': 1,
+                'can_delete': 0,
+            },
+            {
                 'role_class': 'app',
                 'role_id':          'accounting',
                 'description':      'Accounting',
@@ -1233,6 +1241,53 @@ initialDbValues = {
             },
             #
             {
+                'id':               'anonymous_is_archiver',
+                'klass':            'behaviour',
+                'type':             'boolean',
+                'value':            '0',
+                'title':            'Archives for anybody',
+                'description':      ('The "anonymous" user can upload/download'
+                                     ' archives for entire box trees (makes '
+                                     'the "archiver" role irrelevant)'),
+                'default_value':    '0',
+                'metadata':         '',
+                'group_id':         'archives',
+                'group_title':      'Archive settings',
+                'group_ordering':   30,
+                'ordering':          5,
+            },
+            {
+                'id':               'archive_download_alert_size',
+                'klass':            'behaviour',
+                'type':             'optional_integer',
+                'value':            '50',
+                'title':            'Archive download alert',
+                'description':      ('Size, in MiB, at which to issue an alert'
+                                     ' before archive download of a box'),
+                'default_value':    '',
+                'metadata':         '',
+                'group_id':         'archives',
+                'group_title':      'Archive settings',
+                'group_ordering':   30,
+                'ordering':         10,
+            },
+            {
+                'id':               'archive_download_blocking_size',
+                'klass':            'behaviour',
+                'type':             'optional_integer',
+                'value':            '100',
+                'title':            'Archive download max size',
+                'description':      ('Maximum size, in MiB, of a downloadable'
+                                     ' box archive'),
+                'default_value':    '',
+                'metadata':         '',
+                'group_id':         'archives',
+                'group_title':      'Archive settings',
+                'group_ordering':   30,
+                'ordering':         15,
+            },
+            #
+            {
                 'id':               'tree_view_access',
                 'klass':            'behaviour',
                 'type':             'option',
@@ -1251,7 +1306,7 @@ initialDbValues = {
                                     ),
                 'group_id':         'search',
                 'group_title':      'Resource publicity',
-                'group_ordering':   30,
+                'group_ordering':   35,
                 'ordering':         5,
             },
             {
@@ -1269,7 +1324,7 @@ initialDbValues = {
                 'metadata':         '',
                 'group_id':         'search',
                 'group_title':      'Resource publicity',
-                'group_ordering':   30,
+                'group_ordering':   35,
                 'ordering':         10,
             },
             {
@@ -1291,7 +1346,7 @@ initialDbValues = {
                                     ),
                 'group_id':         'search',
                 'group_title':      'Resource publicity',
-                'group_ordering':   30,
+                'group_ordering':   35,
                 'ordering':         15,
             },
             {
@@ -1309,7 +1364,7 @@ initialDbValues = {
                 'metadata':         '',
                 'group_id':         'search',
                 'group_title':      'Resource publicity',
-                'group_ordering':   30,
+                'group_ordering':   35,
                 'ordering':         20,
             },
             {
@@ -1327,9 +1382,10 @@ initialDbValues = {
                 'metadata':         '',
                 'group_id':         'search',
                 'group_title':      'Resource publicity',
-                'group_ordering':   30,
+                'group_ordering':   35,
                 'ordering':         25,
-            },            {
+            },
+            {
                 'id':               'robots_txt_body',
                 'klass':            'behaviour',
                 'type':             'short_text',
@@ -1340,7 +1396,7 @@ initialDbValues = {
                 'metadata':         '',
                 'group_id':         'search',
                 'group_title':      'Resource publicity',
-                'group_ordering':   30,
+                'group_ordering':   35,
                 'ordering':         30,
             },
             #

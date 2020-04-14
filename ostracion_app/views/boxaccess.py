@@ -9,6 +9,7 @@ from flask import (
     redirect,
     url_for,
     render_template,
+    send_from_directory,
     request,
     g,
 )
@@ -39,9 +40,6 @@ from ostracion_app.utilities.exceptions.exceptions import (
 
 from ostracion_app.utilities.database.dbTools import (
     dbGetDatabase,
-)
-from ostracion_app.utilities.database.userTools import (
-    dbGetUser,
 )
 
 from ostracion_app.utilities.database.fileSystem import (
@@ -219,6 +217,7 @@ def lsView(lsPathString=''):
             thisBox,
             boxPath,
             user,
+            g.settings,
             discardedActions=(
                 set()
                 if len(files) > 0

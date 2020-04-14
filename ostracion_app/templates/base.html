@@ -45,12 +45,18 @@
 
     {% for message in get_flashed_messages() %}
       <div class="alert alert-{{ message.class }} alert-dismissible fade show" role="alert">
-        <span><b>{{ message.heading }}</b>: {{ message.body }}</span>
-        {% if message.pillText %}
-          <hr>
-          <h4><span class="badge badge-warning">
-            {{ message.pillText }}
-          </span></h4>
+        {% if message.url %}
+          <a href="{{ message.url }}">
+        {% endif %}
+          <span><b>{{ message.heading }}</b>: {{ message.body }}</span>
+          {% if message.pillText %}
+            <hr>
+            <h4><span class="badge badge-warning">
+              {{ message.pillText }}
+            </span></h4>
+          {% endif %}
+        {% if message.url %}
+          </a>
         {% endif %}
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
           <span aria-hidden="true">&times;</span>

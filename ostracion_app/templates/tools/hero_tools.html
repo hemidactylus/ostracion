@@ -83,6 +83,11 @@
                                     L
                                 </a>
                             {% endif %}
+                            {% if actions.download_box %}
+                                <a href="{{ actions.download_box }}" class="btn btn-success" data-toggle="tooltip" title="Download box">
+                                    D
+                                </a>
+                            {% endif %}
                             {% if actions.issue_upload_ticket %}
                                 <a href="{{ actions.issue_upload_ticket }}" class="btn btn-warning" data-toggle="tooltip" title="Issue upload ticket">
                                     T

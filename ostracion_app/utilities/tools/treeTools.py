@@ -132,6 +132,7 @@ def collectTreeFromBox(db, parentBox, user, admitFiles, collectedPath=[],
             predicate=predicate,
         ),
         'path': [],
+        'obj_path': urllib.parse.quote_plus(''),
         'depth': 0,
     }
     return recursivelyMergeDictionaries(
@@ -171,3 +172,46 @@ def treeAny(tTree, property):
                 treeAny(c, property)
                 for c in tTree.get('contents', {}).get('boxes', [])
             ))
+
+
+def treeSum(f, tTree):
+    """
+        Accumulate values over all items in a tree (branches, leaves).
+
+        f must accept a (type, item) and return a value for summing
+        type = 'box', 'file', ... (a string)
+        item is an istance of Box, File, ...
+    """
+    contributions = [
+        f(tTree['box'], 'box')
+    ] + [
+        f(contFile, 'file')
+        for contFile in tTree['contents']['files']
+    ] + [
+        f(contLink, 'link')
+        for contLink in tTree['contents']['links']
+    ] + [
+        treeSum(f, contBox)
+        for contBox in tTree['contents']['boxes']
+    ]
+    #
+    return sum(contributions)
+
+
+def treeSize(tTree):
+    """
+        Given a tree, approximate the overall size of items contained
+        therein. This still does a rough estimate on links, with a fixed
+        number of bytes.
+    """
+    def itemSizer(itm, tp):
+        if tp == 'box':
+            return 0
+        elif tp == 'file':
+            return itm['file'].size
+        elif tp == 'link':
+            return 50
+        else:
+            raise NotImplementedError('unknown object type in tree [%s]' % tp)
+    #
+    return treeSum(itemSizer, tTree)
