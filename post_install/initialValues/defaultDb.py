@@ -1245,7 +1245,7 @@ initialDbValues = {
                 'klass':            'behaviour',
                 'type':             'boolean',
                 'value':            '0',
-                'title':            'Archives for anybody',
+                'title':            'Archives for everyone',
                 'description':      ('The "anonymous" user can upload/download'
                                      ' archives for entire box trees (makes '
                                      'the "archiver" role irrelevant)'),
