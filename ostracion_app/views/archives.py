@@ -85,113 +85,125 @@ def downloadBoxView(boxPathString=''):
         return abort(404)
     else:
         thisBox = getBoxFromPath(db, lsPath, user)
-        boxPath = lsPath[1:]
-        tempFileDirectory = g.settings['system']['system_directories'][
-            'temp_directory']['value']
-        fileStorageDirectory = g.settings['system']['system_directories'][
-            'fs_directory']['value']
-        # we extract the tree "from this box downward"
-        tree = collectTreeFromBox(db, thisBox, user, admitFiles=True)
-        overallSize = treeSize(tree)
-        # size-dependent handling by reading settings
-        mibSize = bytesToMiB(overallSize)
-        archiveWarningSizeMib = g.settings['behaviour']['archives'][
-            'archive_download_alert_size']['value']
-        archiveBlockSizeMib = g.settings['behaviour']['archives'][
-            'archive_download_blocking_size']['value']
-        if not optionNumberLeq(archiveBlockSizeMib, mibSize):
-            # archive is simply too big (hard limit)
-            oeText = ('Cannot prepare archive: box size, %s'
-                      ', exceeds configured limits')
+        if thisBox is not None:
+            boxPath = lsPath[1:]
+            tempFileDirectory = g.settings['system']['system_directories'][
+                'temp_directory']['value']
+            fileStorageDirectory = g.settings['system']['system_directories'][
+                'fs_directory']['value']
+            # we extract the tree "from this box downward"
+            tree = collectTreeFromBox(db, thisBox, user, admitFiles=True)
+            overallSize = treeSize(tree)
+            # size-dependent handling by reading settings
+            mibSize = bytesToMiB(overallSize)
+            archiveWarningSizeMib = g.settings['behaviour']['archives'][
+                'archive_download_alert_size']['value']
+            archiveBlockSizeMib = g.settings['behaviour']['archives'][
+                'archive_download_blocking_size']['value']
+            if not optionNumberLeq(archiveBlockSizeMib, mibSize):
+                # archive is simply too big (hard limit)
+                oeText = ('Cannot prepare archive: box size, %s'
+                          ', exceeds configured limits')
 
-            raise OstracionError(oeText % formatBytesSize(overallSize))
-        else:
-            # we may have to issue a warning to the downloader:
-            # this if (1) rather large archive, (2) no previous 'ok' was given
-            hasConfirmed = request.args.get('confirmed') == 'yes'
-            if all([
-                not optionNumberLeq(archiveWarningSizeMib, mibSize),
-                not hasConfirmed,
-            ]):
-                # we issue the warning and wait
-                confirmText = ('Preparing this archive may take some time due'
-                               ' to the size of the box (%s). Click this '
-                               'message to really proceed with the download.')
-                flashMessage(
-                    'Warning',
-                    'Caution',
-                    confirmText % formatBytesSize(overallSize),
-                    url=url_for(
-                        'downloadBoxView',
-                        boxPathString=boxPathString,
-                        confirmed='yes',
-                    ),
-                )
-                return redirect(url_for(
-                    'lsView',
-                    lsPathString=boxPathString,
-                ))
+                raise OstracionError(oeText % formatBytesSize(overallSize))
             else:
-                # we collect the information needed to prepare the archive file
-                # for now, no empty boxes (a zip format limitation)
-                def collectArchivablePairs(tr, accPath=''):
-                    hereFiles = [
-                        {
-                            'type': 'file',
-                            'path': fileIdToPath(
-                                file['file'].file_id,
-                                fileStorageDirectory,
-                            ),
-                            'zip_path': os.path.join(
-                                accPath,
-                                file['file'].name,
-                            ),
-                        }
-                        for file in tr['contents']['files']
-                    ] + [
-                        {
-                            'type': 'data',
-                            'data': '# "%s"\n# %s\n\n%s\n' % (
-                                link['link'].title,
-                                link['link'].description,
-                                link['link'].target,
-                            ),
-                            'zip_path': os.path.join(
-                                accPath,
-                                '%s.link.txt' % link['link'].name,
-                            ),
-                        }
-                        for link in tr['contents']['links']
-                    ]
-                    subFiles = [
-                        fp
-                        for subBox in tr['contents']['boxes']
-                        for fp in collectArchivablePairs(
-                            subBox,
-                            accPath=os.path.join(
-                                accPath,
-                                subBox['box'].box_name,
+                # we may have to issue a warning to the downloader:
+                # this if (1) rather large archive,
+                # (2) no previous 'ok' was given
+                hasConfirmed = request.args.get('confirmed') == 'yes'
+                if all([
+                    not optionNumberLeq(archiveWarningSizeMib, mibSize),
+                    not hasConfirmed,
+                ]):
+                    # we issue the warning and wait
+                    confirmText = ('Preparing this archive may take some '
+                                   'time due to the size of the box (%s). '
+                                   'Click this message to really proceed '
+                                   'with the download.')
+                    flashMessage(
+                        'Warning',
+                        'Caution',
+                        confirmText % formatBytesSize(overallSize),
+                        url=url_for(
+                            'downloadBoxView',
+                            boxPathString=boxPathString,
+                            confirmed='yes',
+                        ),
+                    )
+                    return redirect(url_for(
+                        'lsView',
+                        lsPathString=boxPathString,
+                    ))
+                else:
+                    # we collect the information needed to prepare the
+                    # archive file. For now, no empty boxes
+                    # (a zip format limitation)
+                    def collectArchivablePairs(tr, accPath=''):
+                        hereFiles = [
+                            {
+                                'type': 'file',
+                                'path': fileIdToPath(
+                                    file['file'].file_id,
+                                    fileStorageDirectory,
+                                ),
+                                'zip_path': os.path.join(
+                                    accPath,
+                                    file['file'].name,
+                                ),
+                            }
+                            for file in tr['contents']['files']
+                        ] + [
+                            {
+                                'type': 'data',
+                                'data': link['link'].formatAsString,
+                                'zip_path': os.path.join(
+                                    accPath,
+                                    '%s' % link['link'].name,
+                                ),
+                            }
+                            for link in tr['contents']['links']
+                        ]
+                        subFiles = [
+                            fp
+                            for subBox in tr['contents']['boxes']
+                            for fp in collectArchivablePairs(
+                                subBox,
+                                accPath=os.path.join(
+                                    accPath,
+                                    subBox['box'].box_name,
+                                )
                             )
-                        )
-                    ]
-                    return hereFiles + subFiles
+                        ]
+                        return hereFiles + subFiles
 
-                # we make the tree into a list of filePairs, ready to zip
-                inPairs = collectArchivablePairs(tree)
-                filePairs = [p for p in inPairs if p['type'] == 'file']
-                dataPairs = [p for p in inPairs if p['type'] == 'data']
-                # we create the zip
-                _, archiveFileTitle = temporarySplitFileName(tempFileDirectory)
-                makeZipFile(
-                    os.path.join(tempFileDirectory, archiveFileTitle),
-                    filePairs,
-                    dataPairs,
-                )
-                #
-                return send_from_directory(
-                    tempFileDirectory,
-                    archiveFileTitle,
-                    attachment_filename='%s.zip' % describeBoxName(thisBox),
-                    as_attachment=True,
-                    mimetype='application/zip',
-                )
+                    # we make the tree into a list of filePairs, ready to zip
+                    inPairs = collectArchivablePairs(tree)
+                    filePairs = [p for p in inPairs if p['type'] == 'file']
+                    dataPairs = [p for p in inPairs if p['type'] == 'data']
+                    # we create the zip
+                    _, archiveFileTitle = temporarySplitFileName(
+                        tempFileDirectory,
+                    )
+                    makeZipFile(
+                        os.path.join(tempFileDirectory, archiveFileTitle),
+                        filePairs,
+                        dataPairs,
+                    )
+                    #
+                    return send_from_directory(
+                        tempFileDirectory,
+                        archiveFileTitle,
+                        attachment_filename='%s.zip' % describeBoxName(
+                            thisBox,
+                        ),
+                        as_attachment=True,
+                        mimetype='application/zip',
+                    )
+        else:
+            request._onErrorUrl = url_for(
+                'lsView',
+                lsPathString='/'.join(lsPath[1:-1]),
+            )
+            raise OstracionWarning(
+                'Cannot access the specified box "%s"' % lsPath[-1]
+            )

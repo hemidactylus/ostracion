@@ -68,3 +68,11 @@ class Link(DictableObject):
 
     def getMetadata(self, key, default=None):
         return json.loads(self.metadata).get(key, default)
+
+    def formatAsString(self):
+        """Produce a 'text-file' with the link data."""
+        return '# "%s"\n# %s\n\n%s\n' % (
+            link['link'].title,
+            link['link'].description,
+            link['link'].target,
+        )
