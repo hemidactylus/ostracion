@@ -589,6 +589,10 @@ def prepareFileActions(db, file, filePath, parentBox, user,
                 'fsMakeTicketView',
                 fsPathString='/'.join(filePath),
             )
+    fActions['gallery'] = url_for(
+        'fsGalleryView',
+        fsPathString='/'.join(filePath)
+    )
     #
     if prepareParentButton:
         fActions['parent'] = url_for(

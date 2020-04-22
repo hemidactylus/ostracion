@@ -14,6 +14,11 @@
       T
     </a>
   {% endif %}
+  {% if actions.gallery %}
+    <a href="{{ actions.gallery }}" class="btn btn-success btn-sm" data-toggle="tooltip" title="View in gallery">
+      G
+    </a>
+  {% endif %}
   {% if actions.text_edit %}
     <a href="{{ actions.text_edit }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Edit">
       E
