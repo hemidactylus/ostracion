@@ -211,7 +211,7 @@ def fsGalleryView(fsPathString=''):
                     thisFileIndex + 1,
                     numGalleryFiles,
                 ),
-                pageSubtitle=parentBox.description,
+                pageSubtitle=file.description,
                 downloadUrl=None,
                 hideBreadCrumbs=True,
                 hideNavbar=True,
