@@ -6,7 +6,7 @@
 import os
 
 from flask import (
-    send_from_directory,
+    current_app,
     abort,
     redirect,
     url_for,
@@ -155,7 +155,7 @@ def downloadBoxView(boxPathString=''):
                         ] + [
                             {
                                 'type': 'data',
-                                'data': link['link'].formatAsString,
+                                'data': link['link'].formatAsString(),
                                 'zip_path': os.path.join(
                                     accPath,
                                     '%s' % link['link'].name,
@@ -189,14 +189,35 @@ def downloadBoxView(boxPathString=''):
                         filePairs,
                         dataPairs,
                     )
-                    #
-                    return send_from_directory(
-                        tempFileDirectory,
-                        archiveFileTitle,
-                        attachment_filename='%s.zip' % describeBoxName(
-                            thisBox,
+                    # Now the file exists, ready to be served.
+                    # Instead of a plain send_from_directory, though,
+                    # we use the answer "Stream file, then delete"
+                    # by Sean Vieira here:
+                    # https://stackoverflow.com/questions/24612366/
+                    #   delete-an-uploaded-file-after-downloading-it-from-flask
+
+                    def StreamFileAndRemoveIt(localFileName):
+                        fileHandle = open(localFileName, 'rb')
+                        yield from fileHandle
+                        fileHandle.close()
+                        os.remove(localFileName)
+
+                    zipFileName = '%s.zip' % describeBoxName(
+                        thisBox,
+                    )
+                    contentDisposition = 'attachment; filename="%s"' % (
+                        zipFileName,
+                    )
+                    return current_app.response_class(
+                        StreamFileAndRemoveIt(
+                            localFileName=os.path.join(
+                                tempFileDirectory,
+                                archiveFileTitle,
+                            ),
                         ),
-                        as_attachment=True,
+                        headers={
+                            'Content-Disposition': contentDisposition,
+                        },
                         mimetype='application/zip',
                     )
         else:

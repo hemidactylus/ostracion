@@ -37,7 +37,7 @@ Tables and small screens: currently a disaster.
 ### The markdown-with-images riddle
 
 When viewing a rendered markdown, if it embeds an image it is a mess
-since a rel path 'image.png' would inherint the fsv ("V") full url.
+since a rel path 'image.png' would inherit the fsv ("V") full url.
 Find an elegant solution.
 
 
@@ -68,6 +68,10 @@ uplo   -                    -
 
 (size is approximated due to links being rendered as files)
 
+With this one creates the zip ready to stream:
+  https://github.com/BuzonIO/zipfly#zipfly
+but zipping "links" (and other future file-like objects) would be a hassle.
+
 ### Messages
 
 A system-messages table (login protection alerts, etc).
@@ -82,3 +86,4 @@ Boxes of type 'app'.
 
 1. As an exercise: PDF calendar maker.
 2. Accounting app in particular and its special config.
+3. Move biblio here?

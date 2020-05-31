@@ -72,7 +72,7 @@ class Link(DictableObject):
     def formatAsString(self):
         """Produce a 'text-file' with the link data."""
         return '# "%s"\n# %s\n\n%s\n' % (
-            link['link'].title,
-            link['link'].description,
-            link['link'].target,
+            self.title,
+            self.description,
+            self.target,
         )
