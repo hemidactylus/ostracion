@@ -46,11 +46,21 @@
               {% if unmentionedRoleKeys %}
                 <p>
                   <strong>Add new permission set for role:</strong>
-                  {% for unmRole in unmentionedRoleKeys %}
+                  {% for unmRole in unmentionedRoleKeys.nonuser %}
                     <a href="{{ url_for('adminMkPermissionView',roleClass=unmRole[0],roleId=unmRole[1],lsPathString='/'.join(boxPath)) }}">
                       {{ rolepilltools.rolePill(roleKeyToRoleMap[unmRole]) }}
                     </a>
                   {% endfor %}
+                  {% if unmentionedRoleKeys.user %}
+                    <span class="badge badge-secondary btn btn-smz" id="userRoleShower" data-toggle="collapse" href="#userRoleSection" role="button" >Show user roles ...</span>
+                    <span class="collapse" id="userRoleSection">
+                      {% for unmRole in unmentionedRoleKeys.user %}
+                        <a href="{{ url_for('adminMkPermissionView',roleClass=unmRole[0],roleId=unmRole[1],lsPathString='/'.join(boxPath)) }}">
+                          {{ rolepilltools.rolePill(roleKeyToRoleMap[unmRole]) }}
+                        </a>
+                      {% endfor %}
+                    </span>
+                  {% endif %}
                 </p>
               {% endif %}
             {% endif %}
@@ -131,5 +141,16 @@
           </div>
         </div>
       </div>
+
+      <script>
+        $('#userRoleSection').on('hidden.bs.collapse', function (ev) {
+          console.log('HID');
+          $('#userRoleShower')[0].innerHTML='Show user roles ...';
+        })
+        $('#userRoleSection').on('shown.bs.collapse', function (ev) {
+          console.log('SHW');
+          $('#userRoleShower')[0].innerHTML='User roles:';
+        })
+      </script>
 
 {% endblock %}

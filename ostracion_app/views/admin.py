@@ -1148,7 +1148,7 @@ def adminLsPermissionsView(lsPathString=''):
             for r in dbGetAllRoles(db, user)
             if r.can_box != 0
         }
-        unmentionedRoleKeys = [
+        allUnmentionedRoleKeys = [
             rk_r[0]
             for rk_r in sorted(
                 (
@@ -1159,6 +1159,20 @@ def adminLsPermissionsView(lsPathString=''):
                 key=lambda rk_r: rk_r[1].sortableTuple(),
             )
         ]
+        userUnmentionedRoleKeys = [
+            rk
+            for rk in allUnmentionedRoleKeys
+            if roleKeyToRoleMap[rk].role_class == 'user'
+        ]
+        nonUserUnmentionedRoleKeys = [
+            rk
+            for rk in allUnmentionedRoleKeys
+            if roleKeyToRoleMap[rk].role_class != 'user'
+        ]
+        unmentionedRoleKeys = {
+            'nonuser': nonUserUnmentionedRoleKeys,
+            'user': userUnmentionedRoleKeys,
+        }
         #
         structuredPermissionInfo = reformatBoxPermissionAlgebraIntoLists(
             thisBoxPermissionAlgebra,
