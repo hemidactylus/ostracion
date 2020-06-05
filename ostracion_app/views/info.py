@@ -79,6 +79,7 @@ def infoHomeView():
         ['root'],
         g,
     )
+    print(pageFeatures['tasks'])
     return render_template(
         'tasks.html',
         user=user,
@@ -178,6 +179,41 @@ def privacyPolicyView():
         'privacypolicy.html',
         user=user,
         privacyPolicy=privacyPolicy,
+        **pageFeatures,
+    )
+
+
+@app.route('/info/terms')
+def termsView():
+    """Terms and conditions route."""
+    user = g.user
+    db = dbGetDatabase()
+    terms = {
+        'contents': markdownToHtml(
+            g.settings['terms']['terms'][
+                'terms_body']['value'],
+            replacements=loadMarkdownReplacements(g.settings),
+        ),
+    }
+    tVersion = g.settings['terms']['terms'][
+        'terms_version']['value']
+    tDate = g.settings['terms']['terms'][
+        'terms_date']['value']
+    #
+    pageFeatures = prepareTaskPageFeatures(
+        infoPageDescriptor,
+        ['root', 'terms'],
+        g,
+        overrides={
+            'pageSubtitle': 'Version %s' % tVersion if tVersion else None,
+            'pageSubtitleit': 'dated %s' % tDate if tDate else None,
+        },
+    )
+    #
+    return render_template(
+        'terms.html',
+        user=user,
+        terms=terms,
         **pageFeatures,
     )
 

@@ -9,7 +9,8 @@ infoPageDescriptor = {
             'subtitle': 'Manuals, privacy policy, about ...',
             'image_id': ('ostracion_images', 'info'),
             'endpoint_name': ('infoHomeView', {}),
-            'task_order': ['user_guide', 'admin_guide', 'privacy', 'about'],
+            'task_order': ['user_guide', 'admin_guide', 'privacy',
+                           'terms', 'about'],
             'tasks': {
                 'user_guide': {
                     'title': 'User Guide',
@@ -28,6 +29,12 @@ infoPageDescriptor = {
                     'subtitle': '',
                     'image_id': ('ostracion_images', 'privacy_policy_logo'),
                     'endpoint_name': ('privacyPolicyView', {}),
+                },
+                'terms': {
+                    'title': 'Terms and conditions',
+                    'subtitle': '',
+                    'image_id': ('ostracion_images', 'terms_logo'),
+                    'endpoint_name': ('termsView', {}),
                 },
                 'about': {
                     'title': 'About',

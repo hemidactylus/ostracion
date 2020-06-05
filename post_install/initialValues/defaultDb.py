@@ -19,6 +19,7 @@ from ostracion_app.utilities.tools.securityCodes import makeSecurityCode
 from post_install.initialValues.tools import (
     loadDefaultPrivacyPolicyBody,
     loadDefaultAboutInstanceBody,
+    loadDefaultTermsBody,
     loadDefaultAboutBody,
     getDefaultTempDirectory,
     getDefaultFilesystemDirectory,
@@ -376,6 +377,21 @@ initialDbValues = {
                 'ordering':         40,
             },
             {
+                'id':               'admin_settings_terms',
+                'klass':            'image',
+                'type':             'image',
+                'value':            '',
+                'title':            'Settings/terms and conditions image',
+                'description':      'Icon for "Settings/terms and conditions"',
+                'default_value':    'admin_settings_terms.png',
+                'default_icon_mime_type':   'image/png',
+                'metadata':         '{"thumbnailFormat":"thumbnail"}',
+                'group_id':         'admin_images',
+                'group_title':      'Admin image settings',
+                'group_ordering':   20,
+                'ordering':         45,
+            },
+            {
                 'id':               'admin_settings_about',
                 'klass':            'image',
                 'type':             'image',
@@ -388,7 +404,7 @@ initialDbValues = {
                 'group_id':         'admin_images',
                 'group_title':      'Admin image settings',
                 'group_ordering':   20,
-                'ordering':         45,
+                'ordering':         50,
             },
             {
                 'id':               'admin_settings_system',
@@ -403,7 +419,7 @@ initialDbValues = {
                 'group_id':         'admin_images',
                 'group_title':      'Admin image settings',
                 'group_ordering':   20,
-                'ordering':         50,
+                'ordering':         55,
             },
             {
                 'id':               'admin_ticket',
@@ -418,7 +434,7 @@ initialDbValues = {
                 'group_id':         'admin_images',
                 'group_title':      'Admin image settings',
                 'group_ordering':   20,
-                'ordering':         55,
+                'ordering':         60,
             },
             {
                 'id':               'user_invitation',
@@ -433,7 +449,7 @@ initialDbValues = {
                 'group_id':         'admin_images',
                 'group_title':      'Admin image settings',
                 'group_ordering':   20,
-                'ordering':         60,
+                'ordering':         65,
             },
             {
                 'id':               'change_password_ticket',
@@ -448,7 +464,7 @@ initialDbValues = {
                 'group_id':         'admin_images',
                 'group_title':      'Admin image settings',
                 'group_ordering':   20,
-                'ordering':         65,
+                'ordering':         70,
             },
             {
                 'id':               'admin_file_ticket',
@@ -463,7 +479,7 @@ initialDbValues = {
                 'group_id':         'admin_images',
                 'group_title':      'Admin image settings',
                 'group_ordering':   20,
-                'ordering':         70,
+                'ordering':         75,
             },
             {
                 'id':               'admin_upload_ticket',
@@ -478,7 +494,7 @@ initialDbValues = {
                 'group_id':         'admin_images',
                 'group_title':      'Admin image settings',
                 'group_ordering':   20,
-                'ordering':         75,
+                'ordering':         80,
             },
             {
                 'id':               'admin_gallery_ticket',
@@ -493,7 +509,7 @@ initialDbValues = {
                 'group_id':         'admin_images',
                 'group_title':      'Admin image settings',
                 'group_ordering':   20,
-                'ordering':         80,
+                'ordering':         85,
             },
             #
             {
@@ -787,6 +803,21 @@ initialDbValues = {
                 'group_title':      'Ostracion image settings',
                 'group_ordering':   40,
                 'ordering':         35,
+            },
+            {
+                'id':               'terms_logo',
+                'klass':            'image',
+                'type':             'image',
+                'value':            '',
+                'title':            'Terms and conditions logo',
+                'description':      'Terms and conditions page image',
+                'default_value':    'terms_logo.png',
+                'default_icon_mime_type':   'image/png',
+                'metadata':         '{"thumbnailFormat":"thumbnail"}',
+                'group_id':         'ostracion_images',
+                'group_title':      'Ostracion image settings',
+                'group_ordering':   40,
+                'ordering':         40,
             },
             #
             #
@@ -1464,6 +1495,96 @@ initialDbValues = {
                 'group_title':      'Privacy Policy',
                 'group_ordering':    5,
                 'ordering':          20,
+            },
+            #
+            {
+                'id':               'terms_version',
+                'klass':            'terms',
+                'type':             'string',
+                'value':            '',
+                'title':            'Terms and conditions version',
+                'description':      (
+                                        'Version of last revision of the '
+                                        'terms and conditions'
+                                    ),
+                'default_value':    '1.0.0',
+                'metadata':         '',
+                'group_id':         'terms',
+                'group_title':      'Terms and conditions',
+                'group_ordering':    5,
+                'ordering':          5,
+            },
+            {
+                'id':               'terms_date',
+                'klass':            'terms',
+                'type':             'string',
+                'value':            '',
+                'title':            'Terms and conditions date',
+                'description':      (
+                                        'Date of last revision of the '
+                                        'terms and conditions'
+                                    ),
+                'default_value':    'Jan 1st, 2020',
+                'metadata':         '',
+                'group_id':         'terms',
+                'group_title':      'Terms and conditions',
+                'group_ordering':    5,
+                'ordering':          10,
+            },
+            {
+                'id':               'terms_must_agree',
+                'klass':            'terms',
+                'type':             'boolean',
+                'value':            '1',
+                'title':            'Users must agree to Terms and conditions',
+                'description':      (
+                                        'Agreement is compulsory to navigate ('
+                                        'logged-in users)'
+                                    ),
+                'default_value':    '1',
+                'metadata':         '',
+                'group_id':         'terms',
+                'group_title':      'Terms and conditions',
+                'group_ordering':   5,
+                'ordering':         15,
+            },
+            {
+                'id':               'terms_must_agree_anonymous',
+                'klass':            'terms',
+                'type':             'boolean',
+                'value':            '1',
+                'title':            (
+                                        'Visitors must agree to Terms '
+                                        'and conditions'
+                                    ),
+                'description':      (
+                                        'Agreement is compulsory to navigate ('
+                                        'anonymous visitors)'
+                                    ),
+                'default_value':    '1',
+                'metadata':         '',
+                'group_id':         'terms',
+                'group_title':      'Terms and conditions',
+                'group_ordering':   5,
+                'ordering':         20,
+            },
+            {
+                'id':               'terms_body',
+                'klass':            'terms',
+                'type':             'text',
+                'value':            '',
+                'title':            'Terms and conditions text',
+                'description':      (
+                                        'Markdown for last revision of the '
+                                        'terms and conditions (empty for '
+                                        'default)'
+                                    ),
+                'default_value':    loadDefaultTermsBody(),
+                'metadata':         '',
+                'group_id':         'terms',
+                'group_title':      'Terms and conditions',
+                'group_ordering':    5,
+                'ordering':          25,
             },
             #
             {

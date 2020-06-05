@@ -35,6 +35,16 @@ def loadDefaultAboutInstanceBody():
     ).read()
 
 
+def loadDefaultTermsBody():
+    """Load the default markdown for terms."""
+    return open(
+        os.path.join(
+            defaultMarkdownDirectory,
+            'default_terms.md',
+        )
+    ).read()
+
+
 def loadDefaultAboutBody():
     """Load the default markdown for about/ostracion."""
     return open(

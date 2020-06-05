@@ -37,6 +37,15 @@ genericSettingsPageDesc = {
         'markdownHelp': True,
         'index': 2,
     },
+    'terms': {
+        'pageTitle': 'Terms and conditions settings',
+        'pageSubtitle': 'Configure Ostracion terms and conditions document',
+        'menuSubtitle': 'Configure the Terms and Conditions',
+        'settingKlass': 'terms',
+        'image_id': 'admin_settings_terms',
+        'markdownHelp': True,
+        'index': 3,
+    },
     'system_settings': {
         'pageTitle': 'System settings',
         'pageSubtitle': 'Configure post-install system settings',
@@ -44,7 +53,7 @@ genericSettingsPageDesc = {
         'settingKlass': 'system',
         'image_id': 'admin_settings_system',
         'markdownHelp': False,
-        'index': 3,
+        'index': 4,
     },
 }
 
