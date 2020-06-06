@@ -49,6 +49,8 @@ from ostracion_app.utilities.tools.formatting import (
     applyDefault,
 )
 
+from ostracion_app.utilities.tools.extraction import safeInt
+
 from ostracion_app.utilities.database.permissions import (
     dbGetUserRoles,
     isUserWithinPermissionCircle,
@@ -100,6 +102,35 @@ endpointsWithoutInviteOnlyBlocking = {
     'loginView',
     'settingThumbnailView',
     'faviconView',
+    'robotsTxtView',
+    'termsView',
+    'termsAcceptView',
+    'infoHomeView',
+    'userGuideView',
+    'adminGuideView',
+    'privacyPolicyView',
+    'aboutView',
+    'DPOEmailImageView',
+    'contactInfoImageView',
+}
+
+# endpoints for which we do not redirect users (if so configured)
+# to accept the terms of service
+endpointsWithoutTermAcceptanceBlocking = {
+    'loginView',
+    'settingThumbnailView',
+    'faviconView',
+    'logoutView',
+    'robotsTxtView',
+    'termsView',
+    'termsAcceptView',
+    'infoHomeView',
+    'userGuideView',
+    'adminGuideView',
+    'privacyPolicyView',
+    'aboutView',
+    'DPOEmailImageView',
+    'contactInfoImageView',
 }
 
 
@@ -187,6 +218,35 @@ def before_request():
                         'adminHomeSettingsGenericView',
                         settingType='behaviour'
                     ))
+    # we take care of terms-and-conditions acceptance here
+    if request.endpoint not in endpointsWithoutTermAcceptanceBlocking:
+        usersMustAbideByTOS = g.settings['terms']['terms'][
+            'terms_must_agree']['value']
+        anonymousMustAbideByTOS = g.settings['terms']['terms'][
+            'terms_must_agree_anonymous']['value']
+        currentTermVersion = g.settings['terms']['terms'][
+            'terms_version']['value']
+        if g.user.is_authenticated and usersMustAbideByTOS:
+            1/0
+        elif not g.user.is_authenticated and anonymousMustAbideByTOS:
+            # anonymous TOS checks
+            storedTermsVersion = request.cookies.get('termsAcceptedVersion')
+            storedTermsAcceptance = safeInt(
+                request.cookies.get('termsAccepted'),
+                default=0,
+            )
+
+        hasAgreedToTerms = (storedTermsAcceptance != 0 and
+                            storedTermsVersion == currentTermVersion)
+        if not hasAgreedToTerms:
+            flashMessage(
+                'Info',
+                'Action required',
+                ('Visitors must explicitly agree to the Terms and Conditions'
+                    ' before accessing the site.'),
+            )
+            return redirect(url_for('termsView', showAgreementButtons='y'))
+
     # here the ordinary flow is resumed
     if g.settings['behaviour']['behaviour_permissions'][
             'logged_in_users_only']['value']:

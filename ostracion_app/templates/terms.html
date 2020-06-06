@@ -17,8 +17,25 @@
       ) }}
 
         <div class="col">
+            {% if showAgreementButtons %}
+            <div class="row">
+                <div class="col">
+                    <h4>You can state your acceptance of these Terms at the end of the page.</h4>
+                </div>
+            </div>
+            {% endif %}
             <div class="jumbotron" style="padding-top: 5px;">
                 {{ terms.contents | safe }}
+            </div>
+            <div class="row">
+                <div class="col">
+                    <a href="{{ url_for('termsAcceptView', acceptance='yes') }}" class="btn btn-success" style="margin-right: 25px;">
+                        I Agree to the Terms
+                    </a>
+                    <a href="{{ url_for('termsAcceptView', acceptance='no') }}" class="btn btn-warning">
+                        I Decline
+                    </a>
+                </div>
             </div>
         </div>
 

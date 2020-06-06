@@ -11,8 +11,11 @@ from ostracion_app.app_main import app
 from flask import (
     render_template,
     g,
+    redirect,
+    url_for,
     send_from_directory,
     abort,
+    request,
     Response,
 )
 
@@ -36,6 +39,8 @@ from ostracion_app.utilities.tools.markdownTools import (
 from config import (
     resourceDirectory,
 )
+
+from ostracion_app.utilities.viewTools.messageTools import flashMessage
 
 from ostracion_app.utilities.database.permissions import (
     userRoleRequired,
@@ -183,6 +188,45 @@ def privacyPolicyView():
     )
 
 
+@app.route('/info/terms/accept/<acceptance>')
+def termsAcceptView(acceptance):
+    """Terms and conditions route."""
+    if acceptance == 'yes':
+        termsAccepted = 1
+    elif acceptance == 'no':
+        termsAccepted = 0
+    else:
+        # do nothing and return to home: someone improperly tweaked an URL
+        return redirect(url_for('lsView'))
+    termVersion = g.settings['terms']['terms'][
+        'terms_version']['value']
+    user = g.user
+    db = dbGetDatabase()
+    if user.is_authenticated:
+        # we store the acceptance in the user itself
+        1/0
+    else:
+        # cookie-based handling of terms-acceptance
+        flashMessage(
+            'Info',
+            'Terms and Conditions',
+            'Your preferences have been saved.'
+        )
+        response = redirect(url_for('lsView'))
+        expirationDate = datetime.datetime.now() + datetime.timedelta(days=180)
+        response.set_cookie(
+            'termsAcceptedVersion',
+            termVersion,
+            expires=expirationDate,
+        )
+        response.set_cookie(
+            'termsAccepted',
+            str(termsAccepted),
+            expires=expirationDate,
+        )
+        return response
+
+
 @app.route('/info/terms')
 def termsView():
     """Terms and conditions route."""
@@ -200,6 +244,12 @@ def termsView():
     tDate = g.settings['terms']['terms'][
         'terms_date']['value']
     #
+    requestParams = request.args
+    showAgreementButtons = requestParams.get(
+        'showAgreementButtons',
+        'n',
+    ).lower() == 'y'
+    #
     pageFeatures = prepareTaskPageFeatures(
         infoPageDescriptor,
         ['root', 'terms'],
@@ -214,6 +264,7 @@ def termsView():
         'terms.html',
         user=user,
         terms=terms,
+        showAgreementButtons=True,  # showAgreementButtons,
         **pageFeatures,
     )
 

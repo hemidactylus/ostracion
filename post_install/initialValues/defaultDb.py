@@ -1441,7 +1441,7 @@ initialDbValues = {
                                         'Version of last revision of the '
                                         'privacy policy'
                                     ),
-                'default_value':    '1.0.0',
+                'default_value':    '1.1.0',
                 'metadata':         '',
                 'group_id':         'privacy_policy',
                 'group_title':      'Privacy Policy',
@@ -1458,7 +1458,7 @@ initialDbValues = {
                                         'Date of last revision of the '
                                         'privacy policy'
                                     ),
-                'default_value':    'Jan 1st, 2020',
+                'default_value':    'Jun 1st, 2020',
                 'metadata':         '',
                 'group_id':         'privacy_policy',
                 'group_title':      'Privacy Policy',

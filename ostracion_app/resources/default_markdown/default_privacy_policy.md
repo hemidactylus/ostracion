@@ -30,9 +30,9 @@ other users able to see the email address are the Website administrators.
 When users who have an account on [[APPLICATION_NAME]] log in, their
 browser receives a few "technical" cookies, text snippets used in
 subsequent communications between the browser and the server to keep
-the information on the user being rightfully logged in. These cookies are
-of a volatile nature and do not convey any kind of personally-identifiable
-information.
+the information on the user being rightfully logged in and their
+navigation preferences. These cookies do not convey any kind of
+personally-identifiable information.
 
 Users can control and/or delete the cookies as desired - as detailed e.g. at
 [https://allaboutcookies.org](https://allaboutcookies.org/)
