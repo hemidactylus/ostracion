@@ -227,9 +227,16 @@ def before_request():
         currentTermVersion = g.settings['terms']['terms'][
             'terms_version']['value']
         if g.user.is_authenticated and usersMustAbideByTOS:
-            1/0
+            # user-on-db TOS checks
+            typeOfUsers = 'Users'
+            storedTermsVersion = g.user.terms_accepted_version
+            storedTermsAcceptance = safeInt(
+                g.user.terms_accepted,
+                default=0,
+            )
         elif not g.user.is_authenticated and anonymousMustAbideByTOS:
             # anonymous TOS checks
+            typeOfUsers = 'Visitors'
             storedTermsVersion = request.cookies.get('termsAcceptedVersion')
             storedTermsAcceptance = safeInt(
                 request.cookies.get('termsAccepted'),
@@ -242,8 +249,8 @@ def before_request():
             flashMessage(
                 'Info',
                 'Action required',
-                ('Visitors must explicitly agree to the Terms and Conditions'
-                    ' before accessing the site.'),
+                ('%s must explicitly agree to the Terms and Conditions'
+                    ' before accessing the site.') % typeOfUsers,
             )
             return redirect(url_for('termsView', showAgreementButtons='y'))
 

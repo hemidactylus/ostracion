@@ -12,7 +12,8 @@ from ostracion_app.utilities.models.DictableObject import DictableObject
 class User(DictableObject):
     namedFields = ['username', 'fullname', 'salt', 'passwordhash', 'email',
                    'icon_file_id', 'icon_file_id_username', 'icon_mime_type',
-                   'banned', 'last_login']
+                   'banned', 'last_login', 'terms_accepted',
+                   'terms_accepted_version']
 
     def __init__(self, **kwargs):
         """ Standard 'DictableObject' init, plus delicate handling of:

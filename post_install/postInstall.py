@@ -243,6 +243,17 @@ if __name__ == '__main__':
                         print('already present ', end='')
                     print('#')
                 print('        * done.')
+            elif tName == 'users':
+                # we may have to add a field
+                columns = dbQueryColumns(db, tName)
+                for colName in ['terms_accepted', 'terms_accepted_version']:
+                    if colName not in columns:
+                        # must add colName
+                        print('        * Adding "%s" column' % colName)
+                        db.execute(
+                            'ALTER TABLE users ADD COLUMN %s TEXT;' % colName
+                        )
+                        print('          done.')
         # regardless of whether the table was new or not,
         # some on-table checks and finalisations
         if tName == 'user_roles':

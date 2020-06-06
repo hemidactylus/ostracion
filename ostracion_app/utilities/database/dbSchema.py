@@ -17,6 +17,8 @@ dbSchema = {
             ('icon_mime_type', 'TEXT'),
             ('banned', 'INTEGER'),
             ('last_login', 'TIMESTAMP'),
+            ('terms_accepted', 'TEXT'),
+            ('terms_accepted_version', 'TEXT'),
         ],
         'foreign_keys': {
             'users': [

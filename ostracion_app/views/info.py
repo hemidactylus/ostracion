@@ -21,10 +21,19 @@ from flask import (
 
 from config import (
     ostracionVersion,
+    resourceDirectory,
+)
+
+from ostracion_app.utilities.tools.dictTools import (
+    recursivelyMergeDictionaries,
 )
 
 from ostracion_app.utilities.database.dbTools import (
     dbGetDatabase,
+)
+
+from ostracion_app.utilities.database.userTools import (
+    dbUpdateUser,
 )
 
 from ostracion_app.utilities.database.settingsTools import (
@@ -36,11 +45,9 @@ from ostracion_app.utilities.tools.markdownTools import (
     loadMarkdownReplacements,
 )
 
-from config import (
-    resourceDirectory,
-)
-
 from ostracion_app.utilities.viewTools.messageTools import flashMessage
+
+from ostracion_app.utilities.models.User import User
 
 from ostracion_app.utilities.database.permissions import (
     userRoleRequired,
@@ -202,17 +209,21 @@ def termsAcceptView(acceptance):
         'terms_version']['value']
     user = g.user
     db = dbGetDatabase()
+    response = redirect(url_for('lsView'))
     if user.is_authenticated:
         # we store the acceptance in the user itself
-        1/0
+        newUser = User(**(
+            recursivelyMergeDictionaries(
+                {
+                    'terms_accepted_version': termVersion,
+                    'terms_accepted': str(termsAccepted),
+                },
+                defaultMap=user.asDict(),
+            )
+        ))
+        dbUpdateUser(db, newUser, user)
     else:
         # cookie-based handling of terms-acceptance
-        flashMessage(
-            'Info',
-            'Terms and Conditions',
-            'Your preferences have been saved.'
-        )
-        response = redirect(url_for('lsView'))
         expirationDate = datetime.datetime.now() + datetime.timedelta(days=180)
         response.set_cookie(
             'termsAcceptedVersion',
@@ -224,7 +235,13 @@ def termsAcceptView(acceptance):
             str(termsAccepted),
             expires=expirationDate,
         )
-        return response
+    #
+    flashMessage(
+        'Info',
+        'Terms and Conditions',
+        'Your preferences have been saved.'
+    )
+    return response
 
 
 @app.route('/info/terms')
