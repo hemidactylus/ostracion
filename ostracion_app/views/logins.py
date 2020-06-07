@@ -235,6 +235,7 @@ def before_request():
                 g.user.terms_accepted,
                 default=0,
             )
+            needTermsAcceptance = True
         elif not g.user.is_authenticated and anonymousMustAbideByTOS:
             # anonymous TOS checks
             typeOfUsers = 'Visitors'
@@ -243,10 +244,16 @@ def before_request():
                 request.cookies.get('termsAccepted'),
                 default=0,
             )
+            needTermsAcceptance = True
+        else:
+            needTermsAcceptance = False
         #
-        hasAgreedToTerms = (storedTermsAcceptance != 0 and
-                            storedTermsVersion == currentTermVersion)
-        if not hasAgreedToTerms:
+        if needTermsAcceptance:
+            canContinueTermwise = (storedTermsAcceptance != 0 and
+                                   storedTermsVersion == currentTermVersion)
+        else:
+            canContinueTermwise = True
+        if not canContinueTermwise:
             quotedTravelToPath = urllib.parse.quote_plus(request.full_path)
             flashMessage(
                 'Info',
