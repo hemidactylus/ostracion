@@ -43,7 +43,7 @@
                                 {% for userDict in users %}
                                   <tr>
                                     <td>
-                                      <img src="{{ userDict.profilepicture }}" style="max-width: 80px;"/>
+                                      <img class="rounded" src="{{ userDict.profilepicture }}" style="max-width: 80px;"/>
                                     </td>
                                     <td>
                                         {% if userDict.is_current_user %}
