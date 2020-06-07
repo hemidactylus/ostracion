@@ -1524,7 +1524,7 @@ initialDbValues = {
                                         'Date of last revision of the '
                                         'terms and conditions'
                                     ),
-                'default_value':    'Jan 1st, 2020',
+                'default_value':    'Jun 1st, 2020',
                 'metadata':         '',
                 'group_id':         'terms',
                 'group_title':      'Terms and conditions',

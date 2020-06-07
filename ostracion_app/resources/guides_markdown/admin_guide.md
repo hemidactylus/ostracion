@@ -21,6 +21,9 @@ but is always rendered as image to make the life of crawler bots a bit more
 difficult.
 - _Privacy policy_: similar to the previous case. Again, the DPO contact email
 is always rendered as image to visitors.
+- _Terms and conditions_: similar to the previous case. Besides the Markdown
+text body, here are two settings that determine whether explicitly accepting
+the Terms is compulsory in order to start using Ostracion.
 - _System settngs_: this is where the mapping to the actual machine filesystem
 is done. One must be **extremely cautious** when re-configuring this. A
 change in the "filesystem physical location" will make all files currently

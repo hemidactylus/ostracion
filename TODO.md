@@ -44,17 +44,9 @@ Find an elegant solution.
 
 ## TODOs for the next major release
 
-### "Terms and conditions" with compulsory acceptance before using the account?
-(as per new setting: "must new users accept before browsing?")
-
-  - write terms
-  - logic for enforcing acceptance:
-      * 2 settings:   terms.terms.[terms_must_agree_anonymous / terms_must_agree]
-      - anon / users, two flows (cookie / db in users table)
-      - terms page has a queryparam "showagreement"
-      - and other routes redirect here, but no:
-          - service views (icons etc)
-          - login page, other pages?
+### Terms and conditions
+  - hash the original url so that after accepting the terms one is redirected
+    to that
 
 ### API / Command line tools to sync in either direction
 
