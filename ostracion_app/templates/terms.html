@@ -26,16 +26,18 @@
             {% endif %}
             <div class="jumbotron" style="padding-top: 5px;">
                 {{ terms.contents | safe }}
-            </div>
-            <div class="row">
-                <div class="col">
-                    <a href="{{ url_for('termsAcceptView', acceptance='yes') }}" class="btn btn-success" style="margin-right: 25px;">
-                        I Agree to the Terms
-                    </a>
-                    <a href="{{ url_for('termsAcceptView', acceptance='no') }}" class="btn btn-warning">
-                        I Decline
-                    </a>
-                </div>
+                {% if showAgreementButtons %}
+                    <div class="row">
+                        <div class="col">
+                            <a href="{{ url_for('termsAcceptView', acceptance='yes', travelTo=travelTo) }}" class="btn btn-success" style="margin-right: 25px;">
+                                I Agree to the Terms
+                            </a>
+                            <a href="{{ url_for('termsAcceptView', acceptance='no', travelTo=travelTo) }}" class="btn btn-warning">
+                                I Decline
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
 

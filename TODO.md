@@ -44,10 +44,6 @@ Find an elegant solution.
 
 ## TODOs for the next major release
 
-### Terms and conditions
-  - hash the original url so that after accepting the terms one is redirected
-    to that
-
 ### API / Command line tools to sync in either direction
 
 ### Zip handling

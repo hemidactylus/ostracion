@@ -6,6 +6,7 @@
 """
 
 import datetime
+import urllib.parse
 
 from flask import (
     g,
@@ -242,17 +243,22 @@ def before_request():
                 request.cookies.get('termsAccepted'),
                 default=0,
             )
-
+        #
         hasAgreedToTerms = (storedTermsAcceptance != 0 and
                             storedTermsVersion == currentTermVersion)
         if not hasAgreedToTerms:
+            quotedTravelToPath = urllib.parse.quote_plus(request.full_path)
             flashMessage(
                 'Info',
                 'Action required',
                 ('%s must explicitly agree to the Terms and Conditions'
                     ' before accessing the site.') % typeOfUsers,
             )
-            return redirect(url_for('termsView', showAgreementButtons='y'))
+            return redirect(url_for(
+                'termsView',
+                showAgreementButtons='y',
+                travelTo=quotedTravelToPath,
+            ))
 
     # here the ordinary flow is resumed
     if g.settings['behaviour']['behaviour_permissions'][

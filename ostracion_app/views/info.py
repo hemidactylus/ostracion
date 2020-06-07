@@ -5,6 +5,7 @@
 import json
 import os
 import datetime
+import urllib.parse
 
 from ostracion_app.app_main import app
 
@@ -44,6 +45,8 @@ from ostracion_app.utilities.tools.markdownTools import (
     markdownToHtml,
     loadMarkdownReplacements,
 )
+
+from ostracion_app.utilities.tools.extraction import safeUnquotePlus
 
 from ostracion_app.utilities.viewTools.messageTools import flashMessage
 
@@ -209,7 +212,16 @@ def termsAcceptView(acceptance):
         'terms_version']['value']
     user = g.user
     db = dbGetDatabase()
-    response = redirect(url_for('lsView'))
+    #
+    if termsAccepted:
+        requestParams = request.args
+        response = redirect(safeUnquotePlus(
+            requestParams.get('travelTo'),
+            url_for('lsView'),
+        ))
+    else:
+        response = redirect(url_for('lsView'))
+    #
     if user.is_authenticated:
         # we store the acceptance in the user itself
         newUser = User(**(
@@ -266,6 +278,10 @@ def termsView():
         'showAgreementButtons',
         'n',
     ).lower() == 'y'
+    quotedTravelToPath = urllib.parse.quote_plus(safeUnquotePlus(
+        requestParams.get('travelTo'),
+        url_for('lsView'),
+    ))
     #
     pageFeatures = prepareTaskPageFeatures(
         infoPageDescriptor,
@@ -282,6 +298,7 @@ def termsView():
         user=user,
         terms=terms,
         showAgreementButtons=True,  # showAgreementButtons,
+        travelTo=quotedTravelToPath,
         **pageFeatures,
     )
 

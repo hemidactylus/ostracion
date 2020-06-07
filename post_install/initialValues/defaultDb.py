@@ -1559,7 +1559,9 @@ initialDbValues = {
                                     ),
                 'description':      (
                                         'Agreement is compulsory to navigate ('
-                                        'anonymous visitors)'
+                                        'anonymous visitors). Warning: this '
+                                        'also applies before when visitors '
+                                        'redeem a ticket.'
                                     ),
                 'default_value':    '1',
                 'metadata':         '',
