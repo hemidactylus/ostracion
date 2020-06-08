@@ -227,38 +227,44 @@ def before_request():
             'terms_must_agree_anonymous']['value']
         currentTermVersion = g.settings['terms']['terms'][
             'terms_version']['value']
-        if g.user.is_authenticated and usersMustAbideByTOS:
-            # user-on-db TOS checks
+        #
+        if g.user.is_authenticated:
+            mustAbideByTOS = usersMustAbideByTOS
             typeOfUsers = 'Users'
             storedTermsVersion = g.user.terms_accepted_version
             storedTermsAcceptance = safeInt(
                 g.user.terms_accepted,
-                default=0,
+                default=None,
             )
-            needTermsAcceptance = True
-        elif not g.user.is_authenticated and anonymousMustAbideByTOS:
-            # anonymous TOS checks
+        else:
+            mustAbideByTOS = anonymousMustAbideByTOS
             typeOfUsers = 'Visitors'
             storedTermsVersion = request.cookies.get('termsAcceptedVersion')
             storedTermsAcceptance = safeInt(
                 request.cookies.get('termsAccepted'),
-                default=0,
+                default=None,
             )
-            needTermsAcceptance = True
-        else:
-            needTermsAcceptance = False
         #
-        if needTermsAcceptance:
-            canContinueTermwise = (storedTermsAcceptance != 0 and
-                                   storedTermsVersion == currentTermVersion)
+        if storedTermsVersion == currentTermVersion:
+            thisVersionAcceptance = storedTermsAcceptance
         else:
+            thisVersionAcceptance = None
+        #
+        if thisVersionAcceptance is None:
+            canContinueTermwise = not mustAbideByTOS
+        elif thisVersionAcceptance == 0:
+            # explicit not-acceptance
+            canContinueTermwise = False
+        else:
+            # positive updated acceptance
             canContinueTermwise = True
+        #
         if not canContinueTermwise:
             quotedTravelToPath = urllib.parse.quote_plus(request.full_path)
             flashMessage(
                 'Info',
                 'Action required',
-                ('%s must explicitly agree to the Terms and Conditions'
+                ('%s must review the Terms and Conditions'
                     ' before accessing the site.') % typeOfUsers,
             )
             return redirect(url_for(

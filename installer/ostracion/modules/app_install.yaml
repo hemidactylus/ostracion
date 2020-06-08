@@ -27,6 +27,7 @@
   git:
     repo: "https://github.com/hemidactylus/ostracion.git"
     dest: '/home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion'
+    version: master
   tags: app_update
 
 - name: Creating the virtual-environments directory
