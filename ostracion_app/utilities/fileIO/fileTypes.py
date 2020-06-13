@@ -4,6 +4,8 @@
 
 from flask import (
     url_for,
+    request,
+    g,
 )
 
 from ostracion_app.utilities.fileIO.mimeTypeMaps import (
@@ -15,6 +17,9 @@ from ostracion_app.utilities.fileIO.textFileViewingModes import (
     textFileViewingModes,
 )
 
+from ostracion_app.utilities.database.tickets import (
+    dbPunchTicket,
+)
 
 def isFileViewable(file):
     """Does the file belong to the viewable mime types?"""
@@ -38,17 +43,38 @@ def fileViewingClass(file):
         return file.textual_mode
 
 
-def produceFileViewContents(file, mode, viewParameters, fileStorageDirectory):
+def produceFileViewContents(db, file, mode, viewParameters,
+                            fileStorageDirectory, urlRoot=None,
+                            protectBannedUserTickets=None):
     """ Prepare a <contents> structure for later in-page viewing of file.
 
         Act according to whether it is usual-view
         or by-ticket-view (in which case the image URL is different).
+
+        Note: if it's an image, the ticket-punching (if required) occurs
+        within the views such as 'ticket*View' used here.
+        But if it is a text-viewing mode we cannot do that since downloading
+        and viewing in page are different things, hence we have to punch here.
+        So in general viewing and downloading are two separate punches,
+        except, as usual for images, client browser caching entails a single
+        punch.
     """
     fViewClass = fileViewingClass(file)
     if fViewClass in textFileViewingModes:
         fileContents = textFileViewingModes[fViewClass][
             'contentPreparer'](file, mode, viewParameters,
                                fileStorageDirectory)
+        if mode in {'ticketview', 'galleryview'}:
+            # we also punch a ticket
+            dbPunchTicket(
+                db,
+                'f',
+                viewParameters['ticketId'],
+                viewParameters['securityCode'],
+                urlRoot,
+                protectBannedUserTickets,
+            )
+
     elif fViewClass == 'image':
         if mode == 'fsview':
             imgValue = url_for(

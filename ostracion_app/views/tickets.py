@@ -164,6 +164,7 @@ def redeemTicketView(mode, ticketId, securityCode):
                     user=user,
                     issuer=issuer,
                     richTicket=richTicket,
+                    urlRoot=request.url_root,
                 )
             elif mode == 'p':
                 # change password: change password form with ticket
@@ -173,6 +174,7 @@ def redeemTicketView(mode, ticketId, securityCode):
                     user=user,
                     issuer=issuer,
                     richTicket=richTicket,
+                    urlRoot=request.url_root,
                 )
             elif mode == 'f':
                 return retrieveFileUponTicket(
@@ -180,6 +182,7 @@ def redeemTicketView(mode, ticketId, securityCode):
                     user=user,
                     issuer=issuer,
                     richTicket=richTicket,
+                    urlRoot=request.url_root,
                 )
             elif mode == 'c':
                 return uploadFilesUponTicket(
@@ -187,6 +190,7 @@ def redeemTicketView(mode, ticketId, securityCode):
                     user=user,
                     issuer=issuer,
                     richTicket=richTicket,
+                    urlRoot=request.url_root,
                 )
             elif mode == 'g':
                 return galleryViewUponTicket(
@@ -194,14 +198,15 @@ def redeemTicketView(mode, ticketId, securityCode):
                     user=user,
                     issuer=issuer,
                     richTicket=richTicket,
-                )
+                    urlRoot=request.url_root,
+            )
             else:
                 raise OstracionError('Invalid ticket magic link')
         else:
             raise OstracionError('Invalid ticket magic link')
 
 
-def galleryViewUponTicket(db, user, issuer, richTicket):
+def galleryViewUponTicket(db, user, issuer, richTicket, urlRoot):
     """ This is a tiny redirect to a separate view
         with a parameter "page" that is silently brought within [ 0 : (n-1) ]
         and handles the gallery display with hiding of the bcrumbs
@@ -238,9 +243,9 @@ def ticketGalleryView(ticketId, securityCode, page=0):
         issuer = dbGetUser(db, richTicket['ticket'].username)
         if richTicket['redeemable']:
             # valid ticket. Further checks are on the way.
-            if (not g.settings['behaviour']['behaviour_tickets'][
-                    'protect_banned_user_tickets']['value'] or
-                    issuer.banned == 0):
+            protectBannedUserTickets = g.settings['behaviour'][
+                'behaviour_tickets']['protect_banned_user_tickets']['value']
+            if (not protectBannedUserTickets or issuer.banned == 0):
                 #
                 boxPath = richTicket['metadata']['box_path']
                 request._onErrorUrl = url_for(
@@ -270,6 +275,7 @@ def ticketGalleryView(ticketId, securityCode, page=0):
                             ) % numGalleryFiles
                             #
                             fileContents = produceFileViewContents(
+                                db,
                                 file,
                                 mode='galleryview',
                                 viewParameters={
@@ -279,6 +285,8 @@ def ticketGalleryView(ticketId, securityCode, page=0):
                                     'securityCode': securityCode,
                                 },
                                 fileStorageDirectory=fileStorageDirectory,
+                                urlRoot=request.url_root,
+                                protectBannedUserTickets=protectBannedUserTickets,
                             )
                             fileActions = {
                                 'gallery_prev': url_for(
@@ -402,16 +410,16 @@ def ticketGalleryFsView(ticketId, securityCode, fileName):
         return abort(404, 'Content unavailable')
 
 
-def retrieveFileUponTicket(db, user, issuer, richTicket):
+def retrieveFileUponTicket(db, user, issuer, richTicket, urlRoot):
     """ Retrieve a file using a file ticket.
 
         Retrieval fails if either:
             1. user banned;
             2. object not available to the issuer.
     """
-    if (not g.settings['behaviour']['behaviour_tickets'][
-            'protect_banned_user_tickets']['value'] or
-            issuer.banned == 0):
+    protectBannedUserTickets = g.settings['behaviour'][
+        'behaviour_tickets']['protect_banned_user_tickets']['value']
+    if (not protectBannedUserTickets or issuer.banned == 0):
         boxPath, fileName = (
             richTicket['metadata']['path'][:-1],
             richTicket['metadata']['path'][-1],
@@ -435,6 +443,7 @@ def retrieveFileUponTicket(db, user, issuer, richTicket):
                     # for mode='ticketview'this will internally call
                     # the punching endpoint 'ticketFsDownloadView' below.
                     fileContents = produceFileViewContents(
+                        db,
                         file,
                         mode='ticketview',
                         viewParameters={
@@ -442,6 +451,8 @@ def retrieveFileUponTicket(db, user, issuer, richTicket):
                             'securityCode': richTicket['ticket'].security_code,
                         },
                         fileStorageDirectory=fileStorageDirectory,
+                        urlRoot=urlRoot,
+                        protectBannedUserTickets=protectBannedUserTickets,
                     )
                     return render_template(
                         'fileview.html',
@@ -545,7 +556,7 @@ def ticketFsDownloadView(ticketId, securityCode):
         return abort(404, 'Content unavailable')
 
 
-def uploadFilesUponTicket(db, user, issuer, richTicket):
+def uploadFilesUponTicket(db, user, issuer, richTicket, urlRoot):
     """ Upload-file(s)-upon-ticket route.
 
         Upload fails if
@@ -619,9 +630,10 @@ def uploadFilesUponTicket(db, user, issuer, richTicket):
                     ))
                 else:
                     request._onErrorUrl = url_for(
-                        'uploadFilesUponTicket',
-                        ticketId=ticketId,
-                        securityCode=securityCode,
+                        'redeemTicketView',
+                        mode='c',
+                        ticketId=richTicket['ticket'].ticket_id,
+                        securityCode=richTicket['ticket'].security_code,
                     )
                     raise OstracionError(
                         ('Cannot upload this many files '
@@ -661,7 +673,7 @@ def uploadFilesUponTicket(db, user, issuer, richTicket):
         raise OstracionError('Ticket not acessible or expired')
 
 
-def changePasswordUponTicket(db, user, issuer, richTicket):
+def changePasswordUponTicket(db, user, issuer, richTicket, urlRoot):
     """Change-password-ticket route."""
     ticketsByformerAdminsAreProtected = g.settings['behaviour'][
         'behaviour_tickets'][
@@ -750,7 +762,7 @@ def changePasswordUponTicket(db, user, issuer, richTicket):
         raise OstracionError('Ticket not acessible or expired')
 
 
-def createUserUponTicket(db, user, issuer, richTicket):
+def createUserUponTicket(db, user, issuer, richTicket, urlRoot):
     """User-creation-ticket route."""
     ticketsByformerAdminsAreProtected = g.settings['behaviour'][
         'behaviour_tickets'][

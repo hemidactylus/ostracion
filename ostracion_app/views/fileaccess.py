@@ -168,6 +168,7 @@ def fsGalleryView(fsPathString=''):
                 }],
             )
             fileContents = produceFileViewContents(
+                db,
                 file,
                 mode='fsview',
                 viewParameters={
@@ -250,6 +251,7 @@ def fsView(fsPathString=''):
             discardedActions={'view'},
         )
         fileContents = produceFileViewContents(
+            db,
             file,
             mode='fsview',
             viewParameters={

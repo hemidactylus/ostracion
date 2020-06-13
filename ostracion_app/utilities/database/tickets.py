@@ -18,7 +18,9 @@ from ostracion_app.utilities.tools.dictTools import (
 from ostracion_app.utilities.database.permissions import (
     userIsAdmin,
 )
-
+from ostracion_app.utilities.database.userTools import (
+    dbGetUser,
+)
 from ostracion_app.utilities.exceptions.exceptions import (
     OstracionWarning,
     OstracionError,
@@ -190,6 +192,25 @@ def dbGetEnrichAndCheckTicket(db, mode, ticketId, securityCode, urlRoot):
             return None
 
 
+def dbPunchTicket(db, mode, ticketId, securityCode, urlRoot, protectBannedUserTickets):
+    """Retrieve/enrich a ticket and punch it with dbPunchRichTicket."""
+    richTicket = dbGetEnrichAndCheckTicket(
+        db,
+        mode,
+        ticketId,
+        securityCode,
+        urlRoot,
+    )
+    issuer = (dbGetUser(db, richTicket['ticket'].username)
+              if richTicket is not None
+              else None)
+    if (issuer is not None and
+            (not protectBannedUserTickets or issuer.banned == 0)):
+        dbPunchRichTicket(db, richTicket)
+    else:
+        raise OstracionError('Not allowed to punch ticket')
+
+
 def dbPunchRichTicket(db, richTicket, numPunches=1, skipCommit=False):
     """
         Punch a ticket, i.e. mark it as been used once more.
@@ -218,7 +239,10 @@ def dbPunchRichTicket(db, richTicket, numPunches=1, skipCommit=False):
         if not skipCommit:
             db.commit()
     else:
-        raise OstracionError('Cannot punch a non-redeemable ticket')
+        if richTicket['exhausted']:
+            raise OstracionError('Ticket is exhausted')
+        else:
+            raise OstracionError('Cannot punch a non-redeemable ticket')
 
 
 def dbDeleteTicket(db, ticketId, user, mode, skipCommit=False):
