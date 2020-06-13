@@ -508,7 +508,7 @@ def fsMakeTicketView(fsPathString=''):
                 form.name.data = applyDefault(form.name.data, file.name)
                 form.ticketmessage.data = applyDefault(
                     form.ticketmessage.data,
-                    'Please retrieve this file',
+                    'Please access this file',
                 )
                 form.filemode.data = applyDefault(
                     form.filemode.data,
@@ -538,7 +538,7 @@ def fsMakeTicketView(fsPathString=''):
                                   'to access "%s" without an account.') % (
                                       fsPathString,
                                   ),
-                    baseMultiplicityCaption='Number of granted accesses',
+                    baseMultiplicityCaption='Number of granted accesses (both views and downloads count)',
                     user=user,
                     form=form,
                     iconUrl=makeSettingImageUrl(

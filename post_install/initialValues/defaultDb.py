@@ -1507,7 +1507,7 @@ initialDbValues = {
                                         'Version of last revision of the '
                                         'terms and conditions'
                                     ),
-                'default_value':    '1.0.0',
+                'default_value':    '1.1.0',
                 'metadata':         '',
                 'group_id':         'terms',
                 'group_title':      'Terms and conditions',
@@ -1524,7 +1524,7 @@ initialDbValues = {
                                         'Date of last revision of the '
                                         'terms and conditions'
                                     ),
-                'default_value':    'Jun 1st, 2020',
+                'default_value':    'Jun 13th, 2020',
                 'metadata':         '',
                 'group_id':         'terms',
                 'group_title':      'Terms and conditions',

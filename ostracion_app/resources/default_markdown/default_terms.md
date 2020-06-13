@@ -10,6 +10,7 @@ These Terms are really reasonable and boil down to a few simple rules:
 
 - do not expect any guarantee from this website, use it as it is;
 - if you are the victim of unfairness through the website, let us know;
+- administrators' powers are not regulated (but admins will be nice);
 - do not try to bend the website to your shady/illegal purposes.
 
 Keep reading for the fine-print details.
@@ -61,8 +62,35 @@ rights (or third-party rights), they can reach out to the contact address
 found in the "About" page to let the site maintainer know.
 
 Further, administrators have the power to access all contents hosted on
-the website, and the obligation to exert this power only if it is a provably
-necessary access.
+the website.
+
+### Cancellations
+
+In certain conditions, both administrators and other users have the power
+to delete or change contents hosted in the website which have been uploaded
+by another user. In particular:
+
+- in boxes with the right access permissions, regular users
+  can delete contents by anybody;
+- in boxes with the right access permissions, regular users
+  can upload new contents, overwriting same-named contents previously hosted;
+- in boxes with the right access permissions, regular users
+  can alter metadata associated to contents (titles, descriptions, icons);
+- in _all boxes_, administrators have full change/delete/overwrite permissions.
+
+In all the cases above, there is no compensation or legitimate reason
+to complain for lost/changed contents.
+Moreover, administrator can change the profile of all users (icon,
+name and contact data, password), configure their permissions, as well as:
+
+- temporarily **ban the user** from accessing the website;
+- permanently **delete the user** (together with all their contributions
+  to the website).
+
+Although a sensible administrator does so only if circumstances really require
+such drastic action, it is understood that administrators are under no
+obligation to motivate those actions as part of the interaction of the users
+with the website.
 
 ## Prohibited usages
 
