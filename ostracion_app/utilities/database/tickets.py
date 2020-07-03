@@ -127,10 +127,16 @@ def enrichTicket(db, t, urlRoot):
         targetUrl = None
     elif t.target_type == 'file':
         target = metadata.get('file_name', metadata['file_id'])
-        targetUrl = url_for(
-            'fsDownloadView',
-            fsPathString='/'.join(metadata['path'][1:])
-        )
+        if metadata.get('file_mode', 'direct') == 'view':
+            targetUrl = url_for(
+                'fsView',
+                fsPathString='/'.join(metadata['path'][1:])
+            )
+        else:
+            targetUrl = url_for(
+                'fsDownloadView',
+                fsPathString='/'.join(metadata['path'][1:])
+            )
     elif t.target_type == 'upload':
         _target = metadata.get(
             'box_title',
