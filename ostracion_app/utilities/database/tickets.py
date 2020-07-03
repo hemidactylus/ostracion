@@ -198,7 +198,8 @@ def dbGetEnrichAndCheckTicket(db, mode, ticketId, securityCode, urlRoot):
             return None
 
 
-def dbPunchTicket(db, mode, ticketId, securityCode, urlRoot, protectBannedUserTickets):
+def dbPunchTicket(db, mode, ticketId, securityCode, urlRoot,
+                  protectBannedUserTickets):
     """Retrieve/enrich a ticket and punch it with dbPunchRichTicket."""
     richTicket = dbGetEnrichAndCheckTicket(
         db,

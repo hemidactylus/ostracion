@@ -21,6 +21,7 @@ from ostracion_app.utilities.database.tickets import (
     dbPunchTicket,
 )
 
+
 def isFileViewable(file):
     """Does the file belong to the viewable mime types?"""
     return file.mime_type in viewableMimeTypeToViewModeMap

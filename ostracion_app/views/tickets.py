@@ -199,7 +199,7 @@ def redeemTicketView(mode, ticketId, securityCode):
                     issuer=issuer,
                     richTicket=richTicket,
                     urlRoot=request.url_root,
-            )
+                )
             else:
                 raise OstracionError('Invalid ticket magic link')
         else:
@@ -243,9 +243,9 @@ def ticketGalleryView(ticketId, securityCode, page=0):
         issuer = dbGetUser(db, richTicket['ticket'].username)
         if richTicket['redeemable']:
             # valid ticket. Further checks are on the way.
-            protectBannedUserTickets = g.settings['behaviour'][
+            noBandUsrTickets = g.settings['behaviour'][
                 'behaviour_tickets']['protect_banned_user_tickets']['value']
-            if (not protectBannedUserTickets or issuer.banned == 0):
+            if (not noBandUsrTickets or issuer.banned == 0):
                 #
                 boxPath = richTicket['metadata']['box_path']
                 request._onErrorUrl = url_for(
@@ -286,7 +286,7 @@ def ticketGalleryView(ticketId, securityCode, page=0):
                                 },
                                 fileStorageDirectory=fileStorageDirectory,
                                 urlRoot=request.url_root,
-                                protectBannedUserTickets=protectBannedUserTickets,
+                                protectBannedUserTickets=noBandUsrTickets,
                             )
                             fileActions = {
                                 'gallery_prev': url_for(
@@ -417,9 +417,9 @@ def retrieveFileUponTicket(db, user, issuer, richTicket, urlRoot):
             1. user banned;
             2. object not available to the issuer.
     """
-    protectBannedUserTickets = g.settings['behaviour'][
+    noBandUsrTickets = g.settings['behaviour'][
         'behaviour_tickets']['protect_banned_user_tickets']['value']
-    if (not protectBannedUserTickets or issuer.banned == 0):
+    if (not noBandUsrTickets or issuer.banned == 0):
         boxPath, fileName = (
             richTicket['metadata']['path'][:-1],
             richTicket['metadata']['path'][-1],
@@ -452,7 +452,7 @@ def retrieveFileUponTicket(db, user, issuer, richTicket, urlRoot):
                         },
                         fileStorageDirectory=fileStorageDirectory,
                         urlRoot=urlRoot,
-                        protectBannedUserTickets=protectBannedUserTickets,
+                        protectBannedUserTickets=noBandUsrTickets,
                     )
                     return render_template(
                         'fileview.html',
@@ -520,10 +520,10 @@ def ticketFsDownloadView(ticketId, securityCode):
     issuer = (dbGetUser(db, richTicket['ticket'].username)
               if richTicket is not None
               else None)
-    protectBannedUserTickets = g.settings['behaviour']['behaviour_tickets'][
+    noBandUsrTickets = g.settings['behaviour']['behaviour_tickets'][
         'protect_banned_user_tickets']['value']
     if (issuer is not None and
-            (not protectBannedUserTickets or issuer.banned == 0)):
+            (not noBandUsrTickets or issuer.banned == 0)):
         boxPath, fileName = (
             richTicket['metadata']['path'][:-1],
             richTicket['metadata']['path'][-1],
@@ -564,9 +564,9 @@ def uploadFilesUponTicket(db, user, issuer, richTicket, urlRoot):
             2. issuer has no upload permission
                (incl. access) on the target box.
     """
-    protectBannedUserTickets = g.settings['behaviour']['behaviour_tickets'][
+    noBandUsrTickets = g.settings['behaviour']['behaviour_tickets'][
         'protect_banned_user_tickets']['value']
-    if not protectBannedUserTickets or issuer.banned == 0:
+    if not noBandUsrTickets or issuer.banned == 0:
         boxPath = richTicket['metadata']['box_path']
         request._onErrorUrl = url_for(
             'lsView',

@@ -538,7 +538,8 @@ def fsMakeTicketView(fsPathString=''):
                                   'to access "%s" without an account.') % (
                                       fsPathString,
                                   ),
-                    baseMultiplicityCaption='Number of granted accesses (both views and downloads count)',
+                    baseMultiplicityCaption=('Number of granted accesses (bo'
+                                             'th views and downloads count)'),
                     user=user,
                     form=form,
                     iconUrl=makeSettingImageUrl(
