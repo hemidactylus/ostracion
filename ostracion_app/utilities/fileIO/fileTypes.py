@@ -32,6 +32,14 @@ def isFileTextEditable(file):
     return file.mime_type in textualEditableMimeTypes
 
 
+def isFileTextViewable(file):
+    """
+        Decide whether a file is viewable with some "text doc" mode,
+        not resolving between e.g. markdown, plaintext etc.
+    """
+    return viewableMimeTypeToViewModeMap.get(file.mime_type) == 'textual'
+
+
 def fileViewingClass(file):
     """ Resolve file to the viewability class (e.g. image),
         but in particular for textual class resolve further into
@@ -69,7 +77,7 @@ def produceFileViewContents(db, file, mode, viewParameters,
             # we also punch a ticket
             dbPunchTicket(
                 db,
-                'f',
+                {'ticketview': 'f', 'galleryview': 'g'}[mode],
                 viewParameters['ticketId'],
                 viewParameters['securityCode'],
                 urlRoot,

@@ -34,12 +34,6 @@ Tree viev: make all of it into a css style sheet.
 
 Tables and small screens: currently a disaster.
 
-### The markdown-with-images riddle
-
-When viewing a rendered markdown, if it embeds an image it is a mess
-since a rel path 'image.png' would inherit the fsv ("V") full url.
-Find an elegant solution.
-
 
 
 ## TODOs for the next major release

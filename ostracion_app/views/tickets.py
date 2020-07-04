@@ -224,6 +224,7 @@ def galleryViewUponTicket(db, user, issuer, richTicket, urlRoot):
     ))
 
 
+@app.route('/ticketgallery/<ticketId>/<securityCode>')
 @app.route('/ticketgallery/<ticketId>/<securityCode>/<int:page>')
 def ticketGalleryView(ticketId, securityCode, page=0):
     """Actual route to view a gallery with a ticket."""

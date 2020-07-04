@@ -155,7 +155,8 @@ def enrichTicket(db, t, urlRoot):
         target = _target if _target != '' else 'Root'
         targetUrl = url_for(
             'fsGalleryView',
-            fsPathString='/'.join(metadata['box_path'][1:])
+            fsPathString='/'.join(metadata['box_path'][1:]),
+            top=1,
         )
     else:
         target = None

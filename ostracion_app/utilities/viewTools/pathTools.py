@@ -36,6 +36,7 @@ from config import (
 from ostracion_app.utilities.fileIO.fileTypes import (
     isFileViewable,
     isFileTextEditable,
+    isFileTextViewable,
 )
 
 from ostracion_app.utilities.database.userTools import (
@@ -396,7 +397,8 @@ def prepareBoxHeaderActions(db, box, boxPath, user,
         ) if canIssueUploadTicket else None,
         'gallery_view': url_for(
             'fsGalleryView',
-            fsPathString='/'.join(boxPath)
+            fsPathString='/'.join(boxPath),
+            top='1',
         ),
         'issue_gallery_ticket': url_for(
             'makeTicketBoxGalleryView',
@@ -543,6 +545,16 @@ def prepareLinkInfo(db, link):
     ]
 
 
+def prepareAdaptedFileViewLink(file, filePath):
+    """ Disambiguate the file-view mode (is it textual or not?) and
+        prepare a view-link (hybrid-view or not) accordingly.
+    """
+    if isFileTextViewable(file):
+        return url_for('fsHybridView', fsPathString='/'.join(filePath))
+    else:
+        return url_for('fsView', fsPathString='/'.join(filePath))
+
+
 def prepareFileActions(db, file, filePath, parentBox, user,
                        discardedActions=set(), prepareParentButton=False):
     """ Calculate the actions on a file available to user (according to their
@@ -551,7 +563,7 @@ def prepareFileActions(db, file, filePath, parentBox, user,
     fActions = {}
     # view
     if isFileViewable(file):
-        fActions['view'] = url_for('fsView', fsPathString='/'.join(filePath))
+        fActions['view'] = prepareAdaptedFileViewLink(file, filePath)
     # download
     fActions['download'] = url_for(
         'fsDownloadView',
@@ -591,7 +603,8 @@ def prepareFileActions(db, file, filePath, parentBox, user,
             )
     fActions['gallery'] = url_for(
         'fsGalleryView',
-        fsPathString='/'.join(filePath)
+        fsPathString='/'.join(filePath),
+        top='1',
     )
     #
     if prepareParentButton:

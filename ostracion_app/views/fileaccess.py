@@ -59,6 +59,8 @@ from ostracion_app.utilities.fileIO.physical import (
     flushFsDeleteQueue,
 )
 
+from ostracion_app.utilities.tools.extraction import safeInt
+
 from ostracion_app.utilities.viewTools.pathTools import (
     makeBreadCrumbs,
     splitPathString,
@@ -92,6 +94,7 @@ from ostracion_app.utilities.database.settingsTools import (
 
 from ostracion_app.utilities.fileIO.fileTypes import (
     produceFileViewContents,
+    isFileTextViewable,
 )
 
 
@@ -106,6 +109,7 @@ def fsGalleryView(fsPathString=''):
         That is to say, if user has read permission on box, gallery URLs are
         not index-based, rather filename-based and recalculated on actual 'ls'.
     """
+    isTopAccess = 1 if safeInt(request.args.get('top'), 0) != 0 else 0
     user = g.user
     fileStorageDirectory = g.settings['system']['system_directories'][
         'fs_directory']['value']
@@ -124,6 +128,7 @@ def fsGalleryView(fsPathString=''):
             return redirect(url_for(
                 'fsGalleryView',
                 fsPathString='/'.join(lsPath[1:] + [files[0].name]),
+                top=str(isTopAccess),
             ))
         else:
             flashMessage(
@@ -141,86 +146,122 @@ def fsGalleryView(fsPathString=''):
         parentBox = getBoxFromPath(db, boxPath, user)
         file = getFileFromParent(db, parentBox, fileName, user)
         if file is not None:
-            # gallery navigation calculations
-            files = sorted(
-                getFilesFromBox(db, parentBox),
-                key=lambda f: (f.name.lower(), f.name),
-            )
-            thisFileIndex = [
-                idx
-                for idx, fil in enumerate(files)
-                if fil.name == fileName
-            ][0]
-            numGalleryFiles = len(files)
-            nextFileIndex = (thisFileIndex+1) % numGalleryFiles
-            prevFileIndex = (thisFileIndex-1+numGalleryFiles) % numGalleryFiles
-            #
-            pathBCrumbs = makeBreadCrumbs(
-                boxPath,
-                g,
-                appendedItems=[{
-                    'kind': 'link',
-                    'name': 'Gallery view %i/%i' % (
+            if isTopAccess:
+                # gallery navigation calculations
+                files = sorted(
+                    getFilesFromBox(db, parentBox),
+                    key=lambda f: (f.name.lower(), f.name),
+                )
+                thisFileIndex = [
+                    idx
+                    for idx, fil in enumerate(files)
+                    if fil.name == fileName
+                ][0]
+                numGalleryFiles = len(files)
+                nextFileIndex = (thisFileIndex + 1) % numGalleryFiles
+                prevFileIndex = (
+                    thisFileIndex - 1 + numGalleryFiles
+                ) % numGalleryFiles
+                #
+                pathBCrumbs = makeBreadCrumbs(
+                    boxPath,
+                    g,
+                    appendedItems=[{
+                        'kind': 'link',
+                        'name': 'Gallery view %i/%i' % (
+                            thisFileIndex + 1,
+                            numGalleryFiles,
+                        ),
+                        'target': None,
+                    }],
+                )
+                fileContents = produceFileViewContents(
+                    db,
+                    file,
+                    mode='fsview',
+                    viewParameters={
+                        'boxPath': boxPath,
+                        'fileName': fileName,
+                    },
+                    fileStorageDirectory=fileStorageDirectory,
+                )
+                fileActions = {
+                    'gallery_prev': url_for(
+                        'fsGalleryView',
+                        fsPathString='/'.join(
+                            boxPath[1:] + [files[prevFileIndex].name]
+                        ),
+                        top=str(isTopAccess),
+                    ),
+                    'gallery_next': url_for(
+                        'fsGalleryView',
+                        fsPathString='/'.join(
+                            boxPath[1:] + [files[nextFileIndex].name]
+                        ),
+                        top=str(isTopAccess),
+                    ),
+                    'gallery_up': url_for(
+                        'lsView',
+                        lsPathString='/'.join(boxPath[1:]),
+                    ),
+                    'download': url_for(
+                        'fsDownloadView',
+                        fsPathString=fsPathString,
+                    ),
+                }
+                return render_template(
+                    'fileview.html',
+                    fileActions=fileActions,
+                    fileInfo=None,
+                    filecontents=fileContents,
+                    breadCrumbs=pathBCrumbs,
+                    user=user,
+                    pageTitle='"%s" gallery, file "%s" (%i/%i)' % (
+                        parentBox.title,
+                        file.name,
                         thisFileIndex + 1,
                         numGalleryFiles,
                     ),
-                    'target': None,
-                }],
-            )
-            fileContents = produceFileViewContents(
-                db,
-                file,
-                mode='fsview',
-                viewParameters={
-                    'boxPath': boxPath,
-                    'fileName': fileName,
-                },
-                fileStorageDirectory=fileStorageDirectory,
-            )
-            fileActions = {
-                'gallery_prev': url_for(
-                    'fsGalleryView',
-                    fsPathString='/'.join(
-                        boxPath[1:] + [files[prevFileIndex].name]
-                    ),
-                ),
-                'gallery_next': url_for(
-                    'fsGalleryView',
-                    fsPathString='/'.join(
-                        boxPath[1:] + [files[nextFileIndex].name]
-                    ),
-                ),
-                'gallery_up': url_for(
-                    'lsView',
-                    lsPathString='/'.join(boxPath[1:]),
-                ),
-                'download': url_for(
-                    'fsDownloadView',
-                    fsPathString=fsPathString,
-                ),
-            }
-            return render_template(
-                'fileview.html',
-                fileActions=fileActions,
-                fileInfo=None,
-                filecontents=fileContents,
-                breadCrumbs=pathBCrumbs,
-                user=user,
-                pageTitle='"%s" gallery, file "%s" (%i/%i)' % (
-                    parentBox.title,
-                    file.name,
-                    thisFileIndex + 1,
-                    numGalleryFiles,
-                ),
-                pageSubtitle=file.description,
-                downloadUrl=None,
-                hideBreadCrumbs=True,
-                hideNavbar=True,
-            )
+                    pageSubtitle=file.description,
+                    downloadUrl=None,
+                    hideBreadCrumbs=True,
+                    hideNavbar=True,
+                )
+            else:
+                return fsDownloadView(fsPathString=fsPathString)
         else:
             # extreme fallback to ls, which will hiearchically
             # deal with the retrieval
             return redirect(url_for('lsView', lsPathString=fsPathString))
+
+
+@app.route('/fshv/<path:fsPathString>')
+@app.route('/fshv/')
+@app.route('/fshv')
+def fsHybridView(fsPathString=''):
+    """ "Hybrid" file view: if it is a textually-viewable file
+        (such as plaintext but most importantly markdown), show it as 'view';
+        if it is anything else (especially an image), return it as 'download':
+        this is to make sure embedding of images in markdown documents works
+        as usual.
+    """
+    user = g.user
+    lsPath = splitPathString(fsPathString)
+    boxPath, fileName = lsPath[:-1], lsPath[-1]
+    db = dbGetDatabase()
+    fileStorageDirectory = g.settings['system']['system_directories'][
+        'fs_directory']['value']
+    parentBox = getBoxFromPath(db, boxPath, user)
+    request._onErrorUrl = url_for(
+        'lsView',
+        lsPathString='/'.join(boxPath[1:]),
+    )
+    file = getFileFromParent(db, parentBox, fileName, user)
+    isTextual = isFileTextViewable(file)
+    if isTextual:
+        return fsView(fsPathString=fsPathString)
+    else:
+        return fsDownloadView(fsPathString=fsPathString)
 
 
 @app.route('/fsv/<path:fsPathString>')

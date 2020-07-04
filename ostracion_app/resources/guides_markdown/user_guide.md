@@ -111,6 +111,9 @@ In this way documents - from simple grocery lists all the way up
 to multi-page projects such as a complex documentation - can be
 hosted in Ostracion.
 
+There are, however, limitations when it comes to navigating Markdown
+pages accessed by ticket, see below.
+
 ## User profile
 
 This section applies only to logged-in users and details the
@@ -179,6 +182,15 @@ Tickets can expire, when they reach their expiration time or when the number
 of usages reaches the allowed total; all tickets issued by the user can be
 inspected in the dedicated user profile pages and can be revoked
 (that is, deleted) at any time.
+
+#### Tickets and Markdown
+
+When viewing a (rendered) Markdown page through a file-view ticket, other
+pages linked there would result in broken links (that's because Ostracion
+cannot assume the ticket holder has any right to see the link target);
+for the same reason, embedded images would not be displayed. Similar
+limitations apply to the case of a "gallery-view ticket" on a box that happens
+to host Markdown material.
 
 ## Special pages
 
