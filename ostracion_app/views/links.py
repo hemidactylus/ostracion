@@ -283,6 +283,8 @@ def fsMoveLinkView(quotedLinkPath):
     boxPath, linkName = lsPath[:-1], lsPath[-1]
     parentBox = getBoxFromPath(db, boxPath, user)
     link = getLinkFromParent(db, parentBox, linkName, user)
+    if link is None:
+        raise OstracionError('Link not found')
     # next we prepare the selectable destinations
     rootBox = getRootBox(db)
 
