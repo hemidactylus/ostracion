@@ -806,6 +806,8 @@ def createUserUponTicket(db, user, issuer, richTicket, urlRoot):
                         icon_file_id='',
                         icon_file_id_username=userDict['username'],
                         banned=0,
+                        terms_accepted='0',
+                        terms_accepted_version='',
                         **userDict,
                     )
                     try:

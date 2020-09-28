@@ -95,6 +95,7 @@ endpointsWithoutAppInitRerouting = {
     'userThumbnailView',
     'logoutView',
     'faviconView',
+    'termsView',
 }
 
 # endpoints for which we do not block anonymous access even if

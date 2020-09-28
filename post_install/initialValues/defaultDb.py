@@ -41,6 +41,8 @@ initialDbValues = {
                 'icon_file_id':     '',
                 'icon_file_id_username':         '',
                 'banned':           1,
+                'terms_accepted':   '0',
+                'terms_accepted_version': '',
             },
             #
             {
@@ -51,6 +53,8 @@ initialDbValues = {
                 'icon_file_id':     '',
                 'icon_file_id_username':         'admin',
                 'banned':           0,
+                'terms_accepted':   '0',
+                'terms_accepted_version': '',
             },
         ],
     },
@@ -1535,13 +1539,13 @@ initialDbValues = {
                 'id':               'terms_must_agree',
                 'klass':            'terms',
                 'type':             'boolean',
-                'value':            '1',
+                'value':            '0',
                 'title':            'Users must agree to Terms and conditions',
                 'description':      (
                                         'Agreement is compulsory to navigate ('
                                         'logged-in users)'
                                     ),
-                'default_value':    '1',
+                'default_value':    '0',
                 'metadata':         '',
                 'group_id':         'terms',
                 'group_title':      'Terms and conditions',
@@ -1552,7 +1556,7 @@ initialDbValues = {
                 'id':               'terms_must_agree_anonymous',
                 'klass':            'terms',
                 'type':             'boolean',
-                'value':            '1',
+                'value':            '0',
                 'title':            (
                                         'Visitors must agree to Terms '
                                         'and conditions'
@@ -1563,7 +1567,7 @@ initialDbValues = {
                                         'also applies before when visitors '
                                         'redeem a ticket.'
                                     ),
-                'default_value':    '1',
+                'default_value':    '0',
                 'metadata':         '',
                 'group_id':         'terms',
                 'group_title':      'Terms and conditions',
