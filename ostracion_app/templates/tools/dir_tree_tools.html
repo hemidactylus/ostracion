@@ -22,6 +22,9 @@
           {% if mode == 'box_move' and predicate %}
             <a href="{{ url_for('fsDoMoveBoxView',quotedSrcBox=src_obj_path,quotedDestBox=dst_obj_path) }}" class="btn btn-success btn-sm">V</a>
           {% endif %}
+          {% if mode == 'pick_box' %}
+            <a href="{{ src_obj_path }}?chosenBoxObjPath={{ dst_obj_path }}" class="btn btn-success btn-sm">C</a>
+          {% endif %}
           {{ hpc }}
             <img src="{{ url_for('boxThumbnailView',dummyId=box.icon_file_id+'_',boxPathString='/'.join(path)) }}" class="dirtree-element-image rounded"/>
             {{ box.box_name if box.box_name!='' else '(root)' }}

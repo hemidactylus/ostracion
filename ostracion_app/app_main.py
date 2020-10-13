@@ -42,3 +42,5 @@ import ostracion_app.views.find
 import ostracion_app.views.errors
 import ostracion_app.views.tools
 import ostracion_app.views.archives
+
+import ostracion_app.views.apps.calendar_maker.calendarmaker
