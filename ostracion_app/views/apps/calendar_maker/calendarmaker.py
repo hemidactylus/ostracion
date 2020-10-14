@@ -3,7 +3,7 @@
 """
 
 import urllib.parse
-
+import json
 from flask import (
     redirect,
     url_for,
@@ -16,6 +16,11 @@ from ostracion_app.utilities.database.dbTools import (
     dbGetDatabase,
 )
 
+from ostracion_app.utilities.tools.dictTools import (
+    recursivelyMergeDictionaries
+)
+
+
 from ostracion_app.utilities.viewTools.messageTools import flashMessage
 
 from ostracion_app.utilities.database.fileSystem import (
@@ -26,6 +31,7 @@ from ostracion_app.utilities.database.fileSystem import (
     # deleteBox,
     getFilesFromBox,
     # getLinksFromBox,
+    getFileFromParent,
     getRootBox,
     # isNameUnderParentBox,
     # canDeleteBox,
@@ -53,6 +59,45 @@ from ostracion_app.views.apps.utilities import preparePickBoxPage
 
 from ostracion_app.app_main import app
 
+
+admittedImageMimeTypes = {
+    'image/gif', 
+    'image/jpeg', 
+    'image/png', 
+}
+
+
+def cookiesToCurrentCalendar(cookies):
+    cpCookie = cookies.get('apps_calendarmaker_current')
+    if cpCookie is None:
+        return {}
+    else:
+        curCal = json.loads(cpCookie)
+        return curCal
+
+
+def dressResponseWithCurrentCalendar(response, cp):
+    response.set_cookie(
+        'apps_calendarmaker_current',
+        json.dumps(cp),
+    )
+    return response
+
+
+def pathToFileStructure(db, user, fPath):
+    fPath = splitPathString(fPath)
+    fBoxPath, fFileName = fPath[:-1], fPath[-1]
+    fParentBox = getBoxFromPath(db, fBoxPath, user)
+    fFile = getFileFromParent(db, fParentBox, fFileName, user)
+    #
+    fStructure = {
+        'path': fPath,
+        'file': fFile,
+        'parent_box': fParentBox,
+    }
+    return fStructure
+
+
 @app.route('/apps/calendarmaker/')
 @app.route('/apps/calendarmaker/index')
 def calendarMakerIndexView():
@@ -66,14 +111,23 @@ def calendarMakerIndexView():
         lsPathString='',
     )
     #
-    pickedDir = request.cookies.get('apps_calendarmaker_pickeddir')
-    if pickedDir is None:
+    pickedBox = request.cookies.get('apps_calendarmaker_pickedbox')
+    if pickedBox is None:
         message = 'Please pick a box'
     else:
-        message = 'Picked box: "%s"' % pickedDir
+        message = 'Picked box: "%s"' % pickedBox
     #
-    if pickedDir is not None:
-        boxPath = splitPathString(pickedDir)
+    currentCalendar = cookiesToCurrentCalendar(request.cookies)
+    coverImagePathString = currentCalendar.get('cover_image_path_string')
+    if coverImagePathString is None:
+        coverMessage = 'Please select a cover'
+        coverImageFileObject = None
+    else:
+        coverMessage = 'Cover selected'
+        coverImageFileObject = pathToFileStructure(db, user, coverImagePathString)
+    #
+    if pickedBox is not None:
+        boxPath = splitPathString(pickedBox)
         thisBox = getBoxFromPath(db, boxPath, user)
         choosableFiles = [
             {
@@ -96,9 +150,16 @@ def calendarMakerIndexView():
                 getFilesFromBox(db, thisBox),
                 key=lambda f: (f.name.lower(), f.name),
             )
+            if file.mime_type in admittedImageMimeTypes
         ]
     else:
         choosableFiles = []
+    #
+    calendarImagePaths = currentCalendar.get('images', [])
+    calendarImages = [
+        pathToFileStructure(db, user, imgPath)
+        for imgPath in calendarImagePaths
+    ]
     #
     breadCrumbs = [
         {
@@ -120,6 +181,10 @@ def calendarMakerIndexView():
         #
         message=message,
         choosableFiles=choosableFiles,
+        coverMessage=coverMessage,
+        coverImageFileObject=coverImageFileObject,
+        bgcolor='#90B080',
+        calendarImages=calendarImages,
     )
 
 
@@ -151,7 +216,7 @@ def calendarMakerPickBoxEndView():
     chosenBoxObjPathBlob = request.args.get('chosenBoxObjPath')
     chosenBoxObjPath = urllib.parse.unquote_plus(chosenBoxObjPathBlob)
     response = redirect(url_for('calendarMakerIndexView'))
-    response.set_cookie('apps_calendarmaker_pickeddir', chosenBoxObjPath)
+    response.set_cookie('apps_calendarmaker_pickedbox', chosenBoxObjPath)
     return response
 
 
@@ -161,5 +226,64 @@ def calendarMakerUnpickBoxView():
         TO DOC
     """
     response = redirect(url_for('calendarMakerIndexView'))
-    response.set_cookie('apps_calendarmaker_pickeddir', '', expires=0)
+    response.set_cookie('apps_calendarmaker_pickedbox', '', expires=0)
     return response
+
+
+@app.route('/apps/calendarmaker/setcover/<coverObjPath>')
+def calendarMakerSetCover(coverObjPath):
+    """
+        TO DOC
+    """
+    coverImagePath = urllib.parse.unquote_plus(coverObjPath)
+    response = redirect(url_for('calendarMakerIndexView'))
+    currentCalendar = cookiesToCurrentCalendar(request.cookies)
+    dResponse = dressResponseWithCurrentCalendar(
+        response,
+        recursivelyMergeDictionaries(
+            {'cover_image_path_string': coverImagePath},
+            defaultMap=currentCalendar
+        ),
+    )
+    return dResponse
+
+
+@app.route('/apps/calendarmaker/unsetcover')
+def calendarMakerUnsetCover():
+    """
+        TO DOC
+    """
+    response = redirect(url_for('calendarMakerIndexView'))
+    currentCalendar = cookiesToCurrentCalendar(request.cookies)
+    dResponse = dressResponseWithCurrentCalendar(
+        response,
+        {
+            k: v
+            for k, v in currentCalendar.items()
+            if k != 'cover_image_path_string'
+        }
+    )
+    return dResponse
+
+    response = redirect(url_for('calendarMakerIndexView'))
+    response.set_cookie('apps_calendarmaker_cover_image_path', '', expires=0)
+    return response
+
+
+@app.route('/apps/calendarmaker/addimage/<imageObjPath>')
+def calendarMakerAddImage(imageObjPath):
+    """
+        TO DOC
+    """
+    imagePath = urllib.parse.unquote_plus(imageObjPath)
+    response = redirect(url_for('calendarMakerIndexView'))
+    currentCalendar = cookiesToCurrentCalendar(request.cookies)
+    images = currentCalendar.get('images', []) + [imagePath]
+    dResponse = dressResponseWithCurrentCalendar(
+        response,
+        recursivelyMergeDictionaries(
+            {'images': images},
+            defaultMap=currentCalendar
+        ),
+    )
+    return dResponse
