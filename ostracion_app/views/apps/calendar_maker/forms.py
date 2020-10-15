@@ -4,17 +4,20 @@
 
 from flask_wtf import FlaskForm
 from wtforms import (
-    StringField,
-    BooleanField,
+    # StringField,
+    IntegerField,
     SubmitField,
-    RadioField,
-    HiddenField,
     SelectField,
-    PasswordField,
-    TextAreaField,
-    FormField,
-    FieldList,
-    Form,
+    # Form,
+)
+
+from wtforms.validators import (
+    InputRequired,
+    NumberRange,
+    # DataRequired,
+    # Required,
+    # EqualTo,
+    # Length,
 )
 
 
@@ -27,8 +30,17 @@ monthChoices = [
 
 class CalendarMakerPropertyForm(FlaskForm):
     month0 = SelectField('StartMonth', choices=monthChoices)
-    year0 = StringField('StartYear')
+    year0 = IntegerField(
+        'StartYear',
+        validators=[InputRequired(), NumberRange(min=1900, max=2100)],
+    )
     month1 = SelectField('EndMonth', choices=monthChoices)
-    year1 = StringField('EndYear')
-    language = SelectField('Language', choices=[('en', 'English'), ('it', 'Italian')])
+    year1 = IntegerField(
+        'EndYear',
+        validators=[InputRequired(), NumberRange(min=1900, max=2100)],
+    )
+    language = SelectField(
+        'Language',
+        choices=[('en', 'English'), ('it', 'Italian')],
+    )
     submit = SubmitField('Set')

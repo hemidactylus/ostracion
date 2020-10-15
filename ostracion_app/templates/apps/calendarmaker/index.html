@@ -19,7 +19,7 @@
         <div class="col">
 
             <div class="jumbotron" style="background-color: {{ bgcolor }}">
-              <form action="" method="post" name="login">
+              <form action="{{ url_for('calendarMakerSetPropertiesView') }}" method="post" name="login">
                 {{ form.hidden_tag() }}
 
                 <div class="form-row align-items-center">
@@ -30,7 +30,7 @@
                         {% endfor %}
                     </div>
                     <div class="col-auto">
-                        {{ form.year0(class_="form-control",size=4,tabindex=2) }}
+                        {{ form.year0(class_="form-control",size="4",maxlength="4",tabindex=2) }}
                         {% for error in form.year0.errors %}
                           <small class="form-text text-muted">{{ error }}</small>
                         {% endfor %}
@@ -46,7 +46,7 @@
                         {% endfor %}
                     </div>
                     <div class="col-auto">
-                        {{ form.year1(class_="form-control",size=4,tabindex=4) }}
+                        {{ form.year1(class_="form-control",size="4",maxlength="4",tabindex=4) }}
                         {% for error in form.year1.errors %}
                           <small class="form-text text-muted">{{ error }}</small>
                         {% endfor %}
@@ -80,19 +80,7 @@
             </div>
 
             <div class="jumbotron" style="background-color: {{ bgcolor }}">
-                Browse box
-                <div class="row">
-                    <div class="col">
-                        {{ viewBoxMessage }}
-                        <a href="{{ url_for('calendarMakerPickBoxStartView') }}" class="btn btn-primary btn-md">Box...</a>
-                        <a href="{{ url_for('calendarMakerUnpickBoxView') }}" class="btn btn-warning btn-md">Clear</a>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="jumbotron" style="background-color: {{ bgcolor }}">
-                Cover
+                Chosen images
                 <div class="row">
                     <div class="col">
                         {{ coverMessage }}
@@ -101,12 +89,6 @@
                         {% endif %}
                         <a href="{{ url_for('calendarMakerUnsetCover') }}" class="btn btn-warning btn-md">Clear</a>
                     </div>
-                </div>
-            </div>
-
-            <div class="jumbotron" style="background-color: {{ bgcolor }}">
-                Chosen images
-                <div class="row">
                     {% for fileStructure in calendarImages %}
                         <div class="col col-1">
                             <img width="80%" src="{{ url_for('fileThumbnailView',dummyId=fileStructure['file'].icon_file_id+'_',fsPathString='/'.join(fileStructure.path[1:])) }}" />
@@ -122,6 +104,17 @@
                             <a href="{{ url_for('calendarMakerRemoveImage', index=loop.index-1) }}" class="btn btn-danger btn-sm">X</a>
                         </div>
                     {% endfor %}
+                </div>
+            </div>
+
+            <div class="jumbotron" style="background-color: {{ bgcolor }}">
+                Browse box
+                <div class="row">
+                    <div class="col">
+                        {{ viewBoxMessage }}
+                        <a href="{{ url_for('calendarMakerPickBoxStartView') }}" class="btn btn-primary btn-md">Box...</a>
+                        <a href="{{ url_for('calendarMakerUnpickBoxView') }}" class="btn btn-warning btn-md">Clear</a>
+                    </div>
                 </div>
             </div>
 

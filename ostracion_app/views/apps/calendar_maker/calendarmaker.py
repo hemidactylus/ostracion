@@ -2,6 +2,7 @@
     calendarmaker.py
 """
 
+import datetime
 import urllib.parse
 import json
 from flask import (
@@ -23,6 +24,9 @@ from ostracion_app.utilities.tools.dictTools import (
 from ostracion_app.views.apps.calendar_maker.forms import CalendarMakerPropertyForm
 
 from ostracion_app.utilities.viewTools.messageTools import flashMessage
+
+from ostracion_app.utilities.tools.extraction import safeInt
+from ostracion_app.utilities.tools.formatting import applyDefault
 
 from ostracion_app.utilities.database.fileSystem import (
     # getBoxesFromParent,
@@ -149,7 +153,17 @@ def calendarMakerIndexView():
         destBoxMessage = 'Picked dest box: "%s"' % destBox
     #
     currentCalendar = cookiesToCurrentCalendar(request.cookies)
+    #
+    form = CalendarMakerPropertyForm()
+    cProps = currentCalendar.get('properties', {})
+    currentYear = datetime.datetime.now().year
+    form.month0.data = str(applyDefault(cProps.get('month0'), 1))
+    form.year0.data = applyDefault(cProps.get('year0'), currentYear)
+    form.month1.data = str(applyDefault(cProps.get('month1'), 12))
+    form.year1.data = applyDefault(cProps.get('year1'), currentYear)
+    form.language.data = applyDefault(cProps.get('language'), 'en')
     coverImagePathString = currentCalendar.get('cover_image_path_string')
+    #
     if coverImagePathString is None:
         coverMessage = 'Please select a cover'
         coverImageFileObject = None
@@ -191,8 +205,6 @@ def calendarMakerIndexView():
         pathToFileStructure(db, user, imgPath)
         for imgPath in calendarImagePaths
     ]
-    #
-    form = CalendarMakerPropertyForm()
     #
     breadCrumbs = [
         {
@@ -368,7 +380,7 @@ def calendarMakerAddImage(imageObjPath):
         response,
         recursivelyMergeDictionaries(
             {'images': images},
-            defaultMap=currentCalendar
+            defaultMap=currentCalendar,
         ),
     )
     return dResponse
@@ -391,3 +403,37 @@ def calendarMakerSwapImages(index1, index2):
         index1: index2,
         index2: index1,
     })
+
+
+@app.route('/apps/calendarmaker/setproperties', methods=['POST'])
+def calendarMakerSetPropertiesView():
+    user = g.user
+    db = dbGetDatabase()
+    form = CalendarMakerPropertyForm()
+    if form.validate_on_submit():
+        month0 = safeInt(form.month0.data, 1)
+        year0 = form.year0.data
+        month1 = safeInt(form.month1.data, 12)
+        year1 = form.year1.data
+        language = form.language.data
+        response = redirect(url_for('calendarMakerIndexView'))
+        currentCalendar = cookiesToCurrentCalendar(request.cookies)
+        dResponse = dressResponseWithCurrentCalendar(
+            response,
+            recursivelyMergeDictionaries(
+                {
+                    'properties': {
+                        'month0': month0,
+                        'year0': year0,
+                        'month1': month1,
+                        'year1': year1,
+                        'language': language,
+                    },
+                },
+                defaultMap=currentCalendar,
+            ),
+        )
+        return dResponse
+    else:
+        flashMessage('Error', 'Error', 'Invalid form')
+        return redirect(url_for('calendarMakerIndexView'))
