@@ -19,15 +19,77 @@
         <div class="col">
 
             <div class="jumbotron" style="background-color: {{ bgcolor }}">
-                Set target to pick images
+              <form action="" method="post" name="login">
+                {{ form.hidden_tag() }}
+
+                <div class="form-row align-items-center">
+                    <div class="col-auto">
+                        {{ form.month0(class_="form-control",tabindex=1) }}
+                        {% for error in form.month0.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    <div class="col-auto">
+                        {{ form.year0(class_="form-control",size=4,tabindex=2) }}
+                        {% for error in form.year0.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-auto">
+                        <p>To</p>
+                    </div>
+                    <div class="col-auto">
+                        {{ form.month1(class_="form-control",tabindex=3) }}
+                        {% for error in form.month1.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    <div class="col-auto">
+                        {{ form.year1(class_="form-control",size=4,tabindex=4) }}
+                        {% for error in form.year1.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    <div class="col-auto">
+                        <p>In</p>
+                    </div>
+                    <div class="col-auto">
+                        {{ form.language(class_="form-control",tabindex=5) }}
+                        {% for error in form.language.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    <div class="col-auto">
+                        {{ form.submit(class_='btn btn-primary',tabindex=6) }}
+                    </div>
+                </div>
+
+              </form>
+            </div>
+
+            <div class="jumbotron" style="background-color: {{ bgcolor }}">
+                Target box
                 <div class="row">
                     <div class="col">
-                        {{ message }}
+                        {{ destBoxMessage }}
+                        <a href="{{ url_for('calendarMakerPickDestBoxStartView') }}" class="btn btn-primary btn-md">Box...</a>
+                        <a href="{{ url_for('calendarMakerUnpickDestBoxView') }}" class="btn btn-warning btn-md">Clear</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="jumbotron" style="background-color: {{ bgcolor }}">
+                Browse box
+                <div class="row">
+                    <div class="col">
+                        {{ viewBoxMessage }}
                         <a href="{{ url_for('calendarMakerPickBoxStartView') }}" class="btn btn-primary btn-md">Box...</a>
                         <a href="{{ url_for('calendarMakerUnpickBoxView') }}" class="btn btn-warning btn-md">Clear</a>
                     </div>
                 </div>
             </div>
+
 
             <div class="jumbotron" style="background-color: {{ bgcolor }}">
                 Cover
@@ -48,10 +110,16 @@
                     {% for fileStructure in calendarImages %}
                         <div class="col col-1">
                             <img width="80%" src="{{ url_for('fileThumbnailView',dummyId=fileStructure['file'].icon_file_id+'_',fsPathString='/'.join(fileStructure.path[1:])) }}" />
-                            <p title="{{ fileStructure.obj_path }}">{{ fileStructure.file.name }}</p>
-                            <a href="#" class="btn btn-primary btn-sm">L</a>
-                            <a href="#" class="btn btn-primary btn-sm">R</a>
-                            <a href="#" class="btn btn-danger btn-sm">X</a>
+                            <p title="{{ fileStructure.obj_path }}">
+                                {{ loop.index }}: {{ fileStructure.file.name }}
+                            </p>
+                            {% if not loop.first %}
+                                <a href="{{ url_for('calendarMakerSwapImages', index1=loop.index-1, index2=loop.index-2) }}" class="btn btn-primary btn-sm">L</a>
+                            {% endif %}
+                            {% if not loop.last %}
+                                <a href="{{ url_for('calendarMakerSwapImages', index1=loop.index-1, index2=loop.index) }}" class="btn btn-primary btn-sm">R</a>
+                            {% endif %}
+                            <a href="{{ url_for('calendarMakerRemoveImage', index=loop.index-1) }}" class="btn btn-danger btn-sm">X</a>
                         </div>
                     {% endfor %}
                 </div>
@@ -63,7 +131,7 @@
                     {% for fileStructure in choosableFiles %}
                         <div class="col col-2">
                             <img width="60%" src="{{ url_for('fileThumbnailView',dummyId=fileStructure['file'].icon_file_id+'_',fsPathString='/'.join(fileStructure.path)) }}" />
-                            <p title="{{ fileStructure.obj_path }}">{{ fileStructure.file.name }}</p>
+                            <p>{{ fileStructure.file.name }}</p>
                             <a href="{{ url_for('calendarMakerSetCover', coverObjPath=fileStructure.obj_path) }}" class="btn btn-primary btn-sm">Cover</a>
                             <a href="{{ url_for('calendarMakerAddImage', imageObjPath=fileStructure.obj_path) }}" class="btn btn-primary btn-sm">Add</a>
                         </div>

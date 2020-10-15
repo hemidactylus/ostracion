@@ -26,7 +26,7 @@ from ostracion_app.utilities.tools.colorTools import (
 )
 
 
-def preparePickBoxPage(db, user, callbackUrl, startBox, predicate=lambda richFileOrBox: True):
+def preparePickBoxPage(db, user, callbackUrl, startBox, message, predicate=lambda richFileOrBox: True):
     #
     dstBoxTree = collectTreeFromBox(
         db,
@@ -36,6 +36,7 @@ def preparePickBoxPage(db, user, callbackUrl, startBox, predicate=lambda richFil
         fileOrBoxEnricher=lambda richBox: {
             'obj_path': urllib.parse.quote_plus('/'.join(richBox['path'])),
         },
+        predicate=predicate,
     )
     #
     maxDepth = getMaxTreeDepth(dstBoxTree)
@@ -55,7 +56,7 @@ def preparePickBoxPage(db, user, callbackUrl, startBox, predicate=lambda richFil
         user=user,
         iconUrl=makeSettingImageUrl(g, 'app_images', 'move'),
         pageTitle='Choose a box',
-        pageSubtitle='Please specify the source of all images',
+        pageSubtitle=message,
         actions=None,
         backToUrl=None,
         breadCrumbs=[

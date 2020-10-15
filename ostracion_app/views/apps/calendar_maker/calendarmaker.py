@@ -20,6 +20,7 @@ from ostracion_app.utilities.tools.dictTools import (
     recursivelyMergeDictionaries
 )
 
+from ostracion_app.views.apps.calendar_maker.forms import CalendarMakerPropertyForm
 
 from ostracion_app.utilities.viewTools.messageTools import flashMessage
 
@@ -37,6 +38,10 @@ from ostracion_app.utilities.database.fileSystem import (
     # canDeleteBox,
     # isAncestorBoxOf,
     # moveBox,
+)
+
+from ostracion_app.utilities.database.permissions import (
+    userHasPermission,
 )
 
 from ostracion_app.utilities.viewTools.pathTools import (
@@ -97,6 +102,26 @@ def pathToFileStructure(db, user, fPath):
     }
     return fStructure
 
+def applyReindexingToImages(idxMap):
+    response = redirect(url_for('calendarMakerIndexView'))
+    currentCalendar = cookiesToCurrentCalendar(request.cookies)
+    prevImages = currentCalendar.get('images', [])
+    images = [
+        prevImages[idxMap.get(idx, idx)]
+        for idx in range(len(prevImages))
+        if idxMap.get(idx, idx) is not None
+        if idxMap.get(idx, idx) >= 0
+        if idxMap.get(idx, idx) < len(prevImages)
+    ]
+    dResponse = dressResponseWithCurrentCalendar(
+        response,
+        recursivelyMergeDictionaries(
+            {'images': images},
+            defaultMap=currentCalendar
+        ),
+    )
+    return dResponse
+
 
 @app.route('/apps/calendarmaker/')
 @app.route('/apps/calendarmaker/index')
@@ -111,11 +136,17 @@ def calendarMakerIndexView():
         lsPathString='',
     )
     #
-    pickedBox = request.cookies.get('apps_calendarmaker_pickedbox')
-    if pickedBox is None:
-        message = 'Please pick a box'
+    viewBox = request.cookies.get('apps_calendarmaker_viewbox')
+    if viewBox is None:
+        viewBoxMessage = 'Please pick a box'
     else:
-        message = 'Picked box: "%s"' % pickedBox
+        viewBoxMessage = 'Picked box: "%s"' % viewBox
+    #
+    destBox = request.cookies.get('apps_calendarmaker_destbox')
+    if destBox is None:
+        destBoxMessage = 'Please pick a dest box'
+    else:
+        destBoxMessage = 'Picked dest box: "%s"' % destBox
     #
     currentCalendar = cookiesToCurrentCalendar(request.cookies)
     coverImagePathString = currentCalendar.get('cover_image_path_string')
@@ -126,8 +157,8 @@ def calendarMakerIndexView():
         coverMessage = 'Cover selected'
         coverImageFileObject = pathToFileStructure(db, user, coverImagePathString)
     #
-    if pickedBox is not None:
-        boxPath = splitPathString(pickedBox)
+    if viewBox is not None:
+        boxPath = splitPathString(viewBox)
         thisBox = getBoxFromPath(db, boxPath, user)
         choosableFiles = [
             {
@@ -161,6 +192,8 @@ def calendarMakerIndexView():
         for imgPath in calendarImagePaths
     ]
     #
+    form = CalendarMakerPropertyForm()
+    #
     breadCrumbs = [
         {
             'name': 'Root',
@@ -179,12 +212,14 @@ def calendarMakerIndexView():
         pageSubtitle='subt',
         tasks=None,
         #
-        message=message,
+        viewBoxMessage=viewBoxMessage,
+        destBoxMessage=destBoxMessage,
         choosableFiles=choosableFiles,
         coverMessage=coverMessage,
         coverImageFileObject=coverImageFileObject,
         bgcolor='#90B080',
         calendarImages=calendarImages,
+        form=form,
     )
 
 
@@ -205,6 +240,7 @@ def calendarMakerPickBoxStartView():
         user=user,
         callbackUrl=url_for('calendarMakerPickBoxEndView'),
         startBox=rootBox,
+        message='Please specify the source of all images',
     )
 
 
@@ -216,7 +252,7 @@ def calendarMakerPickBoxEndView():
     chosenBoxObjPathBlob = request.args.get('chosenBoxObjPath')
     chosenBoxObjPath = urllib.parse.unquote_plus(chosenBoxObjPathBlob)
     response = redirect(url_for('calendarMakerIndexView'))
-    response.set_cookie('apps_calendarmaker_pickedbox', chosenBoxObjPath)
+    response.set_cookie('apps_calendarmaker_viewbox', chosenBoxObjPath)
     return response
 
 
@@ -226,7 +262,56 @@ def calendarMakerUnpickBoxView():
         TO DOC
     """
     response = redirect(url_for('calendarMakerIndexView'))
-    response.set_cookie('apps_calendarmaker_pickedbox', '', expires=0)
+    response.set_cookie('apps_calendarmaker_viewbox', '', expires=0)
+    return response
+
+
+@app.route('/apps/calendarmaker/pickdestbox_s')
+def calendarMakerPickDestBoxStartView():
+    """
+        TO DOC
+    """
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'calendarMakerIndexView',
+        lsPathString='',
+    )
+    rootBox = getRootBox(db)
+
+    def writableRichBoxPicker(rBox):
+        return userHasPermission(db, user, rBox['box'].permissions, 'w')
+
+    return preparePickBoxPage(
+        db=db,
+        user=user,
+        callbackUrl=url_for('calendarMakerPickDestBoxEndView'),
+        startBox=rootBox,
+        predicate=writableRichBoxPicker,
+        message='Please choose the box in which the calendar will be created',
+    )
+
+
+
+@app.route('/apps/calendarmaker/pickdestbox_e')
+def calendarMakerPickDestBoxEndView():
+    """
+        TO DOC
+    """
+    chosenBoxObjPathBlob = request.args.get('chosenBoxObjPath')
+    chosenBoxObjPath = urllib.parse.unquote_plus(chosenBoxObjPathBlob)
+    response = redirect(url_for('calendarMakerIndexView'))
+    response.set_cookie('apps_calendarmaker_destbox', chosenBoxObjPath)
+    return response
+
+
+@app.route('/apps/calendarmaker/unpickdestbox')
+def calendarMakerUnpickDestBoxView():
+    """
+        TO DOC
+    """
+    response = redirect(url_for('calendarMakerIndexView'))
+    response.set_cookie('c v vbgtfrfcx', '', expires=0)
     return response
 
 
@@ -287,3 +372,22 @@ def calendarMakerAddImage(imageObjPath):
         ),
     )
     return dResponse
+
+
+@app.route('/apps/calendarmaker/removeimage/<int:index>')
+def calendarMakerRemoveImage(index):
+    """
+        TO DOC
+    """
+    return applyReindexingToImages({index: None})
+
+
+@app.route('/apps/calendarmaker/swapimages/<int:index1>/<int:index2>')
+def calendarMakerSwapImages(index1, index2):
+    """
+        TO DOC
+    """
+    return applyReindexingToImages({
+        index1: index2,
+        index2: index1,
+    })
