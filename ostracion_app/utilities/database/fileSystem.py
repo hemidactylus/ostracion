@@ -213,6 +213,29 @@ def getFileFromParent(
         return None
 
 
+def pathToFileStructure(db, user, fPath):
+    """
+        Try to extract, from a path, an object
+        with file and container box. Return None if something does not exist.
+    """
+    fPath = splitPathString(fPath)
+    fBoxPath, fFileName = fPath[:-1], fPath[-1]
+    fParentBox = getBoxFromPath(db, fBoxPath, user)
+    if fParentBox is not None:
+        fFile = getFileFromParent(db, fParentBox, fFileName, user)
+        if fFile is not None:
+            fStructure = {
+                'path': fPath,
+                'file': fFile,
+                'parent_box': fParentBox,
+            }
+        else:
+            fStructure = None
+    else:
+        fStructure = None
+    return fStructure
+
+
 def getLinkFromParent(
         db, parentBox, linkName,
         user, accountDeletionInProgress=False):

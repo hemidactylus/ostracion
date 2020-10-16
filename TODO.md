@@ -2,6 +2,8 @@
 
 ## Maintenance (internals)
 
+### Use pathToFileStructure everywhere (fileaccess views etc)
+
 ### makeFileInParent should check for permissions (hence have more arguments)
 
 ### External links
@@ -76,5 +78,10 @@ Boxes of type 'real fs'
 Boxes of type 'app'.
 
 1. As an exercise: PDF calendar maker.
+    TO DOC every function
+    breadcrumbs proper
+    appearance
+    actual creation of the file (with queue of temp files to delete)
+
 2. Accounting app in particular and its special config.
 3. Move biblio here?

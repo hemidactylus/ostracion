@@ -61,7 +61,16 @@
                         {% endfor %}
                     </div>
                     <div class="col-auto">
-                        {{ form.submit(class_='btn btn-primary',tabindex=6) }}
+                        <p>First column</p>
+                    </div>
+                    <div class="col-auto">
+                        {{ form.startingweekday(class_="form-control",tabindex=6) }}
+                        {% for error in form.startingweekday.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    <div class="col-auto">
+                        {{ form.submit(class_='btn btn-primary',tabindex=7) }}
                     </div>
                 </div>
 
@@ -71,29 +80,35 @@
             <div class="jumbotron" style="background-color: {{ bgcolor }}">
                 Target box
                 <div class="row">
-                    <div class="col">
+                    <div class="col-auto">
                         {{ destBoxMessage }}
                         <a href="{{ url_for('calendarMakerPickDestBoxStartView') }}" class="btn btn-primary btn-md">Box...</a>
                         <a href="{{ url_for('calendarMakerUnpickDestBoxView') }}" class="btn btn-warning btn-md">Clear</a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="#" class="btn btn-primary btn-lg {% if not canGenerate -%}disabled{%- endif %}">Generate</a>
+                        {% for gMessage in generationMessages %}
+                          <small class="form-text text-muted">{{ gMessage }}</small>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
 
             <div class="jumbotron" style="background-color: {{ bgcolor }}">
-                Chosen images
+                {{ calendarImages | length }} chosen images {% if numRequiredImages %}({{ numRequiredImages }} required){% endif %}
                 <div class="row">
-                    <div class="col">
-                        {{ coverMessage }}
+                    <div class="col col-1">
                         {% if coverImageFileObject %}
-                            <img width="120px" src="{{ url_for('fileThumbnailView',dummyId=coverImageFileObject['file'].icon_file_id+'_',fsPathString='/'.join(coverImageFileObject.path[1:])) }}" />
+                            <img width="80%" src="{{ url_for('fileThumbnailView',dummyId=coverImageFileObject['file'].icon_file_id+'_',fsPathString='/'.join(coverImageFileObject.path[1:])) }}" />
                         {% endif %}
-                        <a href="{{ url_for('calendarMakerUnsetCover') }}" class="btn btn-warning btn-md">Clear</a>
+                        <p>Cover</p>
+                        <a href="{{ url_for('calendarMakerUnsetCover') }}" class="btn btn-danger btn-sm">X</a>
                     </div>
                     {% for fileStructure in calendarImages %}
                         <div class="col col-1">
-                            <img width="80%" src="{{ url_for('fileThumbnailView',dummyId=fileStructure['file'].icon_file_id+'_',fsPathString='/'.join(fileStructure.path[1:])) }}" />
-                            <p title="{{ fileStructure.obj_path }}">
-                                {{ loop.index }}: {{ fileStructure.file.name }}
+                            <img title="{{ fileStructure.file.name }}" width="80%" src="{{ url_for('fileThumbnailView',dummyId=fileStructure['file'].icon_file_id+'_',fsPathString='/'.join(fileStructure.path[1:])) }}" />
+                            <p>
+                                {{ loop.index }}
                             </p>
                             {% if not loop.first %}
                                 <a href="{{ url_for('calendarMakerSwapImages', index1=loop.index-1, index2=loop.index-2) }}" class="btn btn-primary btn-sm">L</a>

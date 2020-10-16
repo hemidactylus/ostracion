@@ -43,4 +43,8 @@ class CalendarMakerPropertyForm(FlaskForm):
         'Language',
         choices=[('en', 'English'), ('it', 'Italian')],
     )
+    startingweekday = SelectField(
+        'Starting weekday',
+        choices=[('6', 'Sunday'), ('0' ,'Monday')],
+    )
     submit = SubmitField('Set')
