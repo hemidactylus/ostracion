@@ -110,12 +110,14 @@
                             <p>
                                 {{ loop.index }}
                             </p>
-                            {% if not loop.first %}
-                                <a href="{{ url_for('calendarMakerSwapImages', index1=loop.index-1, index2=loop.index-2) }}" class="btn btn-primary btn-sm">L</a>
-                            {% endif %}
-                            {% if not loop.last %}
-                                <a href="{{ url_for('calendarMakerSwapImages', index1=loop.index-1, index2=loop.index) }}" class="btn btn-primary btn-sm">R</a>
-                            {% endif %}
+                            <a href="{{ url_for('calendarMakerSwapImages', index1=loop.index-1, index2=loop.index-2) }}" class="btn btn-primary btn-sm {% if loop.first -%}disabled{%- endif %}"
+                              style="font-family: 'Zapf Dingbats';">
+                              &#9666;
+                            </a>
+                            <a href="{{ url_for('calendarMakerSwapImages', index1=loop.index-1, index2=loop.index) }}" class="btn btn-primary btn-sm {% if loop.last -%}disabled{%- endif %}"
+                              style="font-family: 'Zapf Dingbats';">
+                              &#9656;
+                            </a>
                             <a href="{{ url_for('calendarMakerRemoveImage', index=loop.index-1) }}" class="btn btn-danger btn-sm">X</a>
                         </div>
                     {% endfor %}
