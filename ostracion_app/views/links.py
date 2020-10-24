@@ -52,6 +52,7 @@ from ostracion_app.utilities.database.fileSystem import (
     updateLink,
     getRootBox,
     moveLink,
+    splitPathString,
 )
 
 from ostracion_app.utilities.tools.treeTools import (
@@ -62,7 +63,6 @@ from ostracion_app.utilities.tools.treeTools import (
 
 from ostracion_app.utilities.viewTools.pathTools import (
     makeBreadCrumbs,
-    splitPathString,
     describeBoxTitle,
 )
 

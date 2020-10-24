@@ -55,6 +55,7 @@ from ostracion_app.utilities.database.fileSystem import (
     getBoxFromPath,
     getFileFromParent,
     getLinkFromParent,
+    splitPathString,
 )
 
 from ostracion_app.utilities.database.settingsTools import (
@@ -76,7 +77,6 @@ from ostracion_app.utilities.fileIO.fileStorage import (
 
 from ostracion_app.utilities.viewTools.pathTools import (
     makeBreadCrumbs,
-    splitPathString,
     #
     prepareTaskPageFeatures,
 )

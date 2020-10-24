@@ -99,13 +99,13 @@ from ostracion_app.utilities.tools.setNaming import (
 
 from ostracion_app.utilities.viewTools.pathTools import (
     makeBreadCrumbs,
-    splitPathString,
     prepareTaskPageFeatures,
     describeBoxTitle,
 )
 
 from ostracion_app.utilities.database.fileSystem import (
     getBoxFromPath,
+    splitPathString,
 )
 
 from ostracion_app.utilities.database.permissions import (

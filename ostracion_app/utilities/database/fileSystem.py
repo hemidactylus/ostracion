@@ -45,6 +45,17 @@ from ostracion_app.utilities.exceptions.exceptions import (
 )
 
 
+def splitPathString(ps):
+    """ Split a path from a string to an array,
+        taking care of the leading root.
+    """
+    return [''] + [
+        pItm.strip()
+        for pItm in ps.split('/')
+        if pItm.strip() != ''
+    ]
+
+
 def getBoxesFromParent(db, parentBox, user, accountDeletionInProgress=False):
     """ Return, as in Yield, all boxes in a given box:
         if boxes are not accessible, None's are returned instead

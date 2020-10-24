@@ -40,6 +40,7 @@ from ostracion_app.utilities.fileIO.textFileViewingModes import (
 from ostracion_app.utilities.database.fileSystem import (
     getBoxFromPath,
     getFileFromParent,
+    splitPathString,
     updateFile,
 )
 
@@ -65,7 +66,6 @@ from ostracion_app.utilities.tools.formatting import (
 
 from ostracion_app.utilities.viewTools.pathTools import (
     makeBreadCrumbs,
-    splitPathString,
     prepareFileActions,
     prepareFileInfo,
     describeBoxTitle,

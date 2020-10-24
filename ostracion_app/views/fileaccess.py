@@ -48,6 +48,7 @@ from ostracion_app.utilities.database.fileSystem import (
     getBoxFromPath,
     getFileFromParent,
     getFilesFromBox,
+    splitPathString,
     deleteFile,
     updateFile,
     moveFile,
@@ -63,7 +64,6 @@ from ostracion_app.utilities.tools.extraction import safeInt
 
 from ostracion_app.utilities.viewTools.pathTools import (
     makeBreadCrumbs,
-    splitPathString,
     prepareFileActions,
     prepareFileInfo,
     describeBoxTitle,

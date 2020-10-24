@@ -34,20 +34,12 @@ from ostracion_app.utilities.tools.extraction import safeInt
 from ostracion_app.utilities.tools.formatting import applyDefault
 
 from ostracion_app.utilities.database.fileSystem import (
-    # getBoxesFromParent,
     getBoxFromPath,
     pathToFileStructure,
-    # makeBoxInParent,
-    # updateBox,
-    # deleteBox,
     getFilesFromBox,
-    # getLinksFromBox,
     getFileFromParent,
     getRootBox,
-    # isNameUnderParentBox,
-    # canDeleteBox,
-    # isAncestorBoxOf,
-    # moveBox,
+    splitPathString,
 )
 
 from ostracion_app.utilities.database.permissions import (
@@ -57,8 +49,9 @@ from ostracion_app.utilities.database.permissions import (
 # from ostracion_app.utilities.tools.extraction import safeNone
 
 from ostracion_app.utilities.viewTools.pathTools import (
+    describeBoxName,
+)
 #     makeBreadCrumbs,
-    splitPathString,
 #     prepareBoxActions,
 #     prepareFileActions,
 #     prepareLinkActions,
@@ -70,16 +63,14 @@ from ostracion_app.utilities.viewTools.pathTools import (
 #     describeBoxTitle,
 #     describeBoxName,
 #     describeRootBoxCaptions,
-)
+# )
 
 from ostracion_app.views.apps.utilities import (
     preparePickBoxPage,
-    pathToFileStructure,
 )
 
 from ostracion_app.views.apps.calendar_maker.engine.dateTools import (
     countMonths,
-    # makeListOfMonths,
 )
 
 from ostracion_app.views.apps.calendar_maker.engine.engine import (
@@ -120,7 +111,7 @@ def dressResponseWithCurrentCalendar(response, cp):
 
 
 def applyReindexingToImages(idxMap):
-    response = redirect(url_for('calendarMakerIndexView'))
+    response = redirect(url_for('calendarMakerImagesView'))
     currentCalendar = cookiesToCurrentCalendar(request.cookies)
     prevImages = currentCalendar.get('image_path_strings', [])
     images = [
@@ -153,51 +144,27 @@ def calendarMakerIndexView():
         lsPathString='',
     )
     #
-    browseBoxString = request.cookies.get('apps_calendarmaker_browsebox')
     destBoxString = request.cookies.get('apps_calendarmaker_destbox')
     currentCalendar = cookiesToCurrentCalendar(request.cookies)
     coverImagePathString = currentCalendar.get('cover_image_path_string')
     calendarImagePaths = currentCalendar.get('image_path_strings', [])
     cProps = currentCalendar.get('properties', {})
     #
-    if browseBoxString is None:
-        browseBoxMessage = 'Browsing box not set.'
-    else:
-        browseBoxMessage = 'Browsing box: "%s".' % browseBoxString
-    #
     if destBoxString is None:
         destBoxMessage = 'Destination box not set.'
         destBox = None
+        destBoxName = None
     else:
         destBoxMessage = 'Destination box: "%s".' % destBoxString
         destBoxPath = splitPathString(destBoxString)
         destBox = getBoxFromPath(db, destBoxPath, user)
+        destBoxName = describeBoxName(destBox)
     if coverImagePathString is None:
         coverMessage = 'Please select a cover'
         coverImageFileObject = None
     else:
         coverMessage = 'Cover selected'
         coverImageFileObject = pathToFileStructure(db, user, coverImagePathString)
-    #
-    if browseBoxString is not None:
-        browseBoxPath = splitPathString(browseBoxString)
-        browseBox = getBoxFromPath(db, browseBoxPath, user)
-        choosableFiles = [
-            {
-                'file': file,
-                'path': browseBoxPath[1:] + [file.name],
-                'obj_path': urllib.parse.quote_plus('/'.join(
-                    browseBoxPath[1:] + [file.name],
-                )),
-            }
-            for file in sorted(
-                getFilesFromBox(db, browseBox),
-                key=lambda f: (f.name.lower(), f.name),
-            )
-            if file.mime_type in admittedImageMimeTypes
-        ]
-    else:
-        choosableFiles = []
     #
     calendarImages = [
         pathToFileStructure(db, user, imgPath)
@@ -212,7 +179,7 @@ def calendarMakerIndexView():
     )
     #
     settingsDesc = describeSettings(cProps)
-    settingsText = (
+    settingsSummaryText = (
         'Not set'
         if settingsDesc is None
         else ' '.join('%s.' % stc for stc in settingsDesc)
@@ -240,8 +207,8 @@ def calendarMakerIndexView():
     else:
         gen3 = False
         gen3Message = ['Select a cover image']
-    canGenerate = all([gen1, gen2, gen3])
-    generationMessages = gen1Message + gen2Message + gen3Message
+    canGenerate = all([gen3, gen1, gen2])
+    generationMessages = gen3Message + gen1Message + gen2Message
     #
     breadCrumbs = [
         {
@@ -261,14 +228,12 @@ def calendarMakerIndexView():
         pageSubtitle='subt',
         tasks=None,
         #
-        settingsText=settingsText,
-        browseBoxMessage=browseBoxMessage,
-        destBoxMessage=destBoxMessage,
-        choosableFiles=choosableFiles,
-        coverMessage=coverMessage,
-        coverImageFileObject=coverImageFileObject,
+        settingsText=settingsSummaryText,
+        destBox=destBox,
+        destBoxName=destBoxName,
         bgcolor='#90B080',
         calendarImages=calendarImages,
+        coverImageFileObject=coverImageFileObject,
         numRequiredImages=numRequiredImages,
         canGenerate=canGenerate,
         generationMessages=generationMessages,
@@ -371,7 +336,7 @@ def calendarMakerBrowseBoxView(mode):
     user = g.user
     db = dbGetDatabase()
     request._onErrorUrl = url_for(
-        'calendarMakerIndexView',
+        'calendarMakerImagesView',
     )
     if mode == 'start':
         rootBox = getRootBox(db)
@@ -385,11 +350,11 @@ def calendarMakerBrowseBoxView(mode):
     elif mode == 'end':
         chosenBoxObjPathBlob = request.args.get('chosenBoxObjPath')
         chosenBoxObjPath = urllib.parse.unquote_plus(chosenBoxObjPathBlob)
-        response = redirect(url_for('calendarMakerIndexView'))
+        response = redirect(url_for('calendarMakerImagesView'))
         response.set_cookie('apps_calendarmaker_browsebox', chosenBoxObjPath)
         return response
     elif mode == 'clear':
-        response = redirect(url_for('calendarMakerIndexView'))
+        response = redirect(url_for('calendarMakerImagesView'))
         response.set_cookie('apps_calendarmaker_browsebox', '', expires=0)
         return response
     else:
@@ -440,10 +405,10 @@ def calendarMakerSetCover(coverObjPath):
         TO DOC
     """
     request._onErrorUrl = url_for(
-        'calendarMakerIndexView',
+        'calendarMakerImagesView',
     )
     coverImagePath = urllib.parse.unquote_plus(coverObjPath)
-    response = redirect(url_for('calendarMakerIndexView'))
+    response = redirect(url_for('calendarMakerImagesView'))
     currentCalendar = cookiesToCurrentCalendar(request.cookies)
     dResponse = dressResponseWithCurrentCalendar(
         response,
@@ -461,9 +426,9 @@ def calendarMakerUnsetCover():
         TO DOC
     """
     request._onErrorUrl = url_for(
-        'calendarMakerIndexView',
+        'calendarMakerImagesView',
     )
-    response = redirect(url_for('calendarMakerIndexView'))
+    response = redirect(url_for('calendarMakerImagesView'))
     currentCalendar = cookiesToCurrentCalendar(request.cookies)
     dResponse = dressResponseWithCurrentCalendar(
         response,
@@ -475,9 +440,110 @@ def calendarMakerUnsetCover():
     )
     return dResponse
 
+
+@app.route('/apps/calendarmaker/unsetimages')
+def calendarMakerUnsetImagesView():
+    """
+        TO DOC
+    """
+    request._onErrorUrl = url_for(
+        'calendarMakerIndexView',
+    )
     response = redirect(url_for('calendarMakerIndexView'))
-    response.set_cookie('apps_calendarmaker_cover_image_path', '', expires=0)
-    return response
+    currentCalendar = cookiesToCurrentCalendar(request.cookies)
+    dResponse = dressResponseWithCurrentCalendar(
+        response,
+        {
+            k: v
+            for k, v in currentCalendar.items()
+            if k != 'cover_image_path_string'
+            if k != 'image_path_strings'
+        }
+    )
+    return dResponse
+
+
+@app.route('/apps/calendarmaker/images')
+def calendarMakerImagesView():
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'calendarMakerIndexView',
+        lsPathString='',
+    )
+    #
+    browseBoxString = request.cookies.get('apps_calendarmaker_browsebox')
+    currentCalendar = cookiesToCurrentCalendar(request.cookies)
+    coverImagePathString = currentCalendar.get('cover_image_path_string')
+    calendarImagePaths = currentCalendar.get('image_path_strings', [])
+    cProps = currentCalendar.get('properties', {})
+    #
+    if coverImagePathString is None:
+        coverImageFileObject = None
+    else:
+        coverImageFileObject = pathToFileStructure(db, user, coverImagePathString)
+    #
+    if browseBoxString is not None:
+        browseBoxPath = splitPathString(browseBoxString)
+        browseBox = getBoxFromPath(db, browseBoxPath, user)
+        choosableFiles = [
+            {
+                'file': file,
+                'path': browseBoxPath[1:] + [file.name],
+                'obj_path': urllib.parse.quote_plus('/'.join(
+                    browseBoxPath[1:] + [file.name],
+                )),
+            }
+            for file in sorted(
+                getFilesFromBox(db, browseBox),
+                key=lambda f: (f.name.lower(), f.name),
+            )
+            if file.mime_type in admittedImageMimeTypes
+        ]
+        browseBoxName = describeBoxName(browseBox)
+    else:
+        browseBox = None
+        browseBoxName = None
+        choosableFiles = []
+    #
+    calendarImages = [
+        pathToFileStructure(db, user, imgPath)
+        for imgPath in calendarImagePaths
+    ]
+    #
+    numRequiredImages = countMonths(
+        cProps.get('year0'),
+        cProps.get('month0'),
+        cProps.get('year1'),
+        cProps.get('month1'),
+    )
+    #
+    breadCrumbs = [
+        {
+            'name': 'Root',
+            'type': 'box',
+            'target': url_for('lsView'),
+            'link': True,
+            'is_root_as_pic': True,
+        }
+    ]
+    return render_template(
+        'apps/calendarmaker/images.html',
+        user=user,
+        breadCrumbs=breadCrumbs,
+        iconUrl=None,
+        pageTitle='imgTitle',
+        pageSubtitle='imgSubt',
+        tasks=None,
+        #
+        browseBox=browseBox,
+        browseBoxName=browseBoxName,
+        choosableFiles=choosableFiles,
+        coverImageFileObject=coverImageFileObject,
+        bgcolor='#90B080',
+        calendarImages=calendarImages,
+        numRequiredImages=numRequiredImages,
+    )
 
 
 @app.route('/apps/calendarmaker/addimage/<imageObjPath>')
@@ -486,10 +552,10 @@ def calendarMakerAddImage(imageObjPath):
         TO DOC
     """
     request._onErrorUrl = url_for(
-        'calendarMakerIndexView',
+        'calendarMakerImagesView',
     )
     imagePath = urllib.parse.unquote_plus(imageObjPath)
-    response = redirect(url_for('calendarMakerIndexView'))
+    response = redirect(url_for('calendarMakerImagesView'))
     currentCalendar = cookiesToCurrentCalendar(request.cookies)
     images = currentCalendar.get('image_path_strings', []) + [imagePath]
     dResponse = dressResponseWithCurrentCalendar(
@@ -508,7 +574,7 @@ def calendarMakerRemoveImage(index):
         TO DOC
     """
     request._onErrorUrl = url_for(
-        'calendarMakerIndexView',
+        'calendarMakerImagesView',
     )
     return applyReindexingToImages({index: None})
 
@@ -519,7 +585,7 @@ def calendarMakerSwapImages(index1, index2):
         TO DOC
     """
     request._onErrorUrl = url_for(
-        'calendarMakerIndexView',
+        'calendarMakerImagesView',
     )
     return applyReindexingToImages({
         index1: index2,

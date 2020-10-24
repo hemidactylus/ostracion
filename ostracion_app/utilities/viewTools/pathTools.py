@@ -315,17 +315,6 @@ def prepareTaskPageFeatures(pageDescriptor, pagePath, g, appendedItems=[],
     }
 
 
-def splitPathString(ps):
-    """ Split a path from a string to an array,
-        taking care of the leading root.
-    """
-    return [''] + [
-        pItm.strip()
-        for pItm in ps.split('/')
-        if pItm.strip() != ''
-    ]
-
-
 def prepareBoxInfo(db, box):
     """Calculate box information for display."""
     return [

@@ -35,13 +35,19 @@ a:hover {
 
 img.dirtree-element-image {
   height:1.8rem;
-  vertical-align:middle;
+  vertical-align: middle;
 }
 
 img.calendar-small-image {
   height: 3rem;
   width: 3rem;
   vertical-align:middle;
+}
+
+img.calendar-image {
+  height: 5rem;
+  width: 5rem;
+  vertical-align: middle;
 }
 
 img.calendar-cover-image {

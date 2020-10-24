@@ -28,9 +28,6 @@ from ostracion_app.utilities.tools.colorTools import (
 from ostracion_app.utilities.database.fileSystem import (
     getBoxFromPath,
     getFileFromParent,
-)
-
-from ostracion_app.utilities.viewTools.pathTools import (
     splitPathString,
 )
 
@@ -76,22 +73,3 @@ def preparePickBoxPage(db, user, callbackUrl, startBox, message, predicate=lambd
             },
         ],
     )
-
-
-def pathToFileStructure(db, user, fPath):
-    fPath = splitPathString(fPath)
-    fBoxPath, fFileName = fPath[:-1], fPath[-1]
-    fParentBox = getBoxFromPath(db, fBoxPath, user)
-    if fParentBox is not None:
-        fFile = getFileFromParent(db, fParentBox, fFileName, user)
-        if fFile is not None:
-            fStructure = {
-                'path': fPath,
-                'file': fFile,
-                'parent_box': fParentBox,
-            }
-        else:
-            fStructure = None
-    else:
-        fStructure = None
-    return fStructure

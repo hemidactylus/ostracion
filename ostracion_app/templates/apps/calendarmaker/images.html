@@ -1,0 +1,112 @@
+{% import "tools/hero_tools.html" as herotools %}
+
+{% extends "base.html" %}
+
+{% block content %}
+
+      {{ herotools.image_hero(
+        title=pageTitle,
+        titleit=None,
+        subtitle=pageSubtitle,
+        subtitleit=None,
+        icon_url=iconUrl,
+        info_lines=None,
+        role_list=None,
+        actions=None,
+        permission_info=None,
+      ) }}
+
+        <div class="col">
+
+            <div class="jumbotron" style="background-color: {{ bgcolor }}">
+                <div class="row">
+                    <div class="col">
+                        {%- if coverImageFileObject -%}Cover and {% endif -%}{{ calendarImages | length }} chosen images {% if numRequiredImages %}({{ numRequiredImages }} required){% endif %}
+                        <a href="{{ url_for('calendarMakerIndexView') }}" class="btn btn-primary btn-md">Done with images</a>
+                    </div>
+                </div>
+
+
+
+
+                <div class="row">
+                    <div class="col col-1">
+                        <div class="row">
+                            {% if coverImageFileObject %}
+                                <img src="{{ url_for('fileThumbnailView',dummyId=coverImageFileObject['file'].icon_file_id+'_',fsPathString='/'.join(coverImageFileObject.path[1:])) }}" class="calendar-image calendar-cover-image rounded" />
+                            {% endif %}
+                        </div>
+                        <div class="row">
+                            Cover
+                        </div>
+                        <div class="row">
+                            {% if coverImageFileObject %}
+                                <a href="{{ url_for('calendarMakerUnsetCover') }}" class="btn btn-danger btn-sm">X</a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+
+
+
+                    {% for fileStructure in calendarImages %}
+                        <div class="col col-1">
+                            <div class="row">
+                                <img title="{{ fileStructure.file.name }}" src="{{ url_for('fileThumbnailView',dummyId=fileStructure['file'].icon_file_id+'_',fsPathString='/'.join(fileStructure.path[1:])) }}" class="calendar-image rounded"/>
+                            </div>
+                            <div class="row">
+                                {{ loop.index }}
+                            </div>
+                            <div class="row">
+                                <a href="{{ url_for('calendarMakerSwapImages', index1=loop.index-1, index2=loop.index-2) }}" class="btn btn-primary btn-sm {% if loop.first -%}disabled{%- endif %}"
+                                  style="font-family: 'Zapf Dingbats';">
+                                  &#9666;
+                                </a>
+                                <a href="{{ url_for('calendarMakerSwapImages', index1=loop.index-1, index2=loop.index) }}" class="btn btn-primary btn-sm {% if loop.last -%}disabled{%- endif %}"
+                                  style="font-family: 'Zapf Dingbats';">
+                                  &#9656;
+                                </a>
+                                <a href="{{ url_for('calendarMakerRemoveImage', index=loop.index-1) }}" class="btn btn-danger btn-sm">X</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="jumbotron" style="background-color: {{ bgcolor }}">
+                <div class="row">
+                    <div class="col">
+                        Selecting images from box:
+                        {% if browseBox %}
+                            {{ browseBoxName }}
+                        {% else %}
+                            (not set)
+                        {% endif %}
+                        <a href="{{ url_for('calendarMakerBrowseBoxView', mode='start') }}" class="btn btn-primary btn-sm">Box...</a>
+                        <a href="{{ url_for('calendarMakerBrowseBoxView', mode='clear') }}" class="btn btn-warning btn-sm">Reset box</a>
+                    </div>
+                </div>
+                <div class="row">
+                    {% if choosableFiles %}
+                        {% for fileStructure in choosableFiles %}
+                            <div class="col col-1">
+                                <div class="row">
+                                    <img title="{{ fileStructure.file.name }}" src="{{ url_for('fileThumbnailView',dummyId=fileStructure['file'].icon_file_id+'_',fsPathString='/'.join(fileStructure.path)) }}" class="calendar-image rounded" />
+                                </div>
+                                <div class="row">
+                                    <a href="{{ url_for('calendarMakerSetCover', coverObjPath=fileStructure.obj_path) }}" class="btn btn-primary btn-sm">C</a>
+                                    <a href="{{ url_for('calendarMakerAddImage', imageObjPath=fileStructure.obj_path) }}" class="btn btn-primary btn-sm">+</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col">
+                            (No images to select)
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+      </div>
+
+{% endblock %}

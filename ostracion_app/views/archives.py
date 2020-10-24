@@ -22,6 +22,7 @@ from ostracion_app.utilities.database.dbTools import (
 
 from ostracion_app.utilities.database.fileSystem import (
     getBoxesFromParent,
+    splitPathString,
     getBoxFromPath,
 )
 
@@ -41,10 +42,6 @@ from ostracion_app.utilities.viewTools.pathTools import (
 )
 
 from ostracion_app.utilities.viewTools.messageTools import flashMessage
-
-from ostracion_app.utilities.viewTools.pathTools import (
-    splitPathString,
-)
 
 from ostracion_app.utilities.fileIO.physical import (
     flushFsDeleteQueue,

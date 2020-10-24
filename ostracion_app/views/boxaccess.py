@@ -55,11 +55,11 @@ from ostracion_app.utilities.database.fileSystem import (
     canDeleteBox,
     isAncestorBoxOf,
     moveBox,
+    splitPathString,
 )
 
 from ostracion_app.utilities.viewTools.pathTools import (
     makeBreadCrumbs,
-    splitPathString,
     prepareBoxActions,
     prepareFileActions,
     prepareLinkActions,
