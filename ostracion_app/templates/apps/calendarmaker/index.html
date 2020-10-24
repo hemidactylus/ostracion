@@ -19,76 +19,44 @@
         <div class="col">
 
             <div class="jumbotron" style="background-color: {{ bgcolor }}">
-              <form action="{{ url_for('calendarMakerSetPropertiesView') }}" method="post" name="login">
-                {{ form.hidden_tag() }}
-
-                <div class="form-row align-items-center">
-                    <div class="col-auto">
-                        {{ form.month0(class_="form-control",tabindex=1) }}
-                        {% for error in form.month0.errors %}
-                          <small class="form-text text-muted">{{ error }}</small>
-                        {% endfor %}
-                    </div>
-                    <div class="col-auto">
-                        {{ form.year0(class_="form-control",size="4",maxlength="4",tabindex=2) }}
-                        {% for error in form.year0.errors %}
-                          <small class="form-text text-muted">{{ error }}</small>
-                        {% endfor %}
-                    </div>
-
-                    <div class="col-auto">
-                        <p>To</p>
-                    </div>
-                    <div class="col-auto">
-                        {{ form.month1(class_="form-control",tabindex=3) }}
-                        {% for error in form.month1.errors %}
-                          <small class="form-text text-muted">{{ error }}</small>
-                        {% endfor %}
-                    </div>
-                    <div class="col-auto">
-                        {{ form.year1(class_="form-control",size="4",maxlength="4",tabindex=4) }}
-                        {% for error in form.year1.errors %}
-                          <small class="form-text text-muted">{{ error }}</small>
-                        {% endfor %}
-                    </div>
-                    <div class="col-auto">
-                        <p>In</p>
-                    </div>
-                    <div class="col-auto">
-                        {{ form.language(class_="form-control",tabindex=5) }}
-                        {% for error in form.language.errors %}
-                          <small class="form-text text-muted">{{ error }}</small>
-                        {% endfor %}
-                    </div>
-                    <div class="col-auto">
-                        <p>First column</p>
-                    </div>
-                    <div class="col-auto">
-                        {{ form.startingweekday(class_="form-control",tabindex=6) }}
-                        {% for error in form.startingweekday.errors %}
-                          <small class="form-text text-muted">{{ error }}</small>
-                        {% endfor %}
-                    </div>
-                    <div class="col-auto">
-                        {{ form.submit(class_='btn btn-primary',tabindex=7) }}
-                    </div>
-                </div>
-
-              </form>
-            </div>
-
-            <div class="jumbotron" style="background-color: {{ bgcolor }}">
-                Target box
                 <div class="row">
                     <div class="col-auto">
-                        {{ destBoxMessage }}
-                        <a href="{{ url_for('calendarMakerDestBoxView', mode='start') }}" class="btn btn-primary btn-md">Box...</a>
-                        <a href="{{ url_for('calendarMakerDestBoxView', mode='clear') }}" class="btn btn-warning btn-md">Clear</a>
+                        <div class="row">
+                            <div class="col-auto">
+                                <a href="#" class="btn btn-primary btn-lg {% if not canGenerate -%}disabled{%- endif %}">Generate</a>
+                            </div>
+                            <div class="col-auto">
+                                {% for gMessage in generationMessages %}
+                                    <small class="form-text text-muted">
+                                        {{ gMessage }}.
+                                    </small>
+                                {% endfor %}
+                            </div>                            
+                        </div>
                     </div>
-                    <div class="col-auto">
-                        <a href="#" class="btn btn-primary btn-lg {% if not canGenerate -%}disabled{%- endif %}">Generate</a>
-                        {% for gMessage in generationMessages %}
-                          <small class="form-text text-muted">{{ gMessage }}</small>
+                </div>
+                <div class="row" style="padding-top: 0.4rem;">
+                    <div class="col">
+                        {{ settingsText }}
+                        <a href="{{ url_for('calendarMakerSettingsView') }}" class="btn btn-primary btn-sm">Change...</a>
+                        <a href="{{ url_for('calendarMakerResetSettingsView') }}" class="btn btn-warning btn-sm">Reset</a>
+                    </div>
+                </div>
+                <div class="row" style="padding-top: 0.4rem;">
+                    <div class="col">
+                        {{ destBoxMessage }}
+                        <a href="{{ url_for('calendarMakerDestBoxView', mode='start') }}" class="btn btn-primary btn-sm">Choose...</a>
+                        <a href="{{ url_for('calendarMakerDestBoxView', mode='clear') }}" class="btn btn-warning btn-sm">Clear</a>
+                    </div>
+                </div>
+                <div class="row" style="padding-top: 0.4rem;">
+                    <div class="col">
+                        Selected images ({%- if coverImageFileObject -%}cover + {% endif -%}{{ calendarImages | length }} {% if numRequiredImages %} / {{ numRequiredImages }}{% endif %}):
+                        {% if coverImageFileObject %}
+                            <img title="Cover: {{ coverImageFileObject.file.name }}" src="{{ url_for('fileThumbnailView',dummyId=coverImageFileObject['file'].icon_file_id+'_',fsPathString='/'.join(coverImageFileObject.path[1:])) }}" class="calendar-small-image calendar-cover-image rounded"/>
+                        {% endif %}
+                        {% for fileStructure in calendarImages %}
+                            <img title="{{ loop.index }}: {{ fileStructure.file.name }}" width="80%" src="{{ url_for('fileThumbnailView',dummyId=fileStructure['file'].icon_file_id+'_',fsPathString='/'.join(fileStructure.path[1:])) }}" class="calendar-small-image rounded"/>
                         {% endfor %}
                     </div>
                 </div>
@@ -139,7 +107,7 @@
                 Pick images
                 <div class="row">
                     {% for fileStructure in choosableFiles %}
-                        <div class="col col-2">
+                        <div class="col col-1">
                             <img width="60%" src="{{ url_for('fileThumbnailView',dummyId=fileStructure['file'].icon_file_id+'_',fsPathString='/'.join(fileStructure.path)) }}" />
                             <p>{{ fileStructure.file.name }}</p>
                             <a href="{{ url_for('calendarMakerSetCover', coverObjPath=fileStructure.obj_path) }}" class="btn btn-primary btn-sm">Cover</a>

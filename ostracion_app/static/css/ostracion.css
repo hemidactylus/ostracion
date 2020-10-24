@@ -37,3 +37,15 @@ img.dirtree-element-image {
   height:1.8rem;
   vertical-align:middle;
 }
+
+img.calendar-small-image {
+  height: 3rem;
+  width: 3rem;
+  vertical-align:middle;
+}
+
+img.calendar-cover-image {
+  border-width: 3px;
+  border-style: solid;
+  color: #8833aa;
+}

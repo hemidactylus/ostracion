@@ -82,6 +82,11 @@ from ostracion_app.views.apps.calendar_maker.engine.dateTools import (
     # makeListOfMonths,
 )
 
+from ostracion_app.views.apps.calendar_maker.engine.engine import (
+    describeSettings,
+    defaultCalendarProperties,
+)
+
 from ostracion_app.app_main import app
 
 from ostracion_app.views.apps.calendar_maker.engine.settings import (
@@ -92,10 +97,18 @@ from ostracion_app.views.apps.calendar_maker.engine.settings import (
 def cookiesToCurrentCalendar(cookies):
     cpCookie = cookies.get('apps_calendarmaker_current')
     if cpCookie is None:
-        return {}
+        calFromCookie = {}
     else:
-        curCal = json.loads(cpCookie)
-        return curCal
+        calFromCookie = json.loads(cpCookie)
+    # defaults
+    defaultCal = {
+        'properties': defaultCalendarProperties()
+    }
+    #
+    return recursivelyMergeDictionaries(
+        calFromCookie,
+        defaultMap=defaultCal,
+    )
 
 
 def dressResponseWithCurrentCalendar(response, cp):
@@ -109,7 +122,7 @@ def dressResponseWithCurrentCalendar(response, cp):
 def applyReindexingToImages(idxMap):
     response = redirect(url_for('calendarMakerIndexView'))
     currentCalendar = cookiesToCurrentCalendar(request.cookies)
-    prevImages = currentCalendar.get('images', [])
+    prevImages = currentCalendar.get('image_path_strings', [])
     images = [
         prevImages[idxMap.get(idx, idx)]
         for idx in range(len(prevImages))
@@ -120,7 +133,7 @@ def applyReindexingToImages(idxMap):
     dResponse = dressResponseWithCurrentCalendar(
         response,
         recursivelyMergeDictionaries(
-            {'images': images},
+            {'image_path_strings': images},
             defaultMap=currentCalendar
         ),
     )
@@ -144,18 +157,19 @@ def calendarMakerIndexView():
     destBoxString = request.cookies.get('apps_calendarmaker_destbox')
     currentCalendar = cookiesToCurrentCalendar(request.cookies)
     coverImagePathString = currentCalendar.get('cover_image_path_string')
-    calendarImagePaths = currentCalendar.get('images', [])
+    calendarImagePaths = currentCalendar.get('image_path_strings', [])
     cProps = currentCalendar.get('properties', {})
     #
     if browseBoxString is None:
-        browseBoxMessage = 'Please pick a box'
+        browseBoxMessage = 'Browsing box not set.'
     else:
-        browseBoxMessage = 'Picked box: "%s"' % browseBoxString
+        browseBoxMessage = 'Browsing box: "%s".' % browseBoxString
+    #
     if destBoxString is None:
-        destBoxMessage = 'Please pick a dest box'
+        destBoxMessage = 'Destination box not set.'
         destBox = None
     else:
-        destBoxMessage = 'Picked dest box: "%s"' % destBoxString
+        destBoxMessage = 'Destination box: "%s".' % destBoxString
         destBoxPath = splitPathString(destBoxString)
         destBox = getBoxFromPath(db, destBoxPath, user)
     if coverImagePathString is None:
@@ -164,19 +178,6 @@ def calendarMakerIndexView():
     else:
         coverMessage = 'Cover selected'
         coverImageFileObject = pathToFileStructure(db, user, coverImagePathString)
-    #
-    currentYear = datetime.datetime.now().year
-    #
-    form = CalendarMakerPropertyForm()
-    form.month0.data = str(applyDefault(cProps.get('month0'), 1))
-    form.year0.data = applyDefault(cProps.get('year0'), currentYear)
-    form.month1.data = str(applyDefault(cProps.get('month1'), 12))
-    form.year1.data = applyDefault(cProps.get('year1'), currentYear)
-    form.language.data = applyDefault(cProps.get('language'), 'en')
-    form.startingweekday.data = applyDefault(
-        cProps.get('startingweekday'),
-        '6',
-    )
     #
     if browseBoxString is not None:
         browseBoxPath = splitPathString(browseBoxString)
@@ -208,6 +209,13 @@ def calendarMakerIndexView():
         cProps.get('month0'),
         cProps.get('year1'),
         cProps.get('month1'),
+    )
+    #
+    settingsDesc = describeSettings(cProps)
+    settingsText = (
+        'Not set'
+        if settingsDesc is None
+        else ' '.join('%s.' % stc for stc in settingsDesc)
     )
     #
     if numRequiredImages is not None:
@@ -253,6 +261,7 @@ def calendarMakerIndexView():
         pageSubtitle='subt',
         tasks=None,
         #
+        settingsText=settingsText,
         browseBoxMessage=browseBoxMessage,
         destBoxMessage=destBoxMessage,
         choosableFiles=choosableFiles,
@@ -263,8 +272,95 @@ def calendarMakerIndexView():
         numRequiredImages=numRequiredImages,
         canGenerate=canGenerate,
         generationMessages=generationMessages,
-        form=form,
     )
+
+@app.route('/apps/calendarmaker/resetsettings')
+def calendarMakerResetSettingsView():
+    currentCalendar = cookiesToCurrentCalendar(request.cookies)
+    response = redirect(url_for('calendarMakerIndexView'))
+    dResponse = dressResponseWithCurrentCalendar(
+        response,
+        recursivelyMergeDictionaries(
+            {
+                'properties': defaultCalendarProperties(),
+            },
+            defaultMap=currentCalendar,
+        ),
+    )
+    return dResponse
+
+
+@app.route('/apps/calendarmaker/settings', methods=['GET', 'POST'])
+def calendarMakerSettingsView():
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'calendarMakerIndexView',
+    )
+    #
+    currentCalendar = cookiesToCurrentCalendar(request.cookies)
+    cProps = currentCalendar.get('properties', {})
+    currentYear = datetime.datetime.now().year
+    form = CalendarMakerPropertyForm()
+    #
+    if form.validate_on_submit():
+        month0 = safeInt(form.month0.data, 1)
+        year0 = form.year0.data
+        month1 = safeInt(form.month1.data, 12)
+        year1 = form.year1.data
+        language = form.language.data
+        startingweekday = form.startingweekday.data
+        response = redirect(url_for('calendarMakerIndexView'))
+        dResponse = dressResponseWithCurrentCalendar(
+            response,
+            recursivelyMergeDictionaries(
+                {
+                    'properties': {
+                        'month0': month0,
+                        'year0': year0,
+                        'month1': month1,
+                        'year1': year1,
+                        'language': language,
+                        'startingweekday': startingweekday,
+                    },
+                },
+                defaultMap=currentCalendar,
+            ),
+        )
+        return dResponse
+    else:
+        breadCrumbs = [
+            {
+                'name': 'Root',
+                'type': 'box',
+                'target': url_for('lsView'),
+                'link': True,
+                'is_root_as_pic': True,
+            }
+        ]
+        #
+        form.month0.data = str(applyDefault(cProps.get('month0'), 1))
+        form.year0.data = applyDefault(cProps.get('year0'), currentYear)
+        form.month1.data = str(applyDefault(cProps.get('month1'), 12))
+        form.year1.data = applyDefault(cProps.get('year1'), currentYear)
+        form.language.data = applyDefault(cProps.get('language'), 'en')
+        form.startingweekday.data = applyDefault(
+            cProps.get('startingweekday'),
+            '6',
+        )
+        #
+        return render_template(
+            'apps/calendarmaker/settings.html',
+            user=user,
+            breadCrumbs=breadCrumbs,
+            iconUrl=None,
+            pageTitle='SettTitle',
+            pageSubtitle='settSubt',
+            tasks=None,
+            #
+            bgcolor='#90B080',
+            form=form,
+        )
 
 
 @app.route('/apps/calendarmaker/browsebox/<mode>')
@@ -276,7 +372,6 @@ def calendarMakerBrowseBoxView(mode):
     db = dbGetDatabase()
     request._onErrorUrl = url_for(
         'calendarMakerIndexView',
-        lsPathString='',
     )
     if mode == 'start':
         rootBox = getRootBox(db)
@@ -310,7 +405,6 @@ def calendarMakerDestBoxView(mode):
     db = dbGetDatabase()
     request._onErrorUrl = url_for(
         'calendarMakerIndexView',
-        lsPathString='',
     )
     rootBox = getRootBox(db)
     if mode == 'start':
@@ -347,7 +441,6 @@ def calendarMakerSetCover(coverObjPath):
     """
     request._onErrorUrl = url_for(
         'calendarMakerIndexView',
-        lsPathString='',
     )
     coverImagePath = urllib.parse.unquote_plus(coverObjPath)
     response = redirect(url_for('calendarMakerIndexView'))
@@ -369,7 +462,6 @@ def calendarMakerUnsetCover():
     """
     request._onErrorUrl = url_for(
         'calendarMakerIndexView',
-        lsPathString='',
     )
     response = redirect(url_for('calendarMakerIndexView'))
     currentCalendar = cookiesToCurrentCalendar(request.cookies)
@@ -395,16 +487,15 @@ def calendarMakerAddImage(imageObjPath):
     """
     request._onErrorUrl = url_for(
         'calendarMakerIndexView',
-        lsPathString='',
     )
     imagePath = urllib.parse.unquote_plus(imageObjPath)
     response = redirect(url_for('calendarMakerIndexView'))
     currentCalendar = cookiesToCurrentCalendar(request.cookies)
-    images = currentCalendar.get('images', []) + [imagePath]
+    images = currentCalendar.get('image_path_strings', []) + [imagePath]
     dResponse = dressResponseWithCurrentCalendar(
         response,
         recursivelyMergeDictionaries(
-            {'images': images},
+            {'image_path_strings': images},
             defaultMap=currentCalendar,
         ),
     )
@@ -418,7 +509,6 @@ def calendarMakerRemoveImage(index):
     """
     request._onErrorUrl = url_for(
         'calendarMakerIndexView',
-        lsPathString='',
     )
     return applyReindexingToImages({index: None})
 
@@ -430,49 +520,8 @@ def calendarMakerSwapImages(index1, index2):
     """
     request._onErrorUrl = url_for(
         'calendarMakerIndexView',
-        lsPathString='',
     )
     return applyReindexingToImages({
         index1: index2,
         index2: index1,
     })
-
-
-@app.route('/apps/calendarmaker/setproperties', methods=['POST'])
-def calendarMakerSetPropertiesView():
-    request._onErrorUrl = url_for(
-        'calendarMakerIndexView',
-        lsPathString='',
-    )
-    user = g.user
-    db = dbGetDatabase()
-    form = CalendarMakerPropertyForm()
-    if form.validate_on_submit():
-        month0 = safeInt(form.month0.data, 1)
-        year0 = form.year0.data
-        month1 = safeInt(form.month1.data, 12)
-        year1 = form.year1.data
-        language = form.language.data
-        startingweekday = form.startingweekday.data
-        response = redirect(url_for('calendarMakerIndexView'))
-        currentCalendar = cookiesToCurrentCalendar(request.cookies)
-        dResponse = dressResponseWithCurrentCalendar(
-            response,
-            recursivelyMergeDictionaries(
-                {
-                    'properties': {
-                        'month0': month0,
-                        'year0': year0,
-                        'month1': month1,
-                        'year1': year1,
-                        'language': language,
-                        'startingweekday': startingweekday,
-                    },
-                },
-                defaultMap=currentCalendar,
-            ),
-        )
-        return dResponse
-    else:
-        flashMessage('Error', 'Error', 'Invalid form')
-        return redirect(url_for('calendarMakerIndexView'))

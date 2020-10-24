@@ -21,12 +21,12 @@ from wtforms.validators import (
 )
 
 
-monthChoices = [
-    ('1', 'Jan'),
-    ('2', 'Feb'),
-    ('3', 'Mar'),
-    ('12', 'Dec'),
-]
+from ostracion_app.views.apps.calendar_maker.engine.settings import (
+    availableLanguages,
+    startingWeekdayChoices,
+    monthChoices,
+)
+
 
 class CalendarMakerPropertyForm(FlaskForm):
     month0 = SelectField('StartMonth', choices=monthChoices)
@@ -41,10 +41,10 @@ class CalendarMakerPropertyForm(FlaskForm):
     )
     language = SelectField(
         'Language',
-        choices=[('en', 'English'), ('it', 'Italian')],
+        choices=availableLanguages,
     )
     startingweekday = SelectField(
         'Starting weekday',
-        choices=[('6', 'Sunday'), ('0' ,'Monday')],
+        choices=startingWeekdayChoices,
     )
     submit = SubmitField('Set')

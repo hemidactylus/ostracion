@@ -1,0 +1,82 @@
+{% import "tools/hero_tools.html" as herotools %}
+
+{% extends "base.html" %}
+
+{% block content %}
+
+      {{ herotools.image_hero(
+        title=pageTitle,
+        titleit=None,
+        subtitle=pageSubtitle,
+        subtitleit=None,
+        icon_url=iconUrl,
+        info_lines=None,
+        role_list=None,
+        actions=None,
+        permission_info=None,
+      ) }}
+
+        <div class="col">
+
+            <div class="jumbotron" style="background-color: {{ bgcolor }}">
+              <form method="post" name="login">
+                {{ form.hidden_tag() }}
+
+                <div class="form-row align-items-center">
+                    <div class="col-auto">
+                        {{ form.month0(class_="form-control",tabindex=1) }}
+                        {% for error in form.month0.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    <div class="col-auto">
+                        {{ form.year0(class_="form-control",size="4",maxlength="4",tabindex=2) }}
+                        {% for error in form.year0.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-auto">
+                        <p>To</p>
+                    </div>
+                    <div class="col-auto">
+                        {{ form.month1(class_="form-control",tabindex=3) }}
+                        {% for error in form.month1.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    <div class="col-auto">
+                        {{ form.year1(class_="form-control",size="4",maxlength="4",tabindex=4) }}
+                        {% for error in form.year1.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    <div class="col-auto">
+                        <p>In</p>
+                    </div>
+                    <div class="col-auto">
+                        {{ form.language(class_="form-control",tabindex=5) }}
+                        {% for error in form.language.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    <div class="col-auto">
+                        <p>First column</p>
+                    </div>
+                    <div class="col-auto">
+                        {{ form.startingweekday(class_="form-control",tabindex=6) }}
+                        {% for error in form.startingweekday.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    <div class="col-auto">
+                        {{ form.submit(class_='btn btn-primary',tabindex=7) }}
+                    </div>
+                </div>
+
+              </form>
+            </div>
+
+      </div>
+
+{% endblock %}
