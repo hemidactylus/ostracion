@@ -21,6 +21,11 @@ from ostracion_app.utilities.tools.dictTools import (
     recursivelyMergeDictionaries
 )
 
+from ostracion_app.utilities.exceptions.exceptions import (
+    OstracionWarning,
+    OstracionError,
+)
+
 from ostracion_app.views.apps.calendar_maker.forms import CalendarMakerPropertyForm
 
 from ostracion_app.utilities.viewTools.messageTools import flashMessage
@@ -67,7 +72,10 @@ from ostracion_app.utilities.viewTools.pathTools import (
 #     describeRootBoxCaptions,
 )
 
-from ostracion_app.views.apps.utilities import preparePickBoxPage
+from ostracion_app.views.apps.utilities import (
+    preparePickBoxPage,
+    pathToFileStructure,
+)
 
 from ostracion_app.views.apps.calendar_maker.engine.dateTools import (
     countMonths,
@@ -96,25 +104,6 @@ def dressResponseWithCurrentCalendar(response, cp):
         json.dumps(cp),
     )
     return response
-
-
-def pathToFileStructure(db, user, fPath):
-    fPath = splitPathString(fPath)
-    fBoxPath, fFileName = fPath[:-1], fPath[-1]
-    fParentBox = getBoxFromPath(db, fBoxPath, user)
-    if fParentBox is not None:
-        fFile = getFileFromParent(db, fParentBox, fFileName, user)
-        if fFile is not None:
-            fStructure = {
-                'path': fPath,
-                'file': fFile,
-                'parent_box': fParentBox,
-            }
-        else:
-            fStructure = None
-    else:
-        fStructure = None
-    return fStructure
 
 
 def applyReindexingToImages(idxMap):
@@ -151,17 +140,17 @@ def calendarMakerIndexView():
         lsPathString='',
     )
     #
-    viewBoxString = request.cookies.get('apps_calendarmaker_viewbox')
+    browseBoxString = request.cookies.get('apps_calendarmaker_browsebox')
     destBoxString = request.cookies.get('apps_calendarmaker_destbox')
     currentCalendar = cookiesToCurrentCalendar(request.cookies)
     coverImagePathString = currentCalendar.get('cover_image_path_string')
     calendarImagePaths = currentCalendar.get('images', [])
     cProps = currentCalendar.get('properties', {})
     #
-    if viewBoxString is None:
-        viewBoxMessage = 'Please pick a box'
+    if browseBoxString is None:
+        browseBoxMessage = 'Please pick a box'
     else:
-        viewBoxMessage = 'Picked box: "%s"' % viewBoxString
+        browseBoxMessage = 'Picked box: "%s"' % browseBoxString
     if destBoxString is None:
         destBoxMessage = 'Please pick a dest box'
         destBox = None
@@ -189,19 +178,19 @@ def calendarMakerIndexView():
         '6',
     )
     #
-    if viewBoxString is not None:
-        viewBoxPath = splitPathString(viewBoxString)
-        viewBox = getBoxFromPath(db, viewBoxPath, user)
+    if browseBoxString is not None:
+        browseBoxPath = splitPathString(browseBoxString)
+        browseBox = getBoxFromPath(db, browseBoxPath, user)
         choosableFiles = [
             {
                 'file': file,
-                'path': viewBoxPath[1:] + [file.name],
+                'path': browseBoxPath[1:] + [file.name],
                 'obj_path': urllib.parse.quote_plus('/'.join(
-                    viewBoxPath[1:] + [file.name],
+                    browseBoxPath[1:] + [file.name],
                 )),
             }
             for file in sorted(
-                getFilesFromBox(db, viewBox),
+                getFilesFromBox(db, browseBox),
                 key=lambda f: (f.name.lower(), f.name),
             )
             if file.mime_type in admittedImageMimeTypes
@@ -264,7 +253,7 @@ def calendarMakerIndexView():
         pageSubtitle='subt',
         tasks=None,
         #
-        viewBoxMessage=viewBoxMessage,
+        browseBoxMessage=browseBoxMessage,
         destBoxMessage=destBoxMessage,
         choosableFiles=choosableFiles,
         coverMessage=coverMessage,
@@ -278,8 +267,42 @@ def calendarMakerIndexView():
     )
 
 
-@app.route('/apps/calendarmaker/pickbox_s')
-def calendarMakerPickBoxStartView():
+@app.route('/apps/calendarmaker/browsebox/<mode>')
+def calendarMakerBrowseBoxView(mode):
+    """
+        TO DOC
+    """
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'calendarMakerIndexView',
+        lsPathString='',
+    )
+    if mode == 'start':
+        rootBox = getRootBox(db)
+        return preparePickBoxPage(
+            db=db,
+            user=user,
+            callbackUrl=url_for('calendarMakerBrowseBoxView', mode='end'),
+            startBox=rootBox,
+            message='Choose browsing box',
+        )
+    elif mode == 'end':
+        chosenBoxObjPathBlob = request.args.get('chosenBoxObjPath')
+        chosenBoxObjPath = urllib.parse.unquote_plus(chosenBoxObjPathBlob)
+        response = redirect(url_for('calendarMakerIndexView'))
+        response.set_cookie('apps_calendarmaker_browsebox', chosenBoxObjPath)
+        return response
+    elif mode == 'clear':
+        response = redirect(url_for('calendarMakerIndexView'))
+        response.set_cookie('apps_calendarmaker_browsebox', '', expires=0)
+        return response
+    else:
+        raise OstracionError('Malformed request')
+
+
+@app.route('/apps/calendarmaker/destbox/<mode>')
+def calendarMakerDestBoxView(mode):
     """
         TO DOC
     """
@@ -290,100 +313,31 @@ def calendarMakerPickBoxStartView():
         lsPathString='',
     )
     rootBox = getRootBox(db)
-    return preparePickBoxPage(
-        db=db,
-        user=user,
-        callbackUrl=url_for('calendarMakerPickBoxEndView'),
-        startBox=rootBox,
-        message='Please specify the source of all images',
-    )
+    if mode == 'start':
 
+        def writableRichBoxPicker(rBox):
+            return userHasPermission(db, user, rBox['box'].permissions, 'w')
 
-@app.route('/apps/calendarmaker/pickbox_e')
-def calendarMakerPickBoxEndView():
-    """
-        TO DOC
-    """
-    request._onErrorUrl = url_for(
-        'calendarMakerIndexView',
-        lsPathString='',
-    )
-    chosenBoxObjPathBlob = request.args.get('chosenBoxObjPath')
-    chosenBoxObjPath = urllib.parse.unquote_plus(chosenBoxObjPathBlob)
-    response = redirect(url_for('calendarMakerIndexView'))
-    response.set_cookie('apps_calendarmaker_viewbox', chosenBoxObjPath)
-    return response
-
-
-@app.route('/apps/calendarmaker/unpickbox')
-def calendarMakerUnpickBoxView():
-    """
-        TO DOC
-    """
-    request._onErrorUrl = url_for(
-        'calendarMakerIndexView',
-        lsPathString='',
-    )
-    response = redirect(url_for('calendarMakerIndexView'))
-    response.set_cookie('apps_calendarmaker_viewbox', '', expires=0)
-    return response
-
-
-@app.route('/apps/calendarmaker/pickdestbox_s')
-def calendarMakerPickDestBoxStartView():
-    """
-        TO DOC
-    """
-    user = g.user
-    db = dbGetDatabase()
-    request._onErrorUrl = url_for(
-        'calendarMakerIndexView',
-        lsPathString='',
-    )
-    rootBox = getRootBox(db)
-
-    def writableRichBoxPicker(rBox):
-        return userHasPermission(db, user, rBox['box'].permissions, 'w')
-
-    return preparePickBoxPage(
-        db=db,
-        user=user,
-        callbackUrl=url_for('calendarMakerPickDestBoxEndView'),
-        startBox=rootBox,
-        predicate=writableRichBoxPicker,
-        message='Please choose the box in which the calendar will be created',
-    )
-
-
-
-@app.route('/apps/calendarmaker/pickdestbox_e')
-def calendarMakerPickDestBoxEndView():
-    """
-        TO DOC
-    """
-    request._onErrorUrl = url_for(
-        'calendarMakerIndexView',
-        lsPathString='',
-    )
-    chosenBoxObjPathBlob = request.args.get('chosenBoxObjPath')
-    chosenBoxObjPath = urllib.parse.unquote_plus(chosenBoxObjPathBlob)
-    response = redirect(url_for('calendarMakerIndexView'))
-    response.set_cookie('apps_calendarmaker_destbox', chosenBoxObjPath)
-    return response
-
-
-@app.route('/apps/calendarmaker/unpickdestbox')
-def calendarMakerUnpickDestBoxView():
-    """
-        TO DOC
-    """
-    request._onErrorUrl = url_for(
-        'calendarMakerIndexView',
-        lsPathString='',
-    )
-    response = redirect(url_for('calendarMakerIndexView'))
-    response.set_cookie('apps_calendarmaker_destbox', '', expires=0)
-    return response
+        return preparePickBoxPage(
+            db=db,
+            user=user,
+            callbackUrl=url_for('calendarMakerDestBoxView', mode='end'),
+            startBox=rootBox,
+            predicate=writableRichBoxPicker,
+            message='Choose destination box',
+        )
+    elif mode == 'end':
+        chosenBoxObjPathBlob = request.args.get('chosenBoxObjPath')
+        chosenBoxObjPath = urllib.parse.unquote_plus(chosenBoxObjPathBlob)
+        response = redirect(url_for('calendarMakerIndexView'))
+        response.set_cookie('apps_calendarmaker_destbox', chosenBoxObjPath)
+        return response
+    elif mode == 'clear':
+        response = redirect(url_for('calendarMakerIndexView'))
+        response.set_cookie('apps_calendarmaker_destbox', '', expires=0)
+        return response
+    else:
+        raise OstracionError('Malformed request')
 
 
 @app.route('/apps/calendarmaker/setcover/<coverObjPath>')

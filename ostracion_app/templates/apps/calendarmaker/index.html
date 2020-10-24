@@ -82,8 +82,8 @@
                 <div class="row">
                     <div class="col-auto">
                         {{ destBoxMessage }}
-                        <a href="{{ url_for('calendarMakerPickDestBoxStartView') }}" class="btn btn-primary btn-md">Box...</a>
-                        <a href="{{ url_for('calendarMakerUnpickDestBoxView') }}" class="btn btn-warning btn-md">Clear</a>
+                        <a href="{{ url_for('calendarMakerDestBoxView', mode='start') }}" class="btn btn-primary btn-md">Box...</a>
+                        <a href="{{ url_for('calendarMakerDestBoxView', mode='clear') }}" class="btn btn-warning btn-md">Clear</a>
                     </div>
                     <div class="col-auto">
                         <a href="#" class="btn btn-primary btn-lg {% if not canGenerate -%}disabled{%- endif %}">Generate</a>
@@ -100,9 +100,9 @@
                     <div class="col col-1">
                         {% if coverImageFileObject %}
                             <img width="80%" src="{{ url_for('fileThumbnailView',dummyId=coverImageFileObject['file'].icon_file_id+'_',fsPathString='/'.join(coverImageFileObject.path[1:])) }}" />
+                            <p>Cover</p>
+                            <a href="{{ url_for('calendarMakerUnsetCover') }}" class="btn btn-danger btn-sm">X</a>
                         {% endif %}
-                        <p>Cover</p>
-                        <a href="{{ url_for('calendarMakerUnsetCover') }}" class="btn btn-danger btn-sm">X</a>
                     </div>
                     {% for fileStructure in calendarImages %}
                         <div class="col col-1">
@@ -128,9 +128,9 @@
                 Browse box
                 <div class="row">
                     <div class="col">
-                        {{ viewBoxMessage }}
-                        <a href="{{ url_for('calendarMakerPickBoxStartView') }}" class="btn btn-primary btn-md">Box...</a>
-                        <a href="{{ url_for('calendarMakerUnpickBoxView') }}" class="btn btn-warning btn-md">Clear</a>
+                        {{ browseBoxMessage }}
+                        <a href="{{ url_for('calendarMakerBrowseBoxView', mode='start') }}" class="btn btn-primary btn-md">Box...</a>
+                        <a href="{{ url_for('calendarMakerBrowseBoxView', mode='clear') }}" class="btn btn-warning btn-md">Clear</a>
                     </div>
                 </div>
             </div>
