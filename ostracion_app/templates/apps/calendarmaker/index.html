@@ -18,12 +18,12 @@
 
         <div class="col">
 
-            <div class="jumbotron" style="background-color: {{ bgcolor }}">
+            <div class="jumbotron jumbotron-slim" style="background-color: {{ bgcolor }}">
                 <div class="row">
                     <div class="col-auto">
                         <div class="row">
                             <div class="col-auto">
-                                <a href="#" class="btn btn-primary btn-lg {% if not canGenerate -%}disabled{%- endif %}">Generate</a>
+                                <a href="#" class="btn btn-primary btn-lg {% if not canGenerate -%}disabled{%- endif %}">Generate calendar</a>
                             </div>
                             <div class="col-auto">
                                 {% for gMessage in generationMessages %}
@@ -45,9 +45,9 @@
                 <div class="row" style="padding-top: 0.4rem;">
                     <div class="col">
                         {% if destBox %}
-                            Destination: {{ destBoxName }}
+                            Destination: <strong>{{ destBoxName }}</strong>.
                         {% else %}
-                            Destination box not set
+                            Destination box not set.
                         {% endif %}
                         <a href="{{ url_for('calendarMakerDestBoxView', mode='start') }}" class="btn btn-primary btn-sm">Choose...</a>
                         <a href="{{ url_for('calendarMakerDestBoxView', mode='clear') }}" class="btn btn-warning btn-sm">Clear</a>
@@ -55,12 +55,12 @@
                 </div>
                 <div class="row" style="padding-top: 0.4rem;">
                     <div class="col">
-                        Selected images ({%- if coverImageFileObject -%}cover + {% endif -%}{{ calendarImages | length }} {% if numRequiredImages %} / {{ numRequiredImages }}{% endif %}):
+                        Selected images ({%- if coverImageFileObject -%}cover + {% else %}missing cover + {% endif -%}{{ calendarImages | length }} {% if numRequiredImages %} / {{ numRequiredImages }}{% endif %}):
                         {% if coverImageFileObject %}
                             <img title="Cover: {{ coverImageFileObject.file.name }}" src="{{ url_for('fileThumbnailView',dummyId=coverImageFileObject['file'].icon_file_id+'_',fsPathString='/'.join(coverImageFileObject.path[1:])) }}" class="calendar-small-image calendar-cover-image rounded"/>
                         {% endif %}
                         {% for fileStructure in calendarImages %}
-                            <img title="{{ loop.index }}: {{ fileStructure.file.name }}" width="80%" src="{{ url_for('fileThumbnailView',dummyId=fileStructure['file'].icon_file_id+'_',fsPathString='/'.join(fileStructure.path[1:])) }}" class="calendar-small-image rounded"/>
+                            <img title="{{ loop.index }}: {{ fileStructure.file.name }}" width="80%" src="{{ url_for('fileThumbnailView',dummyId=fileStructure['file'].icon_file_id+'_',fsPathString='/'.join(fileStructure.path[1:])) }}" class="calendar-small-image calendar-chosen-image rounded"/>
                         {% endfor %}
                         <a href="{{ url_for('calendarMakerImagesView') }}" class="btn btn-primary btn-sm">Browse...</a>
                         <a href="{{ url_for('calendarMakerUnsetImagesView') }}" class="btn btn-warning btn-sm">Reset</a>

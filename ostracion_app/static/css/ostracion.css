@@ -55,3 +55,14 @@ img.calendar-cover-image {
   border-style: solid;
   color: #8833aa;
 }
+
+img.calendar-chosen-image {
+  border-width: 3px;
+  border-style: solid;
+  color: #b873ea;
+}
+
+.jumbotron-slim {
+  padding-top: 0.52rem;
+  padding-bottom: 0.84rem;
+}
