@@ -30,8 +30,8 @@
                 </div>
 
                 <div class="row">
-                    <div class="col col-auto" style="margin: 0.5rem;">
-                        {% if coverImageFileObject %}
+                    {% if coverImageFileObject %}
+                        <div class="col col-auto" style="margin: 0.5rem;">
                             <div class="row">
                                 Cover
                             </div>
@@ -41,11 +41,8 @@
                             <div class="row">
                                 <a href="{{ url_for('calendarMakerUnsetCover') }}" title="Remove" class="btn btn-danger btn-sm" style="margin-right: 0.1rem;">X</a>
                             </div>
-                        {% endif %}
-                    </div>
-
-
-
+                        </div>
+                    {% endif %}
 
                     {% for fileStructure in calendarImages %}
                         <div class="col col-auto" style="margin: 0.5rem;">
@@ -71,7 +68,7 @@
                 </div>
             </div>
 
-            <div class="jumbotron jumbotron-slim" style="background-color: {{ bgcolor }}">
+            <div class="jumbotron jumbotron-slim" style="background-color: {{ bgcolorbrowse }}">
                 <div class="row">
                     <div class="col">
                         <div class="lead">

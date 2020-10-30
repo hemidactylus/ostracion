@@ -77,7 +77,7 @@ def _filterTasks(taskMap, accessibilities):
     return filteredTasks
 
 
-def filterToolsPageDescriptor(pDesc, subTasksAccessibility):
+def filterPageDescriptor(pDesc, subTasksAccessibility):
     '''
         Prune parts of a page tree descriptor according to a prescriptions.
 

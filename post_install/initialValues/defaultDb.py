@@ -117,6 +117,14 @@ initialDbValues = {
                 'can_user': 1,
                 'can_delete': 0,
             },
+            {
+                'role_class': 'app',
+                'role_id':          'calendarmaker',
+                'description':      'Calendar Maker',
+                'can_box': 0,
+                'can_user': 1,
+                'can_delete': 0,
+            },
         ],
     },
     'user_roles': {
@@ -701,6 +709,37 @@ initialDbValues = {
             },
             #
             {
+                'id':               'general_apps',
+                'klass':            'image',
+                'type':             'image',
+                'value':            '',
+                'title':            'Apps',
+                'description':      'Icon for "apps" section',
+                'default_value':    'general_apps.png',
+                'default_icon_mime_type':   'image/png',
+                'metadata':         '{"thumbnailFormat":"thumbnail"}',
+                'group_id':         'custom_apps_images',
+                'group_title':      'Apps image settings',
+                'group_ordering':   40,
+                'ordering':         5,
+            },
+            {
+                'id':               'calendar_maker',
+                'klass':            'image',
+                'type':             'image',
+                'value':            '',
+                'title':            'Calendar maker',
+                'description':      'Icon for app "Calendar maker"',
+                'default_value':    'calendar_maker.png',
+                'default_icon_mime_type':   'image/png',
+                'metadata':         '{"thumbnailFormat":"thumbnail"}',
+                'group_id':         'custom_apps_images',
+                'group_title':      'Apps image settings',
+                'group_ordering':   40,
+                'ordering':         10,
+            },
+            #
+            {
                 'id':               'navbar_logo',
                 'klass':            'image',
                 'type':             'image',
@@ -712,7 +751,7 @@ initialDbValues = {
                 'metadata':         '{"thumbnailFormat":"logo_small"}',
                 'group_id':         'ostracion_images',
                 'group_title':      'Ostracion image settings',
-                'group_ordering':   40,
+                'group_ordering':   50,
                 'ordering':         5,
             },
             {
@@ -727,7 +766,7 @@ initialDbValues = {
                 'metadata':         '{"thumbnailFormat":"thumbnail"}',
                 'group_id':         'ostracion_images',
                 'group_title':      'Ostracion image settings',
-                'group_ordering':   40,
+                'group_ordering':   50,
                 'ordering':         10,
             },
             {
@@ -745,7 +784,7 @@ initialDbValues = {
                 'metadata':         '{"thumbnailFormat":"landscape"}',
                 'group_id':         'ostracion_images',
                 'group_title':      'Ostracion image settings',
-                'group_ordering':   40,
+                'group_ordering':   50,
                 'ordering':         15,
             },
             {
@@ -760,7 +799,7 @@ initialDbValues = {
                 'metadata':         '{"thumbnailFormat":"thumbnail"}',
                 'group_id':         'ostracion_images',
                 'group_title':      'Ostracion image settings',
-                'group_ordering':   40,
+                'group_ordering':   50,
                 'ordering':         20,
             },
             {
@@ -775,7 +814,7 @@ initialDbValues = {
                 'metadata':         '{"thumbnailFormat":"thumbnail"}',
                 'group_id':         'ostracion_images',
                 'group_title':      'Ostracion image settings',
-                'group_ordering':   40,
+                'group_ordering':   50,
                 'ordering':         25,
             },
             {
@@ -790,7 +829,7 @@ initialDbValues = {
                 'metadata':         '{"thumbnailFormat":"thumbnail"}',
                 'group_id':         'ostracion_images',
                 'group_title':      'Ostracion image settings',
-                'group_ordering':   40,
+                'group_ordering':   50,
                 'ordering':         30,
             },
             {
@@ -805,7 +844,7 @@ initialDbValues = {
                 'metadata':         '{"thumbnailFormat":"thumbnail"}',
                 'group_id':         'ostracion_images',
                 'group_title':      'Ostracion image settings',
-                'group_ordering':   40,
+                'group_ordering':   50,
                 'ordering':         35,
             },
             {
@@ -820,7 +859,7 @@ initialDbValues = {
                 'metadata':         '{"thumbnailFormat":"thumbnail"}',
                 'group_id':         'ostracion_images',
                 'group_title':      'Ostracion image settings',
-                'group_ordering':   40,
+                'group_ordering':   50,
                 'ordering':         40,
             },
             #
@@ -989,6 +1028,41 @@ initialDbValues = {
                 'group_title':      'Task colors',
                 'group_ordering':   15,
                 'ordering':         25,
+            },
+            #
+            {
+                'id':               'calendar_maker_color',
+                'klass':            'color',
+                'type':             'color',
+                'value':            '',
+                'title':            'Calendar maker color',
+                'description':      (
+                                        'Color for blocks in calendar maker '
+                                        'interface'
+                                    ),
+                'default_value':    '#b8d9f9',
+                'metadata':         '',
+                'group_id':         'app_colors',
+                'group_title':      'App colors',
+                'group_ordering':   20,
+                'ordering':         5,
+            },
+            {
+                'id':               'calendar_maker_browse_color',
+                'klass':            'color',
+                'type':             'color',
+                'value':            '',
+                'title':            'Calendar maker browsing color',
+                'description':      (
+                                        'Color for blocks in calendar maker '
+                                        'interface, browsing box'
+                                    ),
+                'default_value':    '#9192a2',
+                'metadata':         '',
+                'group_id':         'app_colors',
+                'group_title':      'App colors',
+                'group_ordering':   20,
+                'ordering':         10,
             },
             #
             #

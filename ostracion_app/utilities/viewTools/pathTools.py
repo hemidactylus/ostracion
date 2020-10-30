@@ -59,6 +59,8 @@ from ostracion_app.views.viewTools.toolsPageTreeDescriptor import (
     toolsPageDescriptor,
 )
 
+from ostracion_app.views.apps.appsPageTreeDescriptor import appsPageDescriptor
+
 from ostracion_app.views.viewTools.infoPageTreeDescriptor import (
     infoPageDescriptor,
 )
@@ -617,6 +619,11 @@ def prepareRootTasks(db, g, user):
     appShortName = g.settings['behaviour']['behaviour_appearance'][
         'application_short_name']['value']
     fixedPart = [
+        extractTopLevelTaskFromTreeDescriptor(
+            appsPageDescriptor,
+            'tool_task',
+            g,
+        ),
         extractTopLevelTaskFromTreeDescriptor(
             toolsPageDescriptor,
             'tool_task',

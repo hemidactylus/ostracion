@@ -31,6 +31,27 @@ from ostracion_app.utilities.database.fileSystem import (
     splitPathString,
 )
 
+from ostracion_app.utilities.database.permissions import (
+    userHasRole,
+)
+
+from ostracion_app.views.viewTools.pageTreeDescriptorTools import (
+    filterPageDescriptor,
+)
+
+from ostracion_app.views.apps.appsPageTreeDescriptor import appsPageDescriptor
+
+
+def selectAvailableApps(db, user):
+    return filterPageDescriptor(
+        appsPageDescriptor,
+        subTasksAccessibility={
+            'root': {
+                'calendar_maker':  userHasRole(db, user, 'app', 'calendarmaker'),
+            },
+        },
+    )
+
 
 def preparePickBoxPage(db, user, callbackUrl, startBox, message, predicate=lambda richFileOrBox: True):
     #

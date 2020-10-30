@@ -24,7 +24,7 @@ from ostracion_app.views.viewTools.toolsPageTreeDescriptor import (
 )
 
 from ostracion_app.views.viewTools.pageTreeDescriptorTools import (
-    filterToolsPageDescriptor,
+    filterPageDescriptor,
 )
 
 
@@ -34,7 +34,7 @@ def toolsHomeView():
     user = g.user
     db = dbGetDatabase()
     #
-    filteredToolsPageDescriptor = filterToolsPageDescriptor(
+    filteredToolsPageDescriptor = filterPageDescriptor(
         toolsPageDescriptor,
         subTasksAccessibility={
             'root': {

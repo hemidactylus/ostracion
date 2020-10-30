@@ -72,6 +72,8 @@ from ostracion_app.utilities.database.permissions import (
 
 from ostracion_app.utilities.viewTools.messageTools import flashMessage
 
+from ostracion_app.views.apps.utilities import selectAvailableApps
+
 from ostracion_app.views.viewTools.loginTools import (
     loginTitle,
     loginSubtitle,
@@ -133,6 +135,7 @@ endpointsWithoutTermAcceptanceBlocking = {
     'aboutView',
     'DPOEmailImageView',
     'contactInfoImageView',
+    'static',
 }
 
 
@@ -162,6 +165,8 @@ def before_request():
         g.user,
         g.settings['behaviour']['search']['tree_view_access']['value'],
     )
+    # task lists
+    g.availableApps = selectAvailableApps(db, g.user)
     #
     if g.user.is_authenticated:
         g.user.setRoles(list(dbGetUserRoles(db, g.user)))

@@ -70,7 +70,7 @@ from ostracion_app.views.viewTools.infoPageTreeDescriptor import (
 )
 
 from ostracion_app.views.viewTools.pageTreeDescriptorTools import (
-    filterToolsPageDescriptor,
+    filterPageDescriptor,
 )
 
 
@@ -80,7 +80,7 @@ def infoHomeView():
     user = g.user
     db = dbGetDatabase()
     #
-    filteredInfoPageDescriptor = filterToolsPageDescriptor(
+    filteredInfoPageDescriptor = filterPageDescriptor(
         infoPageDescriptor,
         subTasksAccessibility={
             'root': {
@@ -94,7 +94,6 @@ def infoHomeView():
         ['root'],
         g,
     )
-    print(pageFeatures['tasks'])
     return render_template(
         'tasks.html',
         user=user,

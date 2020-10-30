@@ -46,24 +46,9 @@ from ostracion_app.utilities.database.permissions import (
     userHasPermission,
 )
 
-# from ostracion_app.utilities.tools.extraction import safeNone
-
 from ostracion_app.utilities.viewTools.pathTools import (
     describeBoxName,
 )
-#     makeBreadCrumbs,
-#     prepareBoxActions,
-#     prepareFileActions,
-#     prepareLinkActions,
-#     prepareFileInfo,
-#     prepareLinkInfo,
-#     prepareBoxInfo,
-#     prepareBoxHeaderActions,
-#     prepareRootTasks,
-#     describeBoxTitle,
-#     describeBoxName,
-#     describeRootBoxCaptions,
-# )
 
 from ostracion_app.views.apps.utilities import (
     preparePickBoxPage,
@@ -78,11 +63,17 @@ from ostracion_app.views.apps.calendar_maker.engine.engine import (
     defaultCalendarProperties,
 )
 
-from ostracion_app.app_main import app
-
 from ostracion_app.views.apps.calendar_maker.engine.settings import (
     admittedImageMimeTypes,
 )
+
+from ostracion_app.views.apps.appsPageTreeDescriptor import appsPageDescriptor
+
+from ostracion_app.utilities.viewTools.pathTools import (
+    prepareTaskPageFeatures,
+)
+
+from ostracion_app.app_main import app
 
 
 def cookiesToCurrentCalendar(cookies):
@@ -202,41 +193,33 @@ def calendarMakerIndexView():
         gen2 = False
         gen2Message = ['Select a destination box']
     if coverImageFileObject is not None:
-        gen3 = True
+        gen0 = True
         gen3Message = []
     else:
-        gen3 = False
+        gen0 = False
         gen3Message = ['Select a cover image']
-    canGenerate = all([gen3, gen1, gen2])
+    canGenerate = all([gen0, gen1, gen2])
     generationMessages = gen3Message + gen1Message + gen2Message
-    #
-    breadCrumbs = [
-        {
-            'name': 'Root',
-            'type': 'box',
-            'target': url_for('lsView'),
-            'link': True,
-            'is_root_as_pic': True,
-        }
-    ]
+    pageFeatures = prepareTaskPageFeatures(
+    appsPageDescriptor,
+        ['root', 'calendar_maker'],
+        g,
+    )
+
     return render_template(
         'apps/calendarmaker/index.html',
         user=user,
-        breadCrumbs=breadCrumbs,
-        iconUrl=None,
-        pageTitle='Title',
-        pageSubtitle='subt',
-        tasks=None,
-        #
         settingsText=settingsSummaryText,
         destBox=destBox,
         destBoxName=destBoxName,
-        bgcolor='#90B080',
+        bgcolor=g.settings['color']['app_colors'][
+            'calendar_maker_color']['value'],
         calendarImages=calendarImages,
         coverImageFileObject=coverImageFileObject,
         numRequiredImages=numRequiredImages,
         canGenerate=canGenerate,
         generationMessages=generationMessages,
+        **pageFeatures,
     )
 
 @app.route('/apps/calendarmaker/resetsettings')
@@ -294,16 +277,6 @@ def calendarMakerSettingsView():
         )
         return dResponse
     else:
-        breadCrumbs = [
-            {
-                'name': 'Root',
-                'type': 'box',
-                'target': url_for('lsView'),
-                'link': True,
-                'is_root_as_pic': True,
-            }
-        ]
-        #
         form.month0.data = str(applyDefault(cProps.get('month0'), 1))
         form.year0.data = applyDefault(cProps.get('year0'), currentYear)
         form.month1.data = str(applyDefault(cProps.get('month1'), 12))
@@ -314,17 +287,19 @@ def calendarMakerSettingsView():
             '6',
         )
         #
+        pageFeatures = prepareTaskPageFeatures(
+            appsPageDescriptor,
+            ['root', 'calendar_maker', 'settings'],
+            g,
+        )
+        #
         return render_template(
             'apps/calendarmaker/settings.html',
             user=user,
-            breadCrumbs=breadCrumbs,
-            iconUrl=None,
-            pageTitle='SettTitle',
-            pageSubtitle='settSubt',
-            tasks=None,
-            #
-            bgcolor='#90B080',
+            bgcolor=g.settings['color']['app_colors'][
+                'calendar_maker_color']['value'],
             form=form,
+            **pageFeatures,
         )
 
 
@@ -481,7 +456,11 @@ def calendarMakerImagesView():
     if coverImagePathString is None:
         coverImageFileObject = None
     else:
-        coverImageFileObject = pathToFileStructure(db, user, coverImagePathString)
+        coverImageFileObject = pathToFileStructure(
+            db,
+            user,
+            coverImagePathString,
+        )
     #
     if browseBoxString is not None:
         browseBoxPath = splitPathString(browseBoxString)
@@ -518,31 +497,25 @@ def calendarMakerImagesView():
         cProps.get('month1'),
     )
     #
-    breadCrumbs = [
-        {
-            'name': 'Root',
-            'type': 'box',
-            'target': url_for('lsView'),
-            'link': True,
-            'is_root_as_pic': True,
-        }
-    ]
+    pageFeatures = prepareTaskPageFeatures(
+        appsPageDescriptor,
+        ['root', 'calendar_maker', 'images'],
+        g,
+    )
     return render_template(
         'apps/calendarmaker/images.html',
         user=user,
-        breadCrumbs=breadCrumbs,
-        iconUrl=None,
-        pageTitle='imgTitle',
-        pageSubtitle='imgSubt',
-        tasks=None,
-        #
         browseBox=browseBox,
         browseBoxName=browseBoxName,
         choosableFiles=choosableFiles,
         coverImageFileObject=coverImageFileObject,
-        bgcolor='#90B080',
+        bgcolor=g.settings['color']['app_colors'][
+            'calendar_maker_color']['value'],
+        bgcolorbrowse=g.settings['color']['app_colors'][
+            'calendar_maker_browse_color']['value'],
         calendarImages=calendarImages,
         numRequiredImages=numRequiredImages,
+        **pageFeatures,
     )
 
 

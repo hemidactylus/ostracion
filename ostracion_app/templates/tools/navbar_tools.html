@@ -37,6 +37,19 @@
             </li>
           {% endif %}
 
+          {% if g.availableApps.tasks.root.tasks %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                {{ g.availableApps.tasks.root.title }}
+              </a>
+              {% for app in g.availableApps.tasks.root.task_order %}
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a class="dropdown-item" href="{{ url_for(g.availableApps.tasks.root.tasks[app].endpoint_name[0], **g.availableApps.tasks.root.tasks[app].endpoint_name[1]) }}">{{ g.availableApps.tasks.root.tasks[app].title }}</a>
+                </div>
+              {% endfor %}
+            </li>
+          {% endif %}
+
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               Tools
