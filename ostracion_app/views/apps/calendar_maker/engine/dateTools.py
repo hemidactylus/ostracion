@@ -8,8 +8,6 @@ from ostracion_app.utilities.tools.dictTools import (
     convertIterableToDictOfLists,
 )
 
-# from settings import rowStartingWeekday
-
 
 def getDaysOfMonth(startingDate):
     """
@@ -64,6 +62,13 @@ def regroupDaysOfMonth(dateList, rowStartingWeekday):
         for gInd, gDays in groups.items()
     }
     return regrouped
+
+
+def makeWeekdayIndexSequence(rowStartingWeekday):
+    return [
+        (rowStartingWeekday + i ) % 7
+        for i in range(7)
+]
 
 
 def countMonths(iniY, iniM, endY, endM):

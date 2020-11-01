@@ -1,5 +1,5 @@
 """
-    engine.py
+    calendarTools.py
 """
 
 import datetime
@@ -13,7 +13,7 @@ from ostracion_app.views.apps.calendar_maker.engine.settings import (
 def describeSettings(calProperties):
     languageName = languageMap.get(calProperties.get('language'))
     startingweekdayName = startingWeekdayMap.get(
-        calProperties.get('startingweekday')
+        str(calProperties.get('startingweekday'))
     )
     year0 = calProperties.get('year0')
     month0 = calProperties.get('month0')
@@ -56,5 +56,5 @@ def defaultCalendarProperties():
         'month1': 12,
         'year1': currentYear,
         'language': 'en',
-        'startingweekday': '6',
+        'startingweekday': 6,
     }

@@ -58,13 +58,13 @@ from ostracion_app.views.apps.calendar_maker.engine.dateTools import (
     countMonths,
 )
 
-from ostracion_app.views.apps.calendar_maker.engine.engine import (
+from ostracion_app.views.apps.calendar_maker.engine.calendarTools import (
     describeSettings,
     defaultCalendarProperties,
 )
 
 from ostracion_app.views.apps.calendar_maker.engine.settings import (
-    admittedImageMimeTypes,
+    admittedImageMimeTypeToExtension,
 )
 
 from ostracion_app.views.apps.appsPageTreeDescriptor import appsPageDescriptor
@@ -257,7 +257,7 @@ def calendarMakerSettingsView():
         month1 = safeInt(form.month1.data, 12)
         year1 = form.year1.data
         language = form.language.data
-        startingweekday = form.startingweekday.data
+        startingweekday = safeInt(form.startingweekday.data, 6)
         response = redirect(url_for('calendarMakerIndexView'))
         dResponse = dressResponseWithCurrentCalendar(
             response,
@@ -284,7 +284,7 @@ def calendarMakerSettingsView():
         form.language.data = applyDefault(cProps.get('language'), 'en')
         form.startingweekday.data = applyDefault(
             cProps.get('startingweekday'),
-            '6',
+            6,
         )
         #
         pageFeatures = prepareTaskPageFeatures(
@@ -477,7 +477,7 @@ def calendarMakerImagesView():
                 getFilesFromBox(db, browseBox),
                 key=lambda f: (f.name.lower(), f.name),
             )
-            if file.mime_type in admittedImageMimeTypes
+            if file.mime_type in admittedImageMimeTypeToExtension
         ]
         browseBoxName = describeBoxName(browseBox)
     else:

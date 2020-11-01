@@ -1,0 +1,94 @@
+{% raw %}
+\documentclass[a4paper]{article}
+
+\usepackage[left=0.5in,right=0.6in,top=1.1in,bottom=0.5in]{geometry}
+
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{color}
+\usepackage{bookman}
+
+\definecolor{cyan}{rgb}{0.694,0.876,0.996}
+\definecolor{grey}{rgb}{0.7,0.7,0.7}
+\definecolor{purple}{rgb}{0.6,0,0.6}
+\definecolor{darkgreen}{rgb}{0,0.4,0}
+\newcommand{\rd}[1]{{\color{red} #1}}
+\newcommand{\gr}[1]{{\color{darkgreen} #1}}
+\newcommand{\bl}[1]{{\color{blue} #1}}
+\newcommand{\pp}[1]{{\color{purple} #1}}
+\newcommand{\dd}[1]{{\color{desyo} #1}}
+\newcommand{\grey}[1]{{\color{grey} #1}}
+\newcommand{\cyan}[1]{{\color{cyan} #1}}
+
+\newcommand{\daynumber}[1]{ \vertcell {\Huge{\cyan{\textbf{#1}}}}}
+\newcommand{\vertcell}{\rule{0pt}{1.4cm}}
+\newcommand{\headcell}[1]{\multicolumn{1}{p{1.92cm}}{
+  \begin{center}
+    \bl{#1}
+  \end{center}
+}}
+
+\begin{document}
+{% endraw %}
+
+\pagestyle{empty}
+{\begin{center}
+  $\phantom{.}$ \\
+  \vspace{3.4cm}
+  \includegraphics[width=0.60\textwidth]{% raw %}{{% endraw %}{{ coverImage }}{% raw %}}{% endraw %}
+\end{center}}
+\newpage
+
+{% for page in pages %}
+
+  \pagestyle{empty}
+
+  {\begin{center}
+  \vspace{0.8cm}
+
+  {\Huge \bl{\textbf{ {{ page.monthName }} {{ page.yearName }} }}}
+
+  \vspace{0.8cm}
+
+  \includegraphics[width=0.88\textwidth]{% raw %}{{% endraw %}{{ page.image }}{% raw %}}{% endraw %}
+
+  \vspace{1.2cm}
+  \pp{
+    \begin{tabular}{|r|r|r|r|r|r|r|}
+    \hline
+      {% for wdIndex in wdIndexSequence %}
+        \headcell{ {{ weekdayNames[wdIndex] }} }
+        {% if loop.last %}
+          \\
+        {% else %}
+          &
+        {% endif %}
+      {% endfor %}
+    \hline
+
+      {% for grp,grpMap in page.groups.items() %}
+        % GROUP: {{ grp }}
+        {% for wdIndex in wdIndexSequence %}
+          {% if grpMap[wdIndex] %}
+            \daynumber{ {{ grpMap[wdIndex].day }} }
+          {% endif %}
+          {% if loop.last %}
+            \\
+          {% else %}
+            &
+          {% endif %}
+        {% endfor %}
+        \hline
+      {% endfor %}
+    \end{tabular}
+  }
+
+  \end{center}}
+
+  {% if not loop.last %}
+    \newpage
+  {% endif %}
+
+{% endfor %}
+
+\end{document}

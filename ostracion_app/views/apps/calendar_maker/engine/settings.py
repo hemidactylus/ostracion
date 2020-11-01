@@ -2,10 +2,63 @@
     settings.py
 """
 
-admittedImageMimeTypes = {
-    'image/gif', 
-    'image/jpeg', 
-    'image/png', 
+# these are properly Latex-escaped strings
+weekdayNamesPerLanguage = {
+    'it': [
+        'Luned\\\'i',
+        'Marted\\\'i',
+        'Mercoled\\\'i',
+        'Gioved\\\'i',
+        'Venerd\\\'i',
+        'Sabato',
+        'Domenica',
+    ],
+    'en': [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday',
+    ],
+}
+
+# these are properly Latex-escaped strings
+monthNamesPerLanguage = {
+    'it': [
+        'Gennaio',
+        'Febbraio',
+        'Marzo',
+        'Aprile',
+        'Maggio',
+        'Giugno',
+        'Luglio',
+        'Agosto',
+        'Settembre',
+        'Ottobre',
+        'Novembre',
+        'Dicembre',
+    ],
+    'en': [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
+    ],
+}
+
+admittedImageMimeTypeToExtension = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
 }
 
 availableLanguages = [
@@ -13,7 +66,10 @@ availableLanguages = [
     ('it', 'Italian'),
 ]
 
-startingWeekdayChoices = [('6', 'Sunday'), ('0' ,'Monday')]
+startingWeekdayChoices = [
+    ('6', 'Sunday'),
+    ('0' ,'Monday'),
+]
 
 monthChoices = [
     ('1', 'Jan'),
