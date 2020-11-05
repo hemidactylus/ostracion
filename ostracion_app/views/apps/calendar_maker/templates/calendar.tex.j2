@@ -9,15 +9,9 @@
 \usepackage{bookman}
 
 \definecolor{cyan}{rgb}{0.694,0.876,0.996}
-\definecolor{grey}{rgb}{0.7,0.7,0.7}
 \definecolor{purple}{rgb}{0.6,0,0.6}
-\definecolor{darkgreen}{rgb}{0,0.4,0}
-\newcommand{\rd}[1]{{\color{red} #1}}
-\newcommand{\gr}[1]{{\color{darkgreen} #1}}
 \newcommand{\bl}[1]{{\color{blue} #1}}
 \newcommand{\pp}[1]{{\color{purple} #1}}
-\newcommand{\dd}[1]{{\color{desyo} #1}}
-\newcommand{\grey}[1]{{\color{grey} #1}}
 \newcommand{\cyan}[1]{{\color{cyan} #1}}
 
 \newcommand{\daynumber}[1]{ \vertcell {\Huge{\cyan{\textbf{#1}}}}}
@@ -35,7 +29,7 @@
 {\begin{center}
   $\phantom{.}$ \\
   \vspace{3.4cm}
-  \includegraphics[width=0.60\textwidth]{% raw %}{{% endraw %}{{ coverImage }}{% raw %}}{% endraw %}
+  \includegraphics[width=0.85\textwidth]{% raw %}{{% endraw %}{{ coverImageTexPath }}{% raw %}}{% endraw %}
 \end{center}}
 \newpage
 
@@ -50,13 +44,13 @@
 
   \vspace{0.8cm}
 
-  \includegraphics[width=0.88\textwidth]{% raw %}{{% endraw %}{{ page.image }}{% raw %}}{% endraw %}
+  \includegraphics[height=0.6\textwidth]{% raw %}{{% endraw %}{{ page.imageTexPath }}{% raw %}}{% endraw %}
 
   \vspace{1.2cm}
   \pp{
     \begin{tabular}{|r|r|r|r|r|r|r|}
     \hline
-      {% for wdIndex in wdIndexSequence %}
+      {% for wdIndex in weekdayIndexSequence %}
         \headcell{ {{ weekdayNames[wdIndex] }} }
         {% if loop.last %}
           \\
@@ -68,7 +62,7 @@
 
       {% for grp,grpMap in page.groups.items() %}
         % GROUP: {{ grp }}
-        {% for wdIndex in wdIndexSequence %}
+        {% for wdIndex in weekdayIndexSequence %}
           {% if grpMap[wdIndex] %}
             \daynumber{ {{ grpMap[wdIndex].day }} }
           {% endif %}

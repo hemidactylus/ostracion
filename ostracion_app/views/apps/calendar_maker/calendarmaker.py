@@ -2,6 +2,8 @@
     calendarmaker.py
 """
 
+import os
+from uuid import uuid4
 import datetime
 import urllib.parse
 import json
@@ -10,6 +12,7 @@ from flask import (
     url_for,
     render_template,
     request,
+    send_from_directory,
     g,
 )
 
@@ -65,6 +68,16 @@ from ostracion_app.views.apps.calendar_maker.engine.calendarTools import (
 
 from ostracion_app.views.apps.calendar_maker.engine.settings import (
     admittedImageMimeTypeToExtension,
+)
+
+from ostracion_app.views.apps.calendar_maker.engine.calendarEngine import (
+    makeCalendarPdf,
+)
+
+from ostracion_app.utilities.fileIO.physical import (
+    fileIdToPath,
+    makeSymlink,
+    flushFsDeleteQueue,
 )
 
 from ostracion_app.views.apps.appsPageTreeDescriptor import appsPageDescriptor
@@ -205,7 +218,7 @@ def calendarMakerIndexView():
         ['root', 'calendar_maker'],
         g,
     )
-
+    #
     return render_template(
         'apps/calendarmaker/index.html',
         user=user,
@@ -222,8 +235,96 @@ def calendarMakerIndexView():
         **pageFeatures,
     )
 
+
+@app.route('/apps/calendarmaker/generate')
+def calendarMakerGenerateCalendar():
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'calendarMakerIndexView',
+    )
+    #
+    destBoxString = request.cookies.get('apps_calendarmaker_destbox')
+    currentCalendar = cookiesToCurrentCalendar(request.cookies)
+    coverImagePathString = currentCalendar.get('cover_image_path_string')
+    calendarImagePaths = currentCalendar.get('image_path_strings', [])
+    cProps = currentCalendar.get('properties', {})
+    #
+    if destBoxString is None:
+        destBox = None
+    else:
+        destBoxPath = splitPathString(destBoxString)
+        destBox = getBoxFromPath(db, destBoxPath, user)
+    if coverImagePathString is None:
+        coverImageFileObject = None
+    else:
+        coverImageFileObject = pathToFileStructure(db, user, coverImagePathString)
+    #
+    calendarImages = [
+        pathToFileStructure(db, user, imgPath)
+        for imgPath in calendarImagePaths
+    ]
+    numRequiredImages = countMonths(
+        cProps.get('year0'),
+        cProps.get('month0'),
+        cProps.get('year1'),
+        cProps.get('month1'),
+    )
+    if (destBox is None or coverImageFileObject is None or \
+            any([ci is None for ci in calendarImages]) \
+            or numRequiredImages is None \
+            or numRequiredImages > len(calendarImages)):
+        raise OstracionError('Cannot generate calendar')
+    else:
+        fileStorageDirectory = g.settings['system']['system_directories'][
+            'fs_directory']['value']
+        # proceed with generation
+        tempFileDirectory = g.settings['system']['system_directories'][
+            'temp_directory']['value']
+
+        # !!! QUICK TESTING
+        tempFileDirectory = '/home/stefano/temp/NotBackedUp/Tests/symlinks_for_latex_calendar/fromOstra'
+        print('\n\n\n\nQUICK TESTING\n\n\n')
+
+        texImageCoverPath = makeSymlink(
+            fileIdToPath(coverImageFileObject['file'].file_id, fileStorageDirectory=fileStorageDirectory),
+            os.path.join(tempFileDirectory, '%s.%s' % (uuid4().hex, admittedImageMimeTypeToExtension[coverImageFileObject['file'].mime_type])),
+        )
+        texImagePaths = [
+            makeSymlink(
+                fileIdToPath(imageFile['file'].file_id, fileStorageDirectory=fileStorageDirectory),
+                os.path.join(tempFileDirectory, '%s.%s' % (uuid4().hex, admittedImageMimeTypeToExtension[imageFile['file'].mime_type])),
+            )
+            for imageFile in calendarImages
+        ]
+        #
+        fsDeletionQueue = [texImageCoverPath] + texImagePaths
+        createdPdfTitle = uuid4().hex
+        createdFile, creationToDelete = makeCalendarPdf(cProps, texImagePaths, texImageCoverPath,
+                                                        tempFileDirectory, createdPdfTitle)
+        flushFsDeleteQueue(fsDeletionQueue + creationToDelete)
+        #
+        if createdFile is not None:
+
+            # TEMP
+            return send_from_directory(
+                tempFileDirectory,
+                '%s.pdf' % createdPdfTitle,
+                attachment_filename='calendar.pdf',
+                as_attachment=True,
+                mimetype='application/pdf',
+            )
+
+        else:
+            flashMessage('Error', 'Error', 'Not created')
+        return redirect(url_for('calendarMakerIndexView'))
+
+
 @app.route('/apps/calendarmaker/resetsettings')
 def calendarMakerResetSettingsView():
+    request._onErrorUrl = url_for(
+        'calendarMakerIndexView',
+    )
     currentCalendar = cookiesToCurrentCalendar(request.cookies)
     response = redirect(url_for('calendarMakerIndexView'))
     dResponse = dressResponseWithCurrentCalendar(

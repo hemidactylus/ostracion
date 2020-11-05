@@ -44,6 +44,8 @@ a unique menu construction shared by the menu and the in-page "tasks view"
 
 ## TODOs for the next major release
 
+### A "paste text" ticket
+
 ### API / Command line tools to sync in either direction
 
 ### Zip handling

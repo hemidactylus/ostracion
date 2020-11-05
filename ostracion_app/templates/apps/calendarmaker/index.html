@@ -23,7 +23,7 @@
                     <div class="col-auto">
                         <div class="row">
                             <div class="col-auto">
-                                <a href="#" class="btn btn-primary btn-lg {% if not canGenerate -%}disabled{%- endif %}">Generate calendar</a>
+                                <a href="{{ url_for('calendarMakerGenerateCalendar') }}" class="btn btn-primary btn-lg {% if not canGenerate -%}disabled{%- endif %}">Generate calendar</a>
                             </div>
                             <div class="col-auto">
                                 {% for gMessage in generationMessages %}

@@ -89,3 +89,12 @@ def isWritableDirectory(fullDirPath):
     except Exception as e:
         # a rather rough way to silence any filesystem errors
         return False
+
+
+def makeSymlink(src, dest):
+    """
+        Create a symlink as instructed
+        and return the destination path
+    """
+    os.symlink(src, dest)
+    return dest
