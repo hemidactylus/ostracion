@@ -2,7 +2,7 @@
     settings.py
 """
 
-# these are properly Latex-escaped strings
+# these are properly Latex-escaped strings where needed
 weekdayNamesPerLanguage = {
     'it': [
         'Luned\\\'i',
@@ -24,7 +24,7 @@ weekdayNamesPerLanguage = {
     ],
 }
 
-# these are properly Latex-escaped strings
+# these are properly Latex-escaped strings where needed
 monthNamesPerLanguage = {
     'it': [
         'Gennaio',
@@ -88,3 +88,5 @@ monthChoices = [
 
 languageMap = dict(availableLanguages)
 startingWeekdayMap = dict(startingWeekdayChoices)
+
+pdfGenerationTimeoutSeconds = 5

@@ -94,3 +94,9 @@ def preparePickBoxPage(db, user, callbackUrl, startBox, message, predicate=lambd
             },
         ],
     )
+
+
+1/0
+def placeFileInBox(db, user, box, filePhysicalPath, fileName):
+    #
+    pass

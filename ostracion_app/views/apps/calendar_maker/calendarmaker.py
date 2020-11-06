@@ -78,6 +78,7 @@ from ostracion_app.utilities.fileIO.physical import (
     fileIdToPath,
     makeSymlink,
     flushFsDeleteQueue,
+    mkDirP,
 )
 
 from ostracion_app.views.apps.appsPageTreeDescriptor import appsPageDescriptor
@@ -281,11 +282,7 @@ def calendarMakerGenerateCalendar():
         # proceed with generation
         tempFileDirectory = g.settings['system']['system_directories'][
             'temp_directory']['value']
-
-        # !!! QUICK TESTING
-        tempFileDirectory = '/home/stefano/temp/NotBackedUp/Tests/symlinks_for_latex_calendar/fromOstra'
-        print('\n\n\n\nQUICK TESTING\n\n\n')
-
+        mkDirP(tempFileDirectory)
         texImageCoverPath = makeSymlink(
             fileIdToPath(coverImageFileObject['file'].file_id, fileStorageDirectory=fileStorageDirectory),
             os.path.join(tempFileDirectory, '%s.%s' % (uuid4().hex, admittedImageMimeTypeToExtension[coverImageFileObject['file'].mime_type])),
@@ -306,6 +303,12 @@ def calendarMakerGenerateCalendar():
         #
         if createdFile is not None:
 
+            # Real thing:
+            #   place the file in the Ostracion FS (finding available name)
+            #   flash the message (with filename)
+            #   flush the original pdf and everything else
+            #   redirect user to box
+
             # TEMP
             return send_from_directory(
                 tempFileDirectory,
@@ -316,7 +319,7 @@ def calendarMakerGenerateCalendar():
             )
 
         else:
-            flashMessage('Error', 'Error', 'Not created')
+            flashMessage('Error', 'Error', 'Could not generate the calendar')
         return redirect(url_for('calendarMakerIndexView'))
 
 

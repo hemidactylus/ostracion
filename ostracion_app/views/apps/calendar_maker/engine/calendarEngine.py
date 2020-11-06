@@ -19,6 +19,14 @@ from ostracion_app.views.apps.calendar_maker.engine.naming import (
     printMonth,
 )
 
+from ostracion_app.views.apps.calendar_maker.engine.settings import (
+    pdfGenerationTimeoutSeconds,
+)
+
+from ostracion_app.utilities.exceptions.exceptions import (
+    OstracionWarning,
+    OstracionError,
+)
 
 env = Environment(
     loader=PackageLoader('ostracion_app.views.apps.calendar_maker', 'templates'),
@@ -119,9 +127,11 @@ def makeCalendarPdf(properties, imageTexPaths, coverImageTexPath,
     outputTexPath = os.path.join(workingDirectory, outputTexFile)
     outputPdfPath = os.path.join(workingDirectory, outputPdfFile)
     makeCalendarTexfile(calendarStructure, outputTexPath)
-    # compiling
+    # compiling, checking+returning the resulting file
     pdfMakingOutput = subprocess.run(
         [
+            'timeout',
+            '%is' % pdfGenerationTimeoutSeconds,
             'pdflatex',
             '-halt-on-error',
             outputTexFile,
@@ -130,7 +140,15 @@ def makeCalendarPdf(properties, imageTexPaths, coverImageTexPath,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    finalPdfPath = outputPdfPath if pdfMakingOutput.returncode == 0 else None
+    if pdfMakingOutput.returncode == 0:
+        if os.path.isfile(outputPdfPath):
+            finalPdfPath = outputPdfPath
+        else:
+            raise OstracionError('Could not retrieve generated calendar')
+            finalPdfPath = None
+    else:
+        raise OstracionError('Calendar generation command failed')
+        finalPdfPath = None
     temporaryFiles = [
         os.path.join(workingDirectory, '%s.%s' % (pdfTitle, extension))
         for extension in ['tex', 'log', 'aux']

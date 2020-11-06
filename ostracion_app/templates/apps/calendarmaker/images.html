@@ -95,6 +95,7 @@
                                 <div class="row">
                                     <a href="{{ url_for('calendarMakerSetCover', coverObjPath=fileStructure.obj_path) }}" title="Set as cover" class="btn btn-primary btn-sm" style="margin-right: 0.1rem;">C</a>
                                     <a href="{{ url_for('calendarMakerAddImage', imageObjPath=fileStructure.obj_path) }}" title="Select" class="btn btn-primary btn-sm" style="margin-right: 0.1rem;">+</a>
+                                    <a href="{{ url_for('fsView', fsPathString='/'.join(fileStructure.path)) }}" target="_blank;" title="View" class="btn btn-success btn-sm" style="margin-right: 0.1rem;">v</a>
                                 </div>
                             </div>
                         {% endfor %}
