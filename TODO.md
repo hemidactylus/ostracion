@@ -85,15 +85,10 @@ Boxes of type 'app'.
 
 1. As an exercise: PDF calendar maker.
     TO DOC every function
-    move non-endpoint functions to calendar endpt utilities
-    actual creation of the file (with queue of temp files to delete)
-      engine in separate file
-      + handling of symlinks, check on filetypes
-      relocation of file + removal of temp files
-      (as "async task")
-    MISSING:
-             icon, to do properly
-             + generic "apps" image
+    PEP8
+    - no checkeds in search, fix
+    - transparent GIfs in resizing, fix
+    - make sure ansible has apd installs (latex & co)
 
 2. Accounting app in particular and its special config.
 3. Move biblio here?
