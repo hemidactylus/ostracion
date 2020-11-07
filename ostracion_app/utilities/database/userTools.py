@@ -44,6 +44,7 @@ from ostracion_app.utilities.database.fileSystem import (
     updateBoxThumbnail,
     updateLinkThumbnail,
     isNameUnderParentBox,
+    findFirstAvailableObjectNameInBox,
     deleteBox,
     getFileFromParent,
     getLinkFromParent,
@@ -169,16 +170,6 @@ def dbCreateUser(db, newUser, user):
     db.commit()
 
 
-def _findFirstAvailableDeletedObjectName(db, parentBox, prefix):
-    """ Build a file/box name without name conflicts in a box.
-        Used upon account deletions for cases of forced renames.
-    """
-    tryIndex = 1
-    while isNameUnderParentBox(db, parentBox, '%s%i' % (prefix, tryIndex)):
-        tryIndex += 1
-    return '%s%i' % (prefix, tryIndex)
-
-
 def _boxHasNoChildren(db, box):
     """ Is it true that this box has no children?
         (regardless of visibility-to-this-user issues).
@@ -230,10 +221,11 @@ def _traverseForAccountDeletion(db, parentBox, username, user,
                 iconedFile = file
             # "iconed" as in "icon-wise fixed"
             if iconedFile.metadata_username == username:
-                newFileName = _findFirstAvailableDeletedObjectName(
+                newFileName = findFirstAvailableObjectNameInBox(
                     db,
                     parentBox,
-                    prefix='REDACTED_FILE_'
+                    prefix='REDACTED_FILE_',
+                    suffix='',
                 )
                 newDescription = 'File name redacted upon account deletion'
                 newFile = File(**recursivelyMergeDictionaries(
@@ -282,10 +274,11 @@ def _traverseForAccountDeletion(db, parentBox, username, user,
                 iconedLink = link
             # "iconed" as in "icon-wise fixed"
             if iconedLink.metadata_username == username:
-                newLinkName = _findFirstAvailableDeletedObjectName(
+                newLinkName = findFirstAvailableObjectNameInBox(
                     db,
                     parentBox,
-                    prefix='REDACTED_LINK_'
+                    prefix='REDACTED_LINK_',
+                    suffix='',
                 )
                 newDescription = 'Link data redacted upon account deletion'
                 newLink = Link(**recursivelyMergeDictionaries(
@@ -353,10 +346,11 @@ def _traverseForAccountDeletion(db, parentBox, username, user,
                 if (iconedBox.metadata_username == username or
                         iconedBox.creator_username == username):
                     #
-                    newBoxName = _findFirstAvailableDeletedObjectName(
+                    newBoxName = findFirstAvailableObjectNameInBox(
                         db,
                         parentBox,
                         prefix='REDACTED_BOX_',
+                        suffix='',
                     )
                     newDescription = 'Box name redacted upon account deletion'
                     mdNewBoxContrib = {

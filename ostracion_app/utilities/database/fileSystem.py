@@ -465,6 +465,18 @@ def isLinkNameUnderParentBox(db, parentBox, newName, excludedIds=[]):
     )
 
 
+def findFirstAvailableObjectNameInBox(db, parentBox, prefix, suffix):
+    """ Build a file/box name without name conflicts in a box.
+        Used e.g. upon account deletions for cases of forced renames,
+        or when placing a file in a box from, say, an app or so.
+    """
+    tryIndex = 1
+    while isNameUnderParentBox(db, parentBox,
+            '%s%i%s' % (prefix, tryIndex, suffix)):
+        tryIndex += 1
+    return '%s%i%s' % (prefix, tryIndex, suffix)
+
+
 def isAncestorBoxOf(db, higherBox, childBox):
     """ Return True if higherBox is among the direct ancestors of childBox
         all the way up to root.

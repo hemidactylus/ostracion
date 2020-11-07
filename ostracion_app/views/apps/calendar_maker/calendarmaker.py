@@ -41,6 +41,7 @@ from ostracion_app.utilities.database.fileSystem import (
     pathToFileStructure,
     getFilesFromBox,
     getFileFromParent,
+    findFirstAvailableObjectNameInBox,
     getRootBox,
     splitPathString,
 )
@@ -55,6 +56,7 @@ from ostracion_app.utilities.viewTools.pathTools import (
 
 from ostracion_app.views.apps.utilities import (
     preparePickBoxPage,
+    placeFSFileInBox,
 )
 
 from ostracion_app.views.apps.calendar_maker.engine.dateTools import (
@@ -299,28 +301,43 @@ def calendarMakerGenerateCalendar():
         createdPdfTitle = uuid4().hex
         createdFile, creationToDelete = makeCalendarPdf(cProps, texImagePaths, texImageCoverPath,
                                                         tempFileDirectory, createdPdfTitle)
-        flushFsDeleteQueue(fsDeletionQueue + creationToDelete)
         #
         if createdFile is not None:
-
-            # Real thing:
-            #   place the file in the Ostracion FS (finding available name)
-            #   flash the message (with filename)
-            #   flush the original pdf and everything else
-            #   redirect user to box
-
-            # TEMP
-            return send_from_directory(
-                tempFileDirectory,
-                '%s.pdf' % createdPdfTitle,
-                attachment_filename='calendar.pdf',
-                as_attachment=True,
-                mimetype='application/pdf',
+            # name and description
+            calDescription = 'Calendar %i/%i - %i/%i' % (
+                cProps['month0'],
+                cProps['year0'],
+                cProps['month1'],
+                cProps['year1'],
             )
-
+            calFileName = findFirstAvailableObjectNameInBox(
+                db,
+                destBox,
+                'calendar_',
+                '.pdf',
+            )
+            # place the pdf in the box
+            placeFSFileInBox(
+                db,
+                user,
+                fileStorageDirectory,
+                destBox,
+                createdFile,
+                calFileName,
+                calDescription,
+            )
+            # flushing the delete queue
+            flushFsDeleteQueue(fsDeletionQueue + creationToDelete + [createdFile])
+            # messaging the user
+            successMessage = ('Calendar generated. Please find the file '
+                              '"%s" in the destination box.') % calFileName
+            flashMessage('Success', 'Info', successMessage)
+            # redirecting user to box
+            return redirect(url_for('lsView', lsPathString=destBoxString))
         else:
+            flushFsDeleteQueue(fsDeletionQueue + creationToDelete + [createdFile])
             flashMessage('Error', 'Error', 'Could not generate the calendar')
-        return redirect(url_for('calendarMakerIndexView'))
+            return redirect(url_for('calendarMakerIndexView'))
 
 
 @app.route('/apps/calendarmaker/resetsettings')
