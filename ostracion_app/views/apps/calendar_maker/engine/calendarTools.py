@@ -52,9 +52,9 @@ def defaultCalendarProperties():
     currentYear = datetime.datetime.now().year
     return {
         'month0': 1,
-        'year0': currentYear,
+        'year0': currentYear + 1,
         'month1': 12,
-        'year1': currentYear,
+        'year1': currentYear + 1,
         'language': 'en',
         'startingweekday': 6,
     }
