@@ -896,6 +896,8 @@ def adminNewUserView():
                     password=form.password.data,
                     icon_file_id='',
                     icon_file_id_username='',
+                    terms_accepted=0,
+                    terms_accepted_version='',
                     banned=0,
                 )
                 dbCreateUser(db, newUser, user)
