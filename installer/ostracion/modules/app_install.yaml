@@ -1,4 +1,4 @@
-- name: Install Git, python3, gimp/imagemagick
+- name: Install Git, python3, gimp/imagemagick, latex
   become: true
   become_method: sudo
   apt:
@@ -11,7 +11,10 @@
         - virtualenv
         - gimp
         - imagemagick
-  tags: app_update
+        - texlive-latex-base
+        - texlive-fonts-extra
+  tags:
+    - app_update
 
 - name: Creating the repositories directory as regular user
   file:

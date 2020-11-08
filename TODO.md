@@ -83,9 +83,5 @@ Boxes of type 'real fs'
 
 Boxes of type 'app'.
 
-1. As an exercise: PDF calendar maker.
-    plus:
-      - make sure ansible has apt installs (latex & co)
-
-2. Accounting app in particular and its special config.
-3. Move biblio here?
+1. Accounting app in particular and its special config.
+2. Move biblio here?
