@@ -471,8 +471,11 @@ def findFirstAvailableObjectNameInBox(db, parentBox, prefix, suffix):
         or when placing a file in a box from, say, an app or so.
     """
     tryIndex = 1
-    while isNameUnderParentBox(db, parentBox,
-            '%s%i%s' % (prefix, tryIndex, suffix)):
+    while isNameUnderParentBox(
+        db,
+        parentBox,
+        '%s%i%s' % (prefix, tryIndex, suffix),
+    ):
         tryIndex += 1
     return '%s%i%s' % (prefix, tryIndex, suffix)
 

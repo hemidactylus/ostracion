@@ -27,8 +27,8 @@
                             </div>
                             <div class="col-auto">
                                 {% for gMessage in generationMessages %}
-                                    <small class="form-text text-muted">
-                                        {{ gMessage }}.
+                                    <small class="text-muted">
+                                        <div>{{ gMessage }}</div>
                                     </small>
                                 {% endfor %}
                             </div>                            
@@ -37,25 +37,14 @@
                 </div>
                 <div class="row" style="padding-top: 0.4rem;">
                     <div class="col">
-                        {{ settingsText }}
+                        <i>Settings - </i> {{ settingsText }}
                         <a href="{{ url_for('calendarMakerSettingsView') }}" class="btn btn-primary btn-sm">Change...</a>
                         <a href="{{ url_for('calendarMakerResetSettingsView') }}" class="btn btn-warning btn-sm">Reset</a>
                     </div>
                 </div>
                 <div class="row" style="padding-top: 0.4rem;">
                     <div class="col">
-                        {% if destBox %}
-                            Destination: <strong>{{ destBoxName }}</strong>.
-                        {% else %}
-                            Destination box not set.
-                        {% endif %}
-                        <a href="{{ url_for('calendarMakerDestBoxView', mode='start') }}" class="btn btn-primary btn-sm">Choose...</a>
-                        <a href="{{ url_for('calendarMakerDestBoxView', mode='clear') }}" class="btn btn-warning btn-sm">Clear</a>
-                    </div>
-                </div>
-                <div class="row" style="padding-top: 0.4rem;">
-                    <div class="col">
-                        Selected images ({%- if coverImageFileObject -%}cover + {% else %}missing cover + {% endif -%}{{ calendarImages | length }} {% if numRequiredImages %} / {{ numRequiredImages }}{% endif %}):
+                        <i>Images - </i> Selected images ({%- if coverImageFileObject -%}cover + {% else %}missing cover + {% endif -%}{{ calendarImages | length }} {% if numRequiredImages %} / {{ numRequiredImages }}{% endif %}):
                         {% if coverImageFileObject %}
                             <img title="Cover: {{ coverImageFileObject.file.name }}" src="{{ url_for('fileThumbnailView',dummyId=coverImageFileObject['file'].icon_file_id+'_',fsPathString='/'.join(coverImageFileObject.path[1:])) }}" class="calendar-small-image calendar-cover-image rounded"/>
                         {% endif %}
@@ -64,6 +53,18 @@
                         {% endfor %}
                         <a href="{{ url_for('calendarMakerImagesView') }}" class="btn btn-primary btn-sm">Browse...</a>
                         <a href="{{ url_for('calendarMakerUnsetImagesView') }}" class="btn btn-warning btn-sm">Reset</a>
+                    </div>
+                </div>
+                <div class="row" style="padding-top: 0.4rem;">
+                    <div class="col">
+                        <i>Destination - </i> 
+                        {% if destBox %}
+                            <strong>{{ destBoxName }}</strong>.
+                        {% else %}
+                            not set.
+                        {% endif %}
+                        <a href="{{ url_for('calendarMakerDestBoxView', mode='start') }}" class="btn btn-primary btn-sm">Choose...</a>
+                        <a href="{{ url_for('calendarMakerDestBoxView', mode='clear') }}" class="btn btn-warning btn-sm">Clear</a>
                     </div>
                 </div>
             </div>

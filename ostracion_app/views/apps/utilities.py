@@ -76,13 +76,19 @@ def selectAvailableApps(db, user):
         appsPageDescriptor,
         subTasksAccessibility={
             'root': {
-                'calendar_maker':  userHasRole(db, user, 'app', 'calendarmaker'),
+                'calendar_maker':  userHasRole(
+                    db,
+                    user,
+                    'app',
+                    'calendarmaker'
+                ),
             },
         },
     )
 
 
-def preparePickBoxPage(db, user, callbackUrl, startBox, message, predicate=lambda richFileOrBox: True):
+def preparePickBoxPage(db, user, callbackUrl, startBox, message,
+                       predicate=lambda richFileOrBox: True):
     #
     dstBoxTree = collectTreeFromBox(
         db,
@@ -155,7 +161,7 @@ def placeFSFileInBox(db, user, fileStorageDirectory, box, filePhysicalPath,
                 fileStorageDirectory=fileStorageDirectory,
             )
             shutil.copy2(filePhysicalPath, filePath)
-                #
+            #
             fileProperties = determineFileProperties(filePath)
             newFile.mime_type = fileProperties['file_mime_type']
             newFile.type = fileProperties['file_type']

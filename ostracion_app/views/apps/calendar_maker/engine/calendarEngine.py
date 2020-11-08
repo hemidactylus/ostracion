@@ -23,14 +23,30 @@ from ostracion_app.views.apps.calendar_maker.engine.settings import (
     pdfGenerationTimeoutSeconds,
 )
 
+from ostracion_app.utilities.fileIO.physical import (
+    makeSymlink,
+)
+
 from ostracion_app.utilities.exceptions.exceptions import (
     OstracionWarning,
     OstracionError,
 )
 
 env = Environment(
-    loader=PackageLoader('ostracion_app.views.apps.calendar_maker', 'templates'),
+    loader=PackageLoader(
+        'ostracion_app.views.apps.calendar_maker',
+        'templates',
+    ),
 )
+
+
+def duplicateImageForCalendar(src, dst):
+    """
+        TO DOC
+        may be a symlink or later a resize\
+        May raise an error if something does not work
+    """
+    return makeSymlink(src, dst)
 
 
 def makeCalendarTexfile(calStructure, outFileName):
@@ -54,7 +70,9 @@ def makeCalendarPage(sDate, iTexPath, language, startingWeekday):
     #     sDate,
     #     groups,
     #     language=language,
-    #     wdIndexSequence=makeWeekdayIndexSequence(rowStartingWeekday=startingWeekday),
+    #     wdIndexSequence=makeWeekdayIndexSequence(
+    #         rowStartingWeekday=startingWeekday,
+    #     ),
     # )
     return {
         'monthName': getMonthName(sDate.month, language=language),
@@ -64,7 +82,8 @@ def makeCalendarPage(sDate, iTexPath, language, startingWeekday):
     }
 
 
-def makeCalendarPages(year0, month0, year1, month1, imageTexPaths, language, startingWeekday):
+def makeCalendarPages(year0, month0, year1, month1, imageTexPaths,
+                      language, startingWeekday):
     return [
         makeCalendarPage(startingDate, imagePath, language, startingWeekday)
         for imagePath, startingDate in zip(
@@ -87,7 +106,9 @@ def makeCalendarWeekdayNameMap(language):
 
 
 def makeCalendarStructure(properties, imageTexPaths, coverImageTexPath):
-    weekdayIndexSequence = makeWeekdayIndexSequence(rowStartingWeekday=properties['startingweekday'])
+    weekdayIndexSequence = makeWeekdayIndexSequence(
+        rowStartingWeekday=properties['startingweekday'],
+    )
     weekdayNames = makeCalendarWeekdayNameMap(language=properties['language'])
     pages = makeCalendarPages(
         properties['year0'],
@@ -152,5 +173,5 @@ def makeCalendarPdf(properties, imageTexPaths, coverImageTexPath,
     temporaryFiles = [
         os.path.join(workingDirectory, '%s.%s' % (pdfTitle, extension))
         for extension in ['tex', 'log', 'aux']
-    ]    
+    ]
     return finalPdfPath, temporaryFiles

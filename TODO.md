@@ -86,9 +86,10 @@ Boxes of type 'app'.
 1. As an exercise: PDF calendar maker.
     TO DOC every function
     PEP8
+    custom msg in choose-box in utilities
     - no checkeds in search, fix
     - transparent GIfs in resizing, fix
-    - make sure ansible has apd installs (latex & co)
+    - make sure ansible has apt installs (latex & co)
 
 2. Accounting app in particular and its special config.
 3. Move biblio here?

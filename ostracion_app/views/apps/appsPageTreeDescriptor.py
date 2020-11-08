@@ -20,14 +20,30 @@ appsPageDescriptor = {
                     'tasks': {
                         'settings': {
                             'title': 'Settings',
-                            'subtitle': 'Configure calendar properties',
-                            'image_id': ('custom_apps_images', 'calendar_maker'),
+                            'subtitle': ('Configure calendar properties. '
+                                         'Click "Set" to save.'),
+                            'image_id': (
+                                'custom_apps_images',
+                                'calendar_maker',
+                            ),
                             'endpoint_name': ('calendarMakerSettingsView', {}),
                         },
                         'images': {
                             'title': 'Images',
-                            'subtitle': 'Select images for calendar',
-                            'image_id': ('custom_apps_images', 'calendar_maker'),
+                            'subtitle': ('Select images for calendar. Navigate'
+                                         ' to a box with the bottom block: to '
+                                         'select images click on "C" (set as c'
+                                         'over) or "+" (add to image list). Re'
+                                         'arrange/delete chosen images with th'
+                                         'e controls above. Hit "Done with ima'
+                                         'ges" when finished. For otpimal resu'
+                                         'lts, choose a cover in Portrait form'
+                                         'at and month images in Landscape for'
+                                         'mat.'),
+                            'image_id': (
+                                'custom_apps_images',
+                                'calendar_maker',
+                            ),
                             'endpoint_name': ('calendarMakerImagesView', {}),
                         },
                     }

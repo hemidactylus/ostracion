@@ -51,8 +51,8 @@ def regroupDaysOfMonth(dateList, rowStartingWeekday):
     #
     groups = convertIterableToDictOfLists(
         enrichedDates,
-        keyer = lambda ed: ed['row'],
-        valuer = lambda ed: ed['dateStruct'],
+        keyer=lambda ed: ed['row'],
+        valuer=lambda ed: ed['dateStruct'],
     )
     regrouped = {
         gInd: {
@@ -66,9 +66,9 @@ def regroupDaysOfMonth(dateList, rowStartingWeekday):
 
 def makeWeekdayIndexSequence(rowStartingWeekday):
     return [
-        (rowStartingWeekday + i ) % 7
+        (rowStartingWeekday + i) % 7
         for i in range(7)
-]
+    ]
 
 
 def countMonths(iniY, iniM, endY, endM):

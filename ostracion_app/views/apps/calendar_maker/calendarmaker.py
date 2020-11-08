@@ -29,7 +29,9 @@ from ostracion_app.utilities.exceptions.exceptions import (
     OstracionError,
 )
 
-from ostracion_app.views.apps.calendar_maker.forms import CalendarMakerPropertyForm
+from ostracion_app.views.apps.calendar_maker.forms import (
+    CalendarMakerPropertyForm,
+)
 
 from ostracion_app.utilities.viewTools.messageTools import flashMessage
 
@@ -74,11 +76,11 @@ from ostracion_app.views.apps.calendar_maker.engine.settings import (
 
 from ostracion_app.views.apps.calendar_maker.engine.calendarEngine import (
     makeCalendarPdf,
+    duplicateImageForCalendar,
 )
 
 from ostracion_app.utilities.fileIO.physical import (
     fileIdToPath,
-    makeSymlink,
     flushFsDeleteQueue,
     mkDirP,
 )
@@ -171,7 +173,11 @@ def calendarMakerIndexView():
         coverImageFileObject = None
     else:
         coverMessage = 'Cover selected'
-        coverImageFileObject = pathToFileStructure(db, user, coverImagePathString)
+        coverImageFileObject = pathToFileStructure(
+            db,
+            user,
+            coverImagePathString,
+        )
     #
     calendarImages = [
         pathToFileStructure(db, user, imgPath)
@@ -217,9 +223,15 @@ def calendarMakerIndexView():
     canGenerate = all([gen0, gen1, gen2])
     generationMessages = gen3Message + gen1Message + gen2Message
     pageFeatures = prepareTaskPageFeatures(
-    appsPageDescriptor,
+        appsPageDescriptor,
         ['root', 'calendar_maker'],
         g,
+        overrides={
+            'pageSubtitle': ('Create your own custom calendar. (1) Configure '
+                             'dates and calendar appearance. (2) Select enoug'
+                             'h images. (3) Choose a destination box for the '
+                             'calendar. (4) Hit "Generate calendar".'),
+        },
     )
     #
     return render_template(
@@ -261,7 +273,11 @@ def calendarMakerGenerateCalendar():
     if coverImagePathString is None:
         coverImageFileObject = None
     else:
-        coverImageFileObject = pathToFileStructure(db, user, coverImagePathString)
+        coverImageFileObject = pathToFileStructure(
+            db,
+            user,
+            coverImagePathString,
+        )
     #
     calendarImages = [
         pathToFileStructure(db, user, imgPath)
@@ -273,9 +289,9 @@ def calendarMakerGenerateCalendar():
         cProps.get('year1'),
         cProps.get('month1'),
     )
-    if (destBox is None or coverImageFileObject is None or \
-            any([ci is None for ci in calendarImages]) \
-            or numRequiredImages is None \
+    if (destBox is None or coverImageFileObject is None or
+            any([ci is None for ci in calendarImages])
+            or numRequiredImages is None
             or numRequiredImages > len(calendarImages)):
         raise OstracionError('Cannot generate calendar')
     else:
@@ -285,22 +301,49 @@ def calendarMakerGenerateCalendar():
         tempFileDirectory = g.settings['system']['system_directories'][
             'temp_directory']['value']
         mkDirP(tempFileDirectory)
-        texImageCoverPath = makeSymlink(
-            fileIdToPath(coverImageFileObject['file'].file_id, fileStorageDirectory=fileStorageDirectory),
-            os.path.join(tempFileDirectory, '%s.%s' % (uuid4().hex, admittedImageMimeTypeToExtension[coverImageFileObject['file'].mime_type])),
+        texImageCoverPath = duplicateImageForCalendar(
+            fileIdToPath(
+                coverImageFileObject['file'].file_id,
+                fileStorageDirectory=fileStorageDirectory,
+            ),
+            os.path.join(
+                tempFileDirectory,
+                '%s.%s' % (
+                    uuid4().hex,
+                    admittedImageMimeTypeToExtension[
+                        coverImageFileObject['file'].mime_type
+                    ],
+                )
+            ),
         )
         texImagePaths = [
-            makeSymlink(
-                fileIdToPath(imageFile['file'].file_id, fileStorageDirectory=fileStorageDirectory),
-                os.path.join(tempFileDirectory, '%s.%s' % (uuid4().hex, admittedImageMimeTypeToExtension[imageFile['file'].mime_type])),
+            duplicateImageForCalendar(
+                fileIdToPath(
+                    imageFile['file'].file_id,
+                    fileStorageDirectory=fileStorageDirectory,
+                ),
+                os.path.join(
+                    tempFileDirectory,
+                    '%s.%s' % (
+                        uuid4().hex,
+                        admittedImageMimeTypeToExtension[
+                            imageFile['file'].mime_type
+                        ],
+                    )
+                ),
             )
             for imageFile in calendarImages
         ]
         #
         fsDeletionQueue = [texImageCoverPath] + texImagePaths
         createdPdfTitle = uuid4().hex
-        createdFile, creationToDelete = makeCalendarPdf(cProps, texImagePaths, texImageCoverPath,
-                                                        tempFileDirectory, createdPdfTitle)
+        createdFile, creationToDelete = makeCalendarPdf(
+            cProps,
+            texImagePaths,
+            texImageCoverPath,
+            tempFileDirectory,
+            createdPdfTitle,
+        )
         #
         if createdFile is not None:
             # name and description
@@ -327,7 +370,9 @@ def calendarMakerGenerateCalendar():
                 calDescription,
             )
             # flushing the delete queue
-            flushFsDeleteQueue(fsDeletionQueue + creationToDelete + [createdFile])
+            flushFsDeleteQueue(
+                fsDeletionQueue + creationToDelete + [createdFile]
+            )
             # messaging the user
             successMessage = ('Calendar generated. Please find the file '
                               '"%s" in the destination box.') % calFileName
@@ -335,7 +380,11 @@ def calendarMakerGenerateCalendar():
             # redirecting user to box
             return redirect(url_for('lsView', lsPathString=destBoxString))
         else:
-            flushFsDeleteQueue(fsDeletionQueue + creationToDelete + [createdFile])
+            # flushing the delete queue
+            flushFsDeleteQueue(
+                fsDeletionQueue + creationToDelete + [createdFile],
+            )
+            # messaging the user
             flashMessage('Error', 'Error', 'Could not generate the calendar')
             return redirect(url_for('calendarMakerIndexView'))
 

@@ -68,7 +68,7 @@ availableLanguages = [
 
 startingWeekdayChoices = [
     ('6', 'Sunday'),
-    ('0' ,'Monday'),
+    ('0', 'Monday'),
 ]
 
 monthChoices = [
