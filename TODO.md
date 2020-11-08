@@ -84,10 +84,7 @@ Boxes of type 'real fs'
 Boxes of type 'app'.
 
 1. As an exercise: PDF calendar maker.
-    TO DOC every function
     plus:
-      - cover image landscape: overflows to the right
-      - transparent GIfs in resizing, fix
       - make sure ansible has apt installs (latex & co)
 
 2. Accounting app in particular and its special config.

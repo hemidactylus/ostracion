@@ -62,6 +62,12 @@ from ostracion_app.views.apps.utilities import (
     placeFSFileInBox,
 )
 
+from ostracion_app.views.apps.appsPageTreeDescriptor import appsPageDescriptor
+
+from ostracion_app.utilities.viewTools.pathTools import (
+    prepareTaskPageFeatures,
+)
+
 from ostracion_app.views.apps.calendar_maker.engine.dateTools import (
     countMonths,
 )
@@ -79,12 +85,6 @@ from ostracion_app.utilities.fileIO.physical import (
     fileIdToPath,
     flushFsDeleteQueue,
     mkDirP,
-)
-
-from ostracion_app.views.apps.appsPageTreeDescriptor import appsPageDescriptor
-
-from ostracion_app.utilities.viewTools.pathTools import (
-    prepareTaskPageFeatures,
 )
 
 from ostracion_app.views.apps.calendar_maker.engine.calendarEngine import (
