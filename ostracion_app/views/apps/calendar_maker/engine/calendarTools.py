@@ -11,6 +11,7 @@ from ostracion_app.views.apps.calendar_maker.engine.settings import (
 
 
 def describeSettings(calProperties):
+    """Make the calendar properties into a string summarizing them."""
     languageName = languageMap.get(calProperties.get('language'))
     startingweekdayName = startingWeekdayMap.get(
         str(calProperties.get('startingweekday'))
@@ -49,6 +50,7 @@ def describeSettings(calProperties):
 
 
 def defaultCalendarProperties():
+    """Generate the default properties of a calendar."""
     currentYear = datetime.datetime.now().year
     return {
         'month0': 1,

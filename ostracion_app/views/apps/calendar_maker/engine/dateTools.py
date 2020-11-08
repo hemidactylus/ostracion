@@ -11,7 +11,7 @@ from ostracion_app.utilities.tools.dictTools import (
 
 def getDaysOfMonth(startingDate):
     """
-        TO DOC
+        Given a starting date, list all forward dates belonging to that month.
     """
     thisDate = startingDate
     month = thisDate.month
@@ -29,7 +29,10 @@ def getDaysOfMonth(startingDate):
 
 def regroupDaysOfMonth(dateList, rowStartingWeekday):
     """
-        TO DOC
+        Regroup a list of dates into 'groups', that would be the rows
+        of a calendar.
+        Groups are in a dictionary, with their index as key.
+        Each group is a dictionary weekday -> date (not necessarily full).
     """
     lineChangeIndices = [
         dInd
@@ -65,6 +68,10 @@ def regroupDaysOfMonth(dateList, rowStartingWeekday):
 
 
 def makeWeekdayIndexSequence(rowStartingWeekday):
+    """
+        Prepare the list of weekday indices
+        dictating ordering in each calendar row.
+    """
     return [
         (rowStartingWeekday + i) % 7
         for i in range(7)
@@ -72,10 +79,7 @@ def makeWeekdayIndexSequence(rowStartingWeekday):
 
 
 def countMonths(iniY, iniM, endY, endM):
-    """
-        TO DOC
-            can accept Nones
-    """
+    """Calculate the number of months (calendar pages) of a calendar."""
     if any(v is None for v in [iniY, iniM, endY, endM]):
         return None
     else:
@@ -86,10 +90,7 @@ def countMonths(iniY, iniM, endY, endM):
 
 
 def makeListOfMonths(iniY, iniM, endY, endM):
-    """
-        TO DOC
-            iniM/endM is 1...12
-    """
+    """Prepare a list of all months (dates) for a calendar."""
     _y, _m = iniY, iniM
     while (_y, _m) <= (endY, endM):
         yield datetime.date(_y, _m, 1)

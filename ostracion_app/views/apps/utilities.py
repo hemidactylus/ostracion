@@ -1,5 +1,6 @@
 """
     utilities.py
+        Utilities shared between apps, to interact with the Ostracion system
 """
 
 import shutil
@@ -72,6 +73,10 @@ from ostracion_app.views.apps.appsPageTreeDescriptor import appsPageDescriptor
 
 
 def selectAvailableApps(db, user):
+    """
+        Return a page descriptor adapted to the apps
+        available to the provided user.
+    """
     return filterPageDescriptor(
         appsPageDescriptor,
         subTasksAccessibility={
@@ -87,9 +92,14 @@ def selectAvailableApps(db, user):
     )
 
 
-def preparePickBoxPage(db, user, callbackUrl, startBox, message,
-                       predicate=lambda richFileOrBox: True):
-    #
+def preparePickBoxPageView(db, user, callbackUrl, startBox, message,
+                           predicate=lambda richFileOrBox: True):
+    """
+        Prepare a full response for a "select box" view. Boxes are made
+        selectable according to a 'predicate' and upon selection the callback
+        URL is invokect, with the chosen box path passed as querystring
+        parameter 'chosenBoxObjPath'.
+    """
     dstBoxTree = collectTreeFromBox(
         db,
         startBox,
@@ -134,7 +144,12 @@ def preparePickBoxPage(db, user, callbackUrl, startBox, message,
 def placeFSFileInBox(db, user, fileStorageDirectory, box, filePhysicalPath,
                      fileName, fileDescription, fileTextualMode='',
                      fileThumbnailFormat=None):
-    #
+    """
+        Given an actual file at a physical location,
+        insert it as a Ostracion file by handling the
+        filesystem DB as well as the actual file copy
+        into the storage directories.
+    """
     # can user write to box?
     if userHasPermission(db, user, box.permissions, 'w'):
         # is the name available?

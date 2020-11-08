@@ -9,14 +9,17 @@ from ostracion_app.views.apps.calendar_maker.engine.settings import (
 
 
 def getMonthName(mIndex, language):
+    """Name a month in a given language (LaTeX-escaped)."""
     return monthNamesPerLanguage[language][mIndex - 1]
 
 
 def getWeekdayName(wdIndex, language):
+    """Name a weekday in a given language (LaTeX-escaped)."""
     return weekdayNamesPerLanguage[language][wdIndex]
 
 
 def printMonth(stDate, groups, language, wdIndexSequence):
+    """Debug-print of a whole month as an ASCII table."""
     print('\n    %s' % ('==='*7))
     print(
         '    ** Date: %s, %s **' % (

@@ -42,18 +42,19 @@ env = Environment(
 
 def duplicateImageForCalendar(src, dst):
     """
-        TO DOC
-        may be a symlink or later a resize\
-        May raise an error if something does not work
+        Given a source file (e.g. a standard Ostracion physical filepath)
+        and a destination filepath to create (with extension, amenable to
+        LaTeX), generate the latter and return its path.
+        May be a simple symlink or a new, capped-res file, to optimize
+        calendar pdf for file size.
     """
     return makeSymlink(src, dst)
 
 
 def makeCalendarTexfile(calStructure, outFileName):
     """
-        TO DOC
-        eats structure with everything (incl. final paths for images)
-        and creates texfile
+        Given a full calendar description 'calStructure',
+        generate a ready-to-compile TeX-file with desired filename.
     """
     calTemplate = env.get_template('calendar.tex.j2')
     open(outFileName, 'w').write(
@@ -64,6 +65,7 @@ def makeCalendarTexfile(calStructure, outFileName):
 
 
 def makeCalendarPage(sDate, iTexPath, language, startingWeekday):
+    """Generate the structure describing a calenda 'page' (i.e. month)."""
     days = getDaysOfMonth(sDate)
     groups = regroupDaysOfMonth(days, startingWeekday)
     # printMonth(
@@ -84,6 +86,7 @@ def makeCalendarPage(sDate, iTexPath, language, startingWeekday):
 
 def makeCalendarPages(year0, month0, year1, month1, imageTexPaths,
                       language, startingWeekday):
+    """Generate a list of calendar-structure 'page' objects, for all months."""
     return [
         makeCalendarPage(startingDate, imagePath, language, startingWeekday)
         for imagePath, startingDate in zip(
@@ -99,6 +102,7 @@ def makeCalendarPages(year0, month0, year1, month1, imageTexPaths,
 
 
 def makeCalendarWeekdayNameMap(language):
+    """Prepare a list weekday index -> weekday name"""
     return {
         i: getWeekdayName(i, language)
         for i in range(7)
@@ -106,6 +110,10 @@ def makeCalendarWeekdayNameMap(language):
 
 
 def makeCalendarStructure(properties, imageTexPaths, coverImageTexPath):
+    """
+        Prepare the full structure of a calendar, ready to be given the
+        template generation function.
+    """
     weekdayIndexSequence = makeWeekdayIndexSequence(
         rowStartingWeekday=properties['startingweekday'],
     )
@@ -130,15 +138,21 @@ def makeCalendarStructure(properties, imageTexPaths, coverImageTexPath):
 def makeCalendarPdf(properties, imageTexPaths, coverImageTexPath,
                     workingDirectory, pdfTitle):
     """
-        TO DOC
+        Generate the pdf of a calendar given its properties.
+        Uses 'pdflatex' under the hood.
 
-        Input: properties+workdir+fileTitle+texpaths
-        Output: a created pdf-path or None, an array of temp file paths
-            (for later destruction), which does NOT include the pdf itself
+        Input
+            properties:         a dictionary with all required properties
+            imageTexPaths:      an array of physical-files-to-use
+            coverImageTexPath:  a single path to the cover physical-image-file
+            workingDirectory:   where to generate all files (incl. final pdf)
+            pdfTitle:           pdf-name, without extension
 
-        RUNNING:
-            pdflatex  A.tex
-            (but in the right directory!)
+        Output
+            pdfTitleOrNone, [tempFileToDelete_1, ...]
+
+        pdfTitleOrNone is None upon failures.
+        It is care of the caller to arrange deletion of temporary files.
     """
     # generating
     calendarStructure = makeCalendarStructure(properties, imageTexPaths,

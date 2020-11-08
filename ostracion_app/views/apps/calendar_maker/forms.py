@@ -4,20 +4,14 @@
 
 from flask_wtf import FlaskForm
 from wtforms import (
-    # StringField,
     IntegerField,
     SubmitField,
     SelectField,
-    # Form,
 )
 
 from wtforms.validators import (
     InputRequired,
     NumberRange,
-    # DataRequired,
-    # Required,
-    # EqualTo,
-    # Length,
 )
 
 
@@ -29,6 +23,7 @@ from ostracion_app.views.apps.calendar_maker.engine.settings import (
 
 
 class CalendarMakerPropertyForm(FlaskForm):
+    """Calendar settings form (class)."""
     month0 = SelectField('StartMonth', choices=monthChoices)
     year0 = IntegerField(
         'StartYear',

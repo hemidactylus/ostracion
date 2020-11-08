@@ -116,6 +116,20 @@ def findView():
             'sim_ci',
             additionalNulls=['None'],
         )
+        print(form.searchTypeBoxes.data)
+        form.searchTypeBoxes.data = applyDefault(
+            form.searchTypeBoxes.data,
+            True,
+        )
+        form.searchTypeFiles.data = applyDefault(
+            form.searchTypeFiles.data,
+            True,
+        )
+        form.searchTypeLinks.data = applyDefault(
+            form.searchTypeLinks.data,
+            True,
+        )
+        print(form.searchTypeBoxes.data)
         pageFeatures = prepareTaskPageFeatures(
             toolsPageDescriptor,
             ['root', 'search'],

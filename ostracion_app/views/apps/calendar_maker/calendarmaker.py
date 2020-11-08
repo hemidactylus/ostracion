@@ -1,12 +1,13 @@
 """
     calendarmaker.py
+        An app to handle generation of (pdf) calendars
+        from images hosted in Ostracion.
 """
 
 import os
 from uuid import uuid4
 import datetime
 import urllib.parse
-import json
 from flask import (
     redirect,
     url_for,
@@ -57,7 +58,7 @@ from ostracion_app.utilities.viewTools.pathTools import (
 )
 
 from ostracion_app.views.apps.utilities import (
-    preparePickBoxPage,
+    preparePickBoxPageView,
     placeFSFileInBox,
 )
 
@@ -74,11 +75,6 @@ from ostracion_app.views.apps.calendar_maker.engine.settings import (
     admittedImageMimeTypeToExtension,
 )
 
-from ostracion_app.views.apps.calendar_maker.engine.calendarEngine import (
-    makeCalendarPdf,
-    duplicateImageForCalendar,
-)
-
 from ostracion_app.utilities.fileIO.physical import (
     fileIdToPath,
     flushFsDeleteQueue,
@@ -91,61 +87,24 @@ from ostracion_app.utilities.viewTools.pathTools import (
     prepareTaskPageFeatures,
 )
 
+from ostracion_app.views.apps.calendar_maker.engine.calendarEngine import (
+    makeCalendarPdf,
+    duplicateImageForCalendar,
+)
+
+from ostracion_app.views.apps.calendar_maker.calendarViewUtils import (
+    cookiesToCurrentCalendar,
+    dressResponseWithCurrentCalendar,
+    applyReindexingToImages,
+)
+
 from ostracion_app.app_main import app
-
-
-def cookiesToCurrentCalendar(cookies):
-    cpCookie = cookies.get('apps_calendarmaker_current')
-    if cpCookie is None:
-        calFromCookie = {}
-    else:
-        calFromCookie = json.loads(cpCookie)
-    # defaults
-    defaultCal = {
-        'properties': defaultCalendarProperties()
-    }
-    #
-    return recursivelyMergeDictionaries(
-        calFromCookie,
-        defaultMap=defaultCal,
-    )
-
-
-def dressResponseWithCurrentCalendar(response, cp):
-    response.set_cookie(
-        'apps_calendarmaker_current',
-        json.dumps(cp),
-    )
-    return response
-
-
-def applyReindexingToImages(idxMap):
-    response = redirect(url_for('calendarMakerImagesView'))
-    currentCalendar = cookiesToCurrentCalendar(request.cookies)
-    prevImages = currentCalendar.get('image_path_strings', [])
-    images = [
-        prevImages[idxMap.get(idx, idx)]
-        for idx in range(len(prevImages))
-        if idxMap.get(idx, idx) is not None
-        if idxMap.get(idx, idx) >= 0
-        if idxMap.get(idx, idx) < len(prevImages)
-    ]
-    dResponse = dressResponseWithCurrentCalendar(
-        response,
-        recursivelyMergeDictionaries(
-            {'image_path_strings': images},
-            defaultMap=currentCalendar
-        ),
-    )
-    return dResponse
 
 
 @app.route('/apps/calendarmaker/')
 @app.route('/apps/calendarmaker/index')
 def calendarMakerIndexView():
-    """
-        TO DOC
-    """
+    """Main calendar maker view."""
     user = g.user
     db = dbGetDatabase()
     request._onErrorUrl = url_for(
@@ -253,6 +212,14 @@ def calendarMakerIndexView():
 
 @app.route('/apps/calendarmaker/generate')
 def calendarMakerGenerateCalendar():
+    """
+        Calendar actual generation view.
+        Handles everything:
+            building temporary image files
+            driving the engine functions to make the pdf
+            inserting the pdf in the box
+            removing temporary files
+    """
     user = g.user
     db = dbGetDatabase()
     request._onErrorUrl = url_for(
@@ -391,6 +358,7 @@ def calendarMakerGenerateCalendar():
 
 @app.route('/apps/calendarmaker/resetsettings')
 def calendarMakerResetSettingsView():
+    """Reset calendar settings view."""
     request._onErrorUrl = url_for(
         'calendarMakerIndexView',
     )
@@ -410,6 +378,7 @@ def calendarMakerResetSettingsView():
 
 @app.route('/apps/calendarmaker/settings', methods=['GET', 'POST'])
 def calendarMakerSettingsView():
+    """Calendar settings form view."""
     user = g.user
     db = dbGetDatabase()
     request._onErrorUrl = url_for(
@@ -476,7 +445,10 @@ def calendarMakerSettingsView():
 @app.route('/apps/calendarmaker/browsebox/<mode>')
 def calendarMakerBrowseBoxView(mode):
     """
-        TO DOC
+        Three-way view to manage image-selection browsing box: handles
+            reset
+            initiate box selection (through preparePickBoxPageView)
+            complete box selection
     """
     user = g.user
     db = dbGetDatabase()
@@ -485,12 +457,12 @@ def calendarMakerBrowseBoxView(mode):
     )
     if mode == 'start':
         rootBox = getRootBox(db)
-        return preparePickBoxPage(
+        return preparePickBoxPageView(
             db=db,
             user=user,
             callbackUrl=url_for('calendarMakerBrowseBoxView', mode='end'),
             startBox=rootBox,
-            message='Choose browsing box',
+            message='Choose box to browse images from',
         )
     elif mode == 'end':
         chosenBoxObjPathBlob = request.args.get('chosenBoxObjPath')
@@ -509,7 +481,10 @@ def calendarMakerBrowseBoxView(mode):
 @app.route('/apps/calendarmaker/destbox/<mode>')
 def calendarMakerDestBoxView(mode):
     """
-        TO DOC
+        Three-way view to manage pdf destination box: handles
+            reset
+            initiate box selection (through preparePickBoxPageView)
+            complete box selection
     """
     user = g.user
     db = dbGetDatabase()
@@ -522,13 +497,13 @@ def calendarMakerDestBoxView(mode):
         def writableRichBoxPicker(rBox):
             return userHasPermission(db, user, rBox['box'].permissions, 'w')
 
-        return preparePickBoxPage(
+        return preparePickBoxPageView(
             db=db,
             user=user,
             callbackUrl=url_for('calendarMakerDestBoxView', mode='end'),
             startBox=rootBox,
             predicate=writableRichBoxPicker,
-            message='Choose destination box',
+            message='Choose the box where the calendar will be created',
         )
     elif mode == 'end':
         chosenBoxObjPathBlob = request.args.get('chosenBoxObjPath')
@@ -546,9 +521,7 @@ def calendarMakerDestBoxView(mode):
 
 @app.route('/apps/calendarmaker/setcover/<coverObjPath>')
 def calendarMakerSetCover(coverObjPath):
-    """
-        TO DOC
-    """
+    """Calendar cover image selection view (uses quoted coverObjPath)."""
     request._onErrorUrl = url_for(
         'calendarMakerImagesView',
     )
@@ -567,9 +540,7 @@ def calendarMakerSetCover(coverObjPath):
 
 @app.route('/apps/calendarmaker/unsetcover')
 def calendarMakerUnsetCover():
-    """
-        TO DOC
-    """
+    """Calendar cover image unset view."""
     request._onErrorUrl = url_for(
         'calendarMakerImagesView',
     )
@@ -588,9 +559,7 @@ def calendarMakerUnsetCover():
 
 @app.route('/apps/calendarmaker/unsetimages')
 def calendarMakerUnsetImagesView():
-    """
-        TO DOC
-    """
+    """Calendar image-list unset view."""
     request._onErrorUrl = url_for(
         'calendarMakerIndexView',
     )
@@ -610,6 +579,7 @@ def calendarMakerUnsetImagesView():
 
 @app.route('/apps/calendarmaker/images')
 def calendarMakerImagesView():
+    """Calendar image-selection page view."""
     user = g.user
     db = dbGetDatabase()
     request._onErrorUrl = url_for(
@@ -691,9 +661,7 @@ def calendarMakerImagesView():
 
 @app.route('/apps/calendarmaker/addimage/<imageObjPath>')
 def calendarMakerAddImage(imageObjPath):
-    """
-        TO DOC
-    """
+    """Calendar image-list add-image view (through quoted imageObjPath)."""
     request._onErrorUrl = url_for(
         'calendarMakerImagesView',
     )
@@ -713,24 +681,23 @@ def calendarMakerAddImage(imageObjPath):
 
 @app.route('/apps/calendarmaker/removeimage/<int:index>')
 def calendarMakerRemoveImage(index):
-    """
-        TO DOC
-    """
+    """Calendar image-list remove-one view."""
     request._onErrorUrl = url_for(
         'calendarMakerImagesView',
     )
-    return applyReindexingToImages({index: None})
+    return applyReindexingToImages(request, {index: None})
 
 
 @app.route('/apps/calendarmaker/swapimages/<int:index1>/<int:index2>')
 def calendarMakerSwapImages(index1, index2):
-    """
-        TO DOC
-    """
+    """Calendar image-list shift-one view."""
     request._onErrorUrl = url_for(
         'calendarMakerImagesView',
     )
-    return applyReindexingToImages({
-        index1: index2,
-        index2: index1,
-    })
+    return applyReindexingToImages(
+        request,
+        {
+            index1: index2,
+            index2: index1,
+        },
+    )

@@ -25,9 +25,7 @@ from ostracion_app.views.apps.utilities import selectAvailableApps
 
 @app.route('/apps/')
 def appsView():
-    """
-        TO DOC
-    """
+    """Main apps page with tasks (each an available app)."""
     user = g.user
     db = dbGetDatabase()
     request._onErrorUrl = url_for(

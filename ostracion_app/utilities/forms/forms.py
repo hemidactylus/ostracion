@@ -508,11 +508,15 @@ class FindForm(FlaskForm):
     """Search form (class), complete version."""
     text = StringField('Search term', validators=[Required()])
     #
-    searchTypeBoxes = BooleanField('Boxes', validators=[AtLeastOneChecked(
-        otherCheckboxNames=['searchTypeFiles', 'searchTypeLinks'],
-    )])
-    searchTypeFiles = BooleanField('Files')
-    searchTypeLinks = BooleanField('Links')
+    searchTypeBoxes = BooleanField(
+        'Boxes',
+        validators=[AtLeastOneChecked(
+            otherCheckboxNames=['searchTypeFiles', 'searchTypeLinks'],
+        )],
+        default=True,
+    )
+    searchTypeFiles = BooleanField('Files', default=True)
+    searchTypeLinks = BooleanField('Links', default=True)
     #
     searchFieldDescription = BooleanField('Search in descriptions')
     #
