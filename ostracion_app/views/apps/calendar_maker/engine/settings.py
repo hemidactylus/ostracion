@@ -89,4 +89,4 @@ monthChoices = [
 languageMap = dict(availableLanguages)
 startingWeekdayMap = dict(startingWeekdayChoices)
 
-pdfGenerationTimeoutSeconds = 5
+pdfGenerationTimeoutSeconds = 15
