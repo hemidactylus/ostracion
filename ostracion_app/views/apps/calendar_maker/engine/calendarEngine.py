@@ -21,6 +21,7 @@ from ostracion_app.views.apps.calendar_maker.engine.naming import (
 
 from ostracion_app.views.apps.calendar_maker.engine.settings import (
     pdfGenerationTimeoutSeconds,
+    maxCalendarImageResolutionWidth,
 )
 
 from ostracion_app.utilities.fileIO.physical import (
@@ -48,7 +49,27 @@ def duplicateImageForCalendar(src, dst):
         May be a simple symlink or a new, capped-res file, to optimize
         calendar pdf for file size.
     """
-    return makeSymlink(src, dst)
+    args = [
+        'convert',
+        src,
+        '-resize',
+        '%ix>' % maxCalendarImageResolutionWidth,
+        dst,
+    ]
+    imgDuplicationOutput = subprocess.run(
+        args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if imgDuplicationOutput.returncode == 0:
+        if os.path.isfile(dst):
+            return dst
+        else:
+            raise OstracionError('Could not resize input image')
+            return None
+    else:
+        raise OstracionError('Could not resize input image')
+        return None
 
 
 def makeCalendarTexfile(calStructure, outFileName):
