@@ -79,6 +79,8 @@ A system-messages table (login protection alerts, etc).
 
 Boxes of type 'real fs'
 
+### Log in as ...
+
 ### Apps
 
 Boxes of type 'app'.

@@ -78,18 +78,18 @@
                                     </td>
                                     <td>
                                       <span>
-                                        <a href="{{ url_for('adminUserRolesView',username=userDict.user.username) }}" class="btn btn-primary btn-md" data-toggle="tooltip" title="Roles">
+                                        <a href="{{ url_for('adminUserRolesView',username=userDict.user.username) }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Roles">
                                           R
                                         </a>
                                       </span>
                                       {% if g.settings.behaviour.behaviour_admin_powers.admin_is_god.value %}
                                         <span>
-                                          <a href="{{ url_for('adminEditUser',username=userDict.user.username) }}" class="btn btn-primary btn-md" data-toggle="tooltip" title="Edit user info">
+                                          <a href="{{ url_for('adminEditUser',username=userDict.user.username) }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Edit user info">
                                             E
                                           </a>
                                         </span>
                                         <span>
-                                          <a href="{{ url_for('setIconView',mode='au',itemPathString=userDict.user.username) }}" class="btn btn-primary btn-md" data-toggle="tooltip" title="User icon">
+                                          <a href="{{ url_for('setIconView',mode='au',itemPathString=userDict.user.username) }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="User icon">
                                             I
                                           </a>
                                         </span>
@@ -97,31 +97,38 @@
                                       {% if userDict.bannable %}
                                         <span>
                                           {% if userDict.user.banned %}
-                                            <a href="{{ url_for('adminBanUserView',username=userDict.user.username,state=0) }}" class="btn btn-success btn-md" data-toggle="tooltip" title="Unban">
+                                            <a href="{{ url_for('adminBanUserView',username=userDict.user.username,state=0) }}" class="btn btn-success btn-sm" data-toggle="tooltip" title="Unban">
                                               U
                                             </a>
                                           {% else %}
-                                            <a href="{{ url_for('adminBanUserView',username=userDict.user.username,state=1) }}" class="btn btn-warning btn-md" data-toggle="tooltip" title="Ban">
+                                            <a href="{{ url_for('adminBanUserView',username=userDict.user.username,state=1) }}" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Ban">
                                               B
                                             </a>
                                           {% endif %}
                                         </span>
                                       {% endif %}
                                       <span>
-                                          <a href="{{ url_for('adminUserIssueChangePasswordTicket',username=userDict.user.username) }}" class="btn btn-primary btn-md" data-toggle="tooltip" title="Change-password ticket">
+                                          <a href="{{ url_for('adminUserIssueChangePasswordTicket',username=userDict.user.username) }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Change-password ticket">
                                             P
                                           </a>
                                       </span>
                                       {% if g.settings.behaviour.behaviour_admin_powers.admin_is_god.value %}
                                         <span>
-                                          <a href="{{ url_for('adminUserChangePasswordView',username=userDict.user.username) }}" class="btn btn-primary btn-md" data-toggle="tooltip" title="Change password">
+                                          <a href="{{ url_for('adminUserChangePasswordView',username=userDict.user.username) }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Change password">
                                             Q
+                                          </a>
+                                        </span>
+                                      {% endif %}
+                                      {% if not userDict.is_current_user %}
+                                        <span>
+                                          <a href="{{ url_for('adminLoginAsUserView',username=userDict.user.username) }}" class="btn btn-success btn-sm" data-toggle="tooltip" title="Login as">
+                                            L
                                           </a>
                                         </span>
                                       {% endif %}
                                       {% if userDict.canDelete %}
                                         <span>
-                                          <a href="{{ url_for('adminDeleteUserView',username=userDict.user.username) }}" class="btn btn-danger btn-md" data-toggle="tooltip" title="Delete">
+                                          <a href="{{ url_for('adminDeleteUserView',username=userDict.user.username) }}" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
                                             X
                                           </a>
                                         </span>

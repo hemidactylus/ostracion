@@ -15,6 +15,11 @@ from flask import (
     request,
 )
 
+from flask_login import (
+    login_user,
+    logout_user,
+)
+
 from ostracion_app.utilities.fileIO.physical import (
     mkDirP,
     isWritableDirectory,
@@ -1692,3 +1697,30 @@ def adminFileTicketsView():
         newItemMenu=None,
         **pageFeatures,
     )
+
+
+@app.route('/adminloginasuser/<username>')
+@userRoleRequired({('system', 'admin')})
+def adminLoginAsUserView(username):
+    """ Route to login as another user.
+        Always possible, provided the requestor is admin.
+        (Can also login as another user).
+    """
+    request._onErrorUrl = url_for('adminHomeUsersView')
+    user = g.user
+    db = dbGetDatabase()
+    qUser = dbGetUser(db, username)
+    if qUser is not None:
+        logout_user()
+        flashMessage(
+            'Success',
+            'Success',
+            'You are now logged in as "%s"' % username,
+        )
+        login_user(qUser)
+        return redirect(url_for('lsView'))
+    else:
+        raise OstracionError(
+            'Could not log in as "%s": user not found' % username,
+        )
+        return redirect(url_for('adminHomeUsersView'))
