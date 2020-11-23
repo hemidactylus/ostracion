@@ -19,14 +19,6 @@ from ostracion_app.utilities.viewTools.pathTools import (
     prepareTaskPageFeatures,
 )
 
-from ostracion_app.views.viewTools.toolsPageTreeDescriptor import (
-    toolsPageDescriptor,
-)
-
-from ostracion_app.views.viewTools.pageTreeDescriptorTools import (
-    filterPageDescriptor,
-)
-
 
 @app.route('/tools')
 def toolsHomeView():
@@ -34,15 +26,7 @@ def toolsHomeView():
     user = g.user
     db = dbGetDatabase()
     #
-    filteredToolsPageDescriptor = filterPageDescriptor(
-        toolsPageDescriptor,
-        subTasksAccessibility={
-            'root': {
-                'tree_view': g.canShowTreeView,
-                'search': g.canPerformSearch,
-            },
-        },
-    )
+    filteredToolsPageDescriptor = g.availableTools
     #
     pageFeatures = prepareTaskPageFeatures(
         filteredToolsPageDescriptor,

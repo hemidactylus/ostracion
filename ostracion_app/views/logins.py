@@ -72,7 +72,11 @@ from ostracion_app.utilities.database.permissions import (
 
 from ostracion_app.utilities.viewTools.messageTools import flashMessage
 
-from ostracion_app.views.apps.utilities import selectAvailableApps
+from ostracion_app.views.viewTools.descriptors import (
+    selectAvailableInfoItems,
+    selectAvailableApps,
+    selectAvailableTools,
+)
 
 from ostracion_app.views.viewTools.loginTools import (
     loginTitle,
@@ -165,8 +169,10 @@ def before_request():
         g.user,
         g.settings['behaviour']['search']['tree_view_access']['value'],
     )
-    # task lists
-    g.availableApps = selectAvailableApps(db, g.user)
+    # task lists - must happen after the above (which set access flags)
+    g.availableApps = selectAvailableApps(db, g.user, g)
+    g.availableInfoItems = selectAvailableInfoItems(db, g.user, g)
+    g.availableTools = selectAvailableTools(db, g.user, g)
     #
     if g.user.is_authenticated:
         g.user.setRoles(list(dbGetUserRoles(db, g.user)))

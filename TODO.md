@@ -36,11 +36,6 @@ Tree viev: make all of it into a css style sheet.
 
 Tables and small screens: currently a disaster.
 
-### Better navbar menu building
-
-as for "g.availableApps.tasks.root.tasks" (see logins.py),
-a unique menu construction shared by the menu and the in-page "tasks view"
-
 
 ## TODOs for the next major release
 
@@ -84,4 +79,5 @@ Boxes of type 'real fs'
 Boxes of type 'app'.
 
 1. Accounting app in particular and its special config.
+
 2. Move biblio here?

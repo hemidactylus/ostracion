@@ -56,7 +56,6 @@ from ostracion_app.utilities.fileIO.physical import (
 from ostracion_app.utilities.models.File import File
 
 from ostracion_app.utilities.database.permissions import (
-    userHasRole,
     userHasPermission,
 )
 
@@ -68,28 +67,6 @@ from ostracion_app.utilities.fileIO.thumbnails import (
 from ostracion_app.views.viewTools.pageTreeDescriptorTools import (
     filterPageDescriptor,
 )
-
-from ostracion_app.views.apps.appsPageTreeDescriptor import appsPageDescriptor
-
-
-def selectAvailableApps(db, user):
-    """
-        Return a page descriptor adapted to the apps
-        available to the provided user.
-    """
-    return filterPageDescriptor(
-        appsPageDescriptor,
-        subTasksAccessibility={
-            'root': {
-                'calendar_maker':  userHasRole(
-                    db,
-                    user,
-                    'app',
-                    'calendarmaker'
-                ),
-            },
-        },
-    )
 
 
 def preparePickBoxPageView(db, user, callbackUrl, startBox, message,

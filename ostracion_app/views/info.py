@@ -54,7 +54,6 @@ from ostracion_app.utilities.models.User import User
 
 from ostracion_app.utilities.database.permissions import (
     userRoleRequired,
-    userIsAdmin,
 )
 
 from ostracion_app.utilities.viewTools.pathTools import (
@@ -65,14 +64,6 @@ from ostracion_app.utilities.viewTools.textImageTools import (
     prepareTextualImageForView,
 )
 
-from ostracion_app.views.viewTools.infoPageTreeDescriptor import (
-    infoPageDescriptor,
-)
-
-from ostracion_app.views.viewTools.pageTreeDescriptorTools import (
-    filterPageDescriptor,
-)
-
 
 @app.route('/info')
 def infoHomeView():
@@ -80,14 +71,7 @@ def infoHomeView():
     user = g.user
     db = dbGetDatabase()
     #
-    filteredInfoPageDescriptor = filterPageDescriptor(
-        infoPageDescriptor,
-        subTasksAccessibility={
-            'root': {
-                'admin_guide':  userIsAdmin(db, user),
-            },
-        },
-    )
+    filteredInfoPageDescriptor = g.availableInfoItems
     #
     pageFeatures = prepareTaskPageFeatures(
         filteredInfoPageDescriptor,
@@ -120,7 +104,7 @@ def userGuideView():
     )
     #
     pageFeatures = prepareTaskPageFeatures(
-        infoPageDescriptor,
+        g.availableInfoItems,
         ['root', 'user_guide'],
         g,
     )
@@ -150,7 +134,7 @@ def adminGuideView():
     )
     #
     pageFeatures = prepareTaskPageFeatures(
-        infoPageDescriptor,
+        g.availableInfoItems,
         ['root', 'admin_guide'],
         g,
     )
@@ -180,7 +164,7 @@ def privacyPolicyView():
         'privacy_policy_date']['value']
     #
     pageFeatures = prepareTaskPageFeatures(
-        infoPageDescriptor,
+        g.availableInfoItems,
         ['root', 'privacy'],
         g,
         overrides={
@@ -283,7 +267,7 @@ def termsView():
     ))
     #
     pageFeatures = prepareTaskPageFeatures(
-        infoPageDescriptor,
+        g.availableInfoItems,
         ['root', 'terms'],
         g,
         overrides={
@@ -320,7 +304,7 @@ def aboutView():
     appLongName = g.settings['behaviour']['behaviour_appearance'][
         'application_long_name']['value']
     pageFeatures = prepareTaskPageFeatures(
-        infoPageDescriptor,
+        g.availableInfoItems,
         ['root', 'about'],
         g,
         overrides={

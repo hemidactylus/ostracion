@@ -78,7 +78,7 @@ def _filterTasks(taskMap, accessibilities):
 
 
 def filterPageDescriptor(pDesc, subTasksAccessibility):
-    '''
+    """
         Prune parts of a page tree descriptor according to a prescriptions.
 
         Given a (possibly nested) dictionary subTasksAccessibility
@@ -97,7 +97,7 @@ def filterPageDescriptor(pDesc, subTasksAccessibility):
 
         Absent keys are treated as TRUEs,
         a whole True lets the whole subtree (if any) pass.
-    '''
+    """
     return {
         'tasks': _filterTasks(
             pDesc['tasks'],

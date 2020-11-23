@@ -90,7 +90,7 @@ languageMap = dict(availableLanguages)
 startingWeekdayMap = dict(startingWeekdayChoices)
 
 # after how many seconds shall generation stop and fail?
-pdfGenerationTimeoutSeconds = 15
+pdfGenerationTimeoutSeconds = 90
 
 # max width, in pixels, for resizing images in calendar pdf
 maxCalendarImageResolutionWidth = 1600

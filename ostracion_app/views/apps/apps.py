@@ -20,8 +20,6 @@ from ostracion_app.utilities.viewTools.pathTools import (
 
 from ostracion_app.app_main import app
 
-from ostracion_app.views.apps.utilities import selectAvailableApps
-
 
 @app.route('/apps/')
 def appsView():
@@ -33,7 +31,7 @@ def appsView():
         lsPathString='',
     )
     #
-    filteredAppsPageDescriptor = selectAvailableApps(db, user)
+    filteredAppsPageDescriptor = g.availableApps
     #
     pageFeatures = prepareTaskPageFeatures(
         filteredAppsPageDescriptor,

@@ -18,7 +18,7 @@ toolsPageDescriptor = {
                     'endpoint_name': ('dirTreeView', {}),
                 },
                 'search': {
-                    'title': 'Search',
+                    'title': 'Search...',
                     'subtitle': '',
                     'image_id': ('app_images', 'search'),
                     'endpoint_name': ('findView', {}),
