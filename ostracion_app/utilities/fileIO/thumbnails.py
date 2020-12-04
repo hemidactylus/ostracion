@@ -131,25 +131,29 @@ def resizeToThumbnail(srcFile, dstFile, thumbnailFormat):
         Return True upon success.
     """
     rThumbArg, rExtentArg = makeResizeGeometryStringArgs(thumbnailFormat)
+    resizingArguments = [
+        arg
+        for arg in (
+            'convert',
+            srcFile,
+            '-auto-orient',  # against in-picture rotation info for thb.
+            '-thumbnail' if rThumbArg is not None else None,
+            rThumbArg if rThumbArg is not None else None,
+            '-gravity',
+            'center',
+            '-background',  # these two seem to be needed until imagemagick
+            'none',         # v. 6.8.9.9 (6.9.7.4 appears to be fine without)
+            '-extent' if rExtentArg is not None else None,
+            rExtentArg if rExtentArg is not None else None,
+            # '-flatten',   # that would make animated GIFs collapse to one
+            '-strip',       # removal of EXIF data
+            dstFile,
+        )
+        if arg is not None
+    ]
+    print(resizingArguments)
     resizingOutput = subprocess.run(
-        [
-            arg
-            for arg in (
-                'convert',
-                srcFile,
-                '-auto-orient',  # against in-picture rotation info for thb.
-                '-thumbnail' if rThumbArg is not None else None,
-                rThumbArg if rThumbArg is not None else None,
-                '-gravity',
-                'center',
-                '-extent' if rExtentArg is not None else None,
-                rExtentArg if rExtentArg is not None else None,
-                # '-flatten',   # that would make animated GIFs collapse to one
-                '-strip',       # removal of EXIF data
-                dstFile,
-            )
-            if arg is not None
-        ],
+        resizingArguments,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
