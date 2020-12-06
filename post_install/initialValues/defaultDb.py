@@ -738,6 +738,21 @@ initialDbValues = {
                 'group_ordering':   40,
                 'ordering':         10,
             },
+            {
+                'id':               'accounting',
+                'klass':            'image',
+                'type':             'image',
+                'value':            '',
+                'title':            'Accounting',
+                'description':      'Icon for app "Accounting"',
+                'default_value':    'accounting.png',
+                'default_icon_mime_type':   'image/png',
+                'metadata':         '{"thumbnailFormat":"thumbnail"}',
+                'group_id':         'custom_apps_images',
+                'group_title':      'Apps image settings',
+                'group_ordering':   40,
+                'ordering':         15,
+            },
             #
             {
                 'id':               'navbar_logo',
@@ -1063,6 +1078,40 @@ initialDbValues = {
                 'group_title':      'App colors',
                 'group_ordering':   20,
                 'ordering':         10,
+            },
+            {
+                'id':               'accounting_main_color',
+                'klass':            'color',
+                'type':             'color',
+                'value':            '',
+                'title':            'Accounting main color',
+                'description':      (
+                                        'Color for main elements in accounting'
+                                        'interface'
+                                    ),
+                'default_value':    '#e19715',
+                'metadata':         '',
+                'group_id':         'app_colors',
+                'group_title':      'App colors',
+                'group_ordering':   20,
+                'ordering':         15,
+            },
+            {
+                'id':               'accounting_admin_color',
+                'klass':            'color',
+                'type':             'color',
+                'value':            '',
+                'title':            'Accounting admin color',
+                'description':      (
+                                        'Color for admin elements in '
+                                        'accounting interface'
+                                    ),
+                'default_value':    '#bfb00c',
+                'metadata':         '',
+                'group_id':         'app_colors',
+                'group_title':      'App colors',
+                'group_ordering':   20,
+                'ordering':         20,
             },
             #
             #
@@ -1798,6 +1847,7 @@ initialDbValues = {
         ],
     },
 }
+
 
 if __name__ == '__main__':
     """An ugly check that the above is ordered as seen on pages."""

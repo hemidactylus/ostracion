@@ -9,7 +9,7 @@ appsPageDescriptor = {
             'subtitle': 'Available applications',
             'image_id': ('custom_apps_images', 'general_apps'),
             'endpoint_name': ('appsView', {}),
-            'task_order': ['calendar_maker'],
+            'task_order': ['calendar_maker', 'accounting'],
             'tasks': {
                 'calendar_maker': {
                     'title': 'Calendar maker',
@@ -48,6 +48,12 @@ appsPageDescriptor = {
                         },
                     }
                 },
+                'accounting': {
+                    'title': 'Accounting',
+                    'subtitle': 'Manage accounting',
+                    'image_id': ('custom_apps_images', 'accounting'),
+                    'endpoint_name': ('accountingIndexView', {}),
+                }
             },
         },
     },

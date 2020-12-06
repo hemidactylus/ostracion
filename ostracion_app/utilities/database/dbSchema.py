@@ -243,7 +243,128 @@ dbSchema = {
         'columns': [
             ('datetime',        'TIMESTAMP'),
         ],
-    }
+    },
+    # accounting app, tables
+    'accounting_ledgers': {
+        'primary_key': [
+            ('ledger_id', 'TEXT'),
+        ],
+        'columns': [
+            ('name', 'TEXT'),
+            ('description', 'TEXT'),
+        ],
+        'foreign_keys': {},
+    },
+    'accounting_ledgers_users': {
+        'primary_key': [
+            ('username', 'TEXT'),
+            ('ledger_id', 'TEXT'),
+        ],
+        'columns': [],
+        'foreign_keys': {
+            'users': [
+                [['username'], ['username']],
+            ],
+            'accounting_ledgers': [
+                [['ledger_id'], ['ledger_id']],
+            ],
+        },
+    },
+    'accounting_actors': {
+        'primary_key': [
+            ('ledger_id', 'TEXT'),
+            ('actor_id', 'TEXT'),
+        ],
+        'columns': [
+            ('name', 'TEXT'),
+        ],
+        'foreign_keys': {
+            'accounting_ledgers': [
+                [['ledger_id'], ['ledger_id']],
+            ],
+        },
+    },
+    'accounting_movement_categories': {
+        'primary_key': [
+            ('ledger_id', 'TEXT'),
+            ('category_id', 'TEXT'),
+        ],
+        'columns': [
+            ('name', 'TEXT'),
+            ('sort_index', 'INTEGER')
+        ],
+        'foreign_keys': {
+            'accounting_ledgers': [
+                [['ledger_id'], ['ledger_id']],
+            ],
+        },
+    },
+    'accounting_movement_subcategories': {
+        'primary_key': [
+            ('ledger_id', 'TEXT'),
+            ('category_id', 'TEXT'),
+            ('subcategory_id', 'TEXT'),
+        ],
+        'columns': [
+            ('name', 'TEXT'),
+            ('sort_index', 'INTEGER')
+        ],
+        'foreign_keys': {
+            'accounting_ledgers': [
+                [['ledger_id'], ['ledger_id']],
+            ],
+            'accounting_movement_categories': [
+                [['category_id'], ['category_id']],
+            ],
+        },
+    },
+    'accounting_ledger_movements': {
+        'primary_key': [
+            ('ledger_id', 'TEXT'),
+            ('movement_id', 'INTEGER'),
+        ],
+        'columns': [
+            ('category_id', 'TEXT'),
+            ('subcategory_id', 'TEXT'),
+            ('date', 'TEXT'),
+            ('description', 'TEXT'),
+        ],
+        'indices': {
+            'accounting_ledger_movements_date_index': [
+                ('date', 'DESC'),
+            ],
+        },
+        'foreign_keys': {
+            'accounting_ledgers': [
+                [['ledger_id'], ['ledger_id']],
+            ],
+            'accounting_movement_subcategories': [
+                [['category_id'], ['category_id']],
+                [['subcategory_id'], ['subcategory_id']],
+            ],
+        },
+    },
+    'accounting_movement_contributions': {
+        'primary_key': [
+            ('ledger_id', 'TEXT'),
+            ('movement_id', 'INTEGER'),
+            ('actor_id', 'INTEGER'),
+        ],
+        'columns': [
+            ('paid', 'REAL'),
+            ('due', 'REAL'),
+            ('proportion', 'REAL'),
+        ],
+        'foreign_keys': {
+            'accounting_ledger_movements': [
+                [['ledger_id'], ['ledger_id']],
+                [['movement_id'], ['movement_id']],
+            ],
+            'accounting_actors': [
+                [['actor_id'], ['actor_id']],
+            ],
+        },
+    },
 }
 
 tableCreationOrderSequence = [
@@ -257,6 +378,14 @@ tableCreationOrderSequence = [
     'settings',
     'tickets',
     'attempted_logins',
+    # accounting app
+    'accounting_ledgers',
+    'accounting_ledgers_users',
+    'accounting_actors',
+    'accounting_movement_categories',
+    'accounting_movement_subcategories',
+    'accounting_ledger_movements',
+    'accounting_movement_contributions',
 ]
 
 tableCreationOrder = {

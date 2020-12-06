@@ -51,6 +51,15 @@ def selectAvailableApps(db, user, gg):
                     'app',
                     'calendarmaker'
                 ),
+                'accounting': userHasRole(
+                    db,
+                    user,
+                    'app',
+                    'accounting'
+                ) or userIsAdmin(
+                    db,
+                    user,
+                )
             },
         },
     )

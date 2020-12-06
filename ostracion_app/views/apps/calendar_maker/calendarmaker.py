@@ -22,7 +22,7 @@ from ostracion_app.utilities.database.dbTools import (
 )
 
 from ostracion_app.utilities.tools.dictTools import (
-    recursivelyMergeDictionaries
+    recursivelyMergeDictionaries,
 )
 
 from ostracion_app.utilities.exceptions.exceptions import (

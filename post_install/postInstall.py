@@ -98,7 +98,7 @@ if __name__ == '__main__':
     for tName, tContents in sorted(
             dbSchema.items(),
             key=lambda tnc: tableCreationOrder[tnc[0]]):
-        print('     * %-30s' % ('"%s"' % tName), end='')
+        print('     * %-60s' % ('"%s" ' % tName), end='')
         tableFound = dbTableExists(db, tName)
         if not tableFound:
             print('creating...', end='')
