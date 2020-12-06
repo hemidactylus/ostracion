@@ -252,6 +252,8 @@ dbSchema = {
         'columns': [
             ('name', 'TEXT'),
             ('description', 'TEXT'),
+            ('creator_username', 'TEXT'),
+            ('creation_date', 'TIMESTAMP'),
         ],
         'foreign_keys': {},
     },

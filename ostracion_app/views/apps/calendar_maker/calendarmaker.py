@@ -51,6 +51,7 @@ from ostracion_app.utilities.database.fileSystem import (
 
 from ostracion_app.utilities.database.permissions import (
     userHasPermission,
+    userRoleRequired,
 )
 
 from ostracion_app.utilities.viewTools.pathTools import (
@@ -103,6 +104,7 @@ from ostracion_app.app_main import app
 
 @app.route('/apps/calendarmaker/')
 @app.route('/apps/calendarmaker/index')
+@userRoleRequired({('app', 'calendarmaker')})
 def calendarMakerIndexView():
     """Main calendar maker view."""
     user = g.user
@@ -211,6 +213,7 @@ def calendarMakerIndexView():
 
 
 @app.route('/apps/calendarmaker/generate')
+@userRoleRequired({('app', 'calendarmaker')})
 def calendarMakerGenerateCalendar():
     """
         Calendar actual generation view.
@@ -357,6 +360,7 @@ def calendarMakerGenerateCalendar():
 
 
 @app.route('/apps/calendarmaker/resetsettings')
+@userRoleRequired({('app', 'calendarmaker')})
 def calendarMakerResetSettingsView():
     """Reset calendar settings view."""
     request._onErrorUrl = url_for(
@@ -377,6 +381,7 @@ def calendarMakerResetSettingsView():
 
 
 @app.route('/apps/calendarmaker/settings', methods=['GET', 'POST'])
+@userRoleRequired({('app', 'calendarmaker')})
 def calendarMakerSettingsView():
     """Calendar settings form view."""
     user = g.user
@@ -443,6 +448,7 @@ def calendarMakerSettingsView():
 
 
 @app.route('/apps/calendarmaker/browsebox/<mode>')
+@userRoleRequired({('app', 'calendarmaker')})
 def calendarMakerBrowseBoxView(mode):
     """
         Three-way view to manage image-selection browsing box: handles
@@ -479,6 +485,7 @@ def calendarMakerBrowseBoxView(mode):
 
 
 @app.route('/apps/calendarmaker/destbox/<mode>')
+@userRoleRequired({('app', 'calendarmaker')})
 def calendarMakerDestBoxView(mode):
     """
         Three-way view to manage pdf destination box: handles
@@ -520,6 +527,7 @@ def calendarMakerDestBoxView(mode):
 
 
 @app.route('/apps/calendarmaker/setcover/<coverObjPath>')
+@userRoleRequired({('app', 'calendarmaker')})
 def calendarMakerSetCover(coverObjPath):
     """Calendar cover image selection view (uses quoted coverObjPath)."""
     request._onErrorUrl = url_for(
@@ -539,6 +547,7 @@ def calendarMakerSetCover(coverObjPath):
 
 
 @app.route('/apps/calendarmaker/unsetcover')
+@userRoleRequired({('app', 'calendarmaker')})
 def calendarMakerUnsetCover():
     """Calendar cover image unset view."""
     request._onErrorUrl = url_for(
@@ -558,6 +567,7 @@ def calendarMakerUnsetCover():
 
 
 @app.route('/apps/calendarmaker/unsetimages')
+@userRoleRequired({('app', 'calendarmaker')})
 def calendarMakerUnsetImagesView():
     """Calendar image-list unset view."""
     request._onErrorUrl = url_for(
@@ -578,6 +588,7 @@ def calendarMakerUnsetImagesView():
 
 
 @app.route('/apps/calendarmaker/images')
+@userRoleRequired({('app', 'calendarmaker')})
 def calendarMakerImagesView():
     """Calendar image-selection page view."""
     user = g.user
@@ -660,6 +671,7 @@ def calendarMakerImagesView():
 
 
 @app.route('/apps/calendarmaker/addimage/<imageObjPath>')
+@userRoleRequired({('app', 'calendarmaker')})
 def calendarMakerAddImage(imageObjPath):
     """Calendar image-list add-image view (through quoted imageObjPath)."""
     request._onErrorUrl = url_for(
@@ -680,6 +692,7 @@ def calendarMakerAddImage(imageObjPath):
 
 
 @app.route('/apps/calendarmaker/removeimage/<int:index>')
+@userRoleRequired({('app', 'calendarmaker')})
 def calendarMakerRemoveImage(index):
     """Calendar image-list remove-one view."""
     request._onErrorUrl = url_for(
@@ -689,6 +702,7 @@ def calendarMakerRemoveImage(index):
 
 
 @app.route('/apps/calendarmaker/swapimages/<int:index1>/<int:index2>')
+@userRoleRequired({('app', 'calendarmaker')})
 def calendarMakerSwapImages(index1, index2):
     """Calendar image-list shift-one view."""
     request._onErrorUrl = url_for(

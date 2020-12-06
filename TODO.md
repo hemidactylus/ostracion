@@ -78,6 +78,14 @@ Boxes of type 'real fs'
 
 Boxes of type 'app'.
 
-1. Accounting app in particular and its special config.
+1. Accounting app in particular and its special config, see later
 
 2. Move biblio here?
+
+
+### Accounting app
+
+Closing todos:
+  - add removal of items from tables when erasing a user
+  - getAllLedgers is for admins only: make getUserLedgers to handle ordinary view (which for admins covers all)
+  - in dbDeleteLedger, handle other tables related to this

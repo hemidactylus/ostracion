@@ -19,7 +19,7 @@ class LedgerMovementContribution(DictableObject):
             )
 
     def __repr__(self):
-        return '<LedgerMovementContribution[%s/%s/%s] >' % (
+        return '<LedgerMovementContribution[%s/%s/%s]>' % (
             self.ledger_id,
             self.movement_id,
             self.actor_id,

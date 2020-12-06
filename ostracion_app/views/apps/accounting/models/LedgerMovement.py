@@ -18,4 +18,4 @@ class LedgerMovement(DictableObject):
             )
 
     def __repr__(self):
-        return '<LedgerMovement[%s/%s] >' % (self.ledger_id, self.movement_id)
+        return '<LedgerMovement[%s/%s]>' % (self.ledger_id, self.movement_id)

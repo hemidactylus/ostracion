@@ -17,4 +17,4 @@ class Actor(DictableObject):
             )
 
     def __repr__(self):
-        return '<Actor[%s/%s] >' % (self.ledger_id, self.actor_id)
+        return '<Actor[%s/%s]>' % (self.ledger_id, self.actor_id)

@@ -20,10 +20,20 @@
 
             <div class="jumbotron jumbotron-slim" style="background-color: {{ admin_bgcolor }}">
                 <div>Admin.</div>
+                {% if user.is_authenticated and user.has_role('system', 'admin') %}
+                    <p><a href="{{ url_for('accountingNewLedgerView') }}">New Ledger...</a></p>
+                {% endif %}
             </div>
 
             <div class="jumbotron jumbotron-slim" style="background-color: {{ bgcolor }}">
                 <div>Generic.</div>
+                {% for led in ledgers %}
+                    <div>
+                        {{ led }}
+                        [<a href="{{ url_for('accountingEditLedgerView', ledgerId=led.ledger_id) }}">E</a>]
+                        [<a href="{{ url_for('accountingDeleteLedgerView', ledgerId=led.ledger_id) }}">X</a>]
+                    </div>
+                {% endfor %}
             </div>
 
       </div>

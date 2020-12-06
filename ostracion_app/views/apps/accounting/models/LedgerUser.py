@@ -17,4 +17,4 @@ class LedgerUser(DictableObject):
             )
 
     def __repr__(self):
-        return '<LedgerUser[%s/%s] >' % (self.username, self.ledger_id)
+        return '<LedgerUser[%s/%s]>' % (self.username, self.ledger_id)

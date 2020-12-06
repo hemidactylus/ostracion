@@ -46,14 +46,35 @@ appsPageDescriptor = {
                             ),
                             'endpoint_name': ('calendarMakerImagesView', {}),
                         },
-                    }
+                    },
                 },
                 'accounting': {
                     'title': 'Accounting',
                     'subtitle': 'Manage accounting',
                     'image_id': ('custom_apps_images', 'accounting'),
                     'endpoint_name': ('accountingIndexView', {}),
-                }
+                    'task_order': ['newledger'],
+                    'tasks': {
+                        'newledger': {
+                            'title': 'New ledger',
+                            'subtitle': ('Create a new ledger'),
+                            'image_id': (
+                                'custom_apps_images',
+                                'accounting',
+                            ),
+                            'endpoint_name': ('accountingNewLedgerView', {}),
+                        },
+                        'editledger': {
+                            'title': 'Edit ledger',
+                            'subtitle': ('Change ledger name and description'),
+                            'image_id': (
+                                'custom_apps_images',
+                                'accounting',
+                            ),
+                            'endpoint_name': ('accountingEditLedgerView', {}),
+                        },
+                    },
+                },
             },
         },
     },

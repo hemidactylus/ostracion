@@ -18,7 +18,7 @@ class MovementSubcategory(DictableObject):
             )
 
     def __repr__(self):
-        return '<MovementSubcategory[%s/%s] >' % (
+        return '<MovementSubcategory[%s/%s]>' % (
             self.ledger_id,
             self.category_id,
             self.subcategory_id,
