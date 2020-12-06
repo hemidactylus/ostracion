@@ -256,10 +256,6 @@ def accountingEditLedgerView(ledgerId):
                 actorform=None,
                 actors=[],
                 #
-                handleUsers=True,
-                usersInLedger=usersInLedger,
-                usersOutsideLedger=usersOutsideLedger,
-                #
                 bgcolor=g.settings['color']['app_colors'][
                     'accounting_main_color']['value'],
                 admin_bgcolor=g.settings['color']['app_colors'][
@@ -289,6 +285,70 @@ def accountingDeleteLedgerView(ledgerId):
     return redirect(url_for('accountingIndexView'))
 
 
+@app.route('/apps/accounting/ledgerusers/<ledgerId>')
+@userRoleRequired({('system', 'admin')})
+def accountingLedgerUsersView(ledgerId):
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'accountingIndexView',
+        lsPathString='',
+    )
+    #
+    pageFeatures = prepareTaskPageFeatures(
+        appsPageDescriptor,
+        ['root', 'accounting'],
+        g,
+        overrides={
+            'pageTitle': 'Users for ledger "%s"' % ledgerId,
+            'pageSubtitle': 'Define Ostracion users with access to the ledger',
+        },
+        appendedItems=[{
+            'kind': 'link',
+            'target': None,
+            'name': 'Users for ledger',
+        }],
+    )
+    ledger = dbGetLedger(db, ledgerId)
+    #
+    usersInLedger = sorted(
+        dbGetUsersForLedger(db, user, ledgerId),
+        key=lambda u: u.username.lower(),
+    )
+    usernamesInLedger = {u.username for u in usersInLedger}
+    usersOutsideLedger = sorted(
+        [
+            u
+            for u in dbGetAllUsers(db, user)
+            if u.username not in usernamesInLedger
+        ],
+        key=lambda u: u.username.lower(),
+    )
+    #
+    if ledger is None:
+        raise OstracionError('Unknown ledger "%s"' % ledgerId)
+    else:
+                #
+        return render_template(
+            'apps/accounting/ledgerusers.html',
+            user=user,
+            #
+            ledger=ledger,
+            #
+            usersInLedger=usersInLedger,
+            usersOutsideLedger=usersOutsideLedger,
+            #
+            bgcolor=g.settings['color']['app_colors'][
+                'accounting_main_color']['value'],
+            admin_bgcolor=g.settings['color']['app_colors'][
+                'accounting_admin_color']['value'],
+            formaction=url_for('accountingEditLedgerView', ledgerId=ledgerId),
+            lockLedgerId=True,
+            backToUrl=url_for('accountingIndexView'),
+            **pageFeatures,
+        )
+
+
 @app.route('/apps/accounting/addusertoledger/<ledgerId>/<username>')
 @userRoleRequired({('system', 'admin')})
 def accountingAddUserToLedgerView(ledgerId, username):
@@ -296,7 +356,7 @@ def accountingAddUserToLedgerView(ledgerId, username):
     user = g.user
     db = dbGetDatabase()
     request._onErrorUrl = url_for(
-        'accountingEditLedgerView',
+        'accountingLedgerUsersView',
         ledgerId=ledgerId,
     )
     #
@@ -308,7 +368,7 @@ def accountingAddUserToLedgerView(ledgerId, username):
             # actual adding
             dbAddUserToLedger(db, user, ledger, userToAdd)
             return redirect(url_for(
-                'accountingEditLedgerView',
+                'accountingLedgerUsersView',
                 ledgerId=ledgerId,
             ))
         else:
@@ -324,7 +384,7 @@ def accountingRemoveUserFromLedgerView(ledgerId, username):
     user = g.user
     db = dbGetDatabase()
     request._onErrorUrl = url_for(
-        'accountingEditLedgerView',
+        'accountingLedgerUsersView',
         ledgerId=ledgerId,
     )
     #
@@ -336,7 +396,7 @@ def accountingRemoveUserFromLedgerView(ledgerId, username):
             # actual adding
             dbRemoveUserFromLedger(db, user, ledger, userToRemove)
             return redirect(url_for(
-                'accountingEditLedgerView',
+                'accountingLedgerUsersView',
                 ledgerId=ledgerId,
             ))
         else:

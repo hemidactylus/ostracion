@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% import "tools/form_tools.html" as formtools %}
+
+{% block content %}
+    <div class="row">
+        <div class="col">
+            <div class="jumbotron" style="padding: 10px;">
+
+              {{ formtools.form_header(
+                pageTitle,
+                pageSubtitle,
+                icon_url=iconUrl,
+              ) }}
+
+              <div>
+                IN:
+                {% for u in usersInLedger %}
+                  <a href="{{ url_for('accountingRemoveUserFromLedgerView', ledgerId=ledger.ledger_id, username=u.username) }}" class="badge badge-primary">
+                    {{ u.fullname }}
+                  </a>
+                {% endfor %}
+              </div>
+              <div>
+                OUT:
+                {% for u in usersOutsideLedger %}
+                  <a href="{{ url_for('accountingAddUserToLedgerView', ledgerId=ledger.ledger_id, username=u.username) }}" class="badge badge-secondary">
+                    {{ u.fullname }}
+                  </a>
+                {% endfor %}
+              </div>
+
+              <a href="{{ url_for('accountingIndexView') }}" class="btn btn-success">Back to ledgers</a>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
