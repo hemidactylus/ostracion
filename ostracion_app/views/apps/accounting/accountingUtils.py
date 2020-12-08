@@ -4,5 +4,5 @@ from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetLedger,
 )
 
-def isLedgerId(db, ledgerId, user):
-    return dbGetLedger(db, ledgerId) is not None
+def isLedgerId(db, user, ledgerId):
+    return dbGetLedger(db, user, ledgerId) is not None

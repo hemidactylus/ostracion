@@ -56,6 +56,7 @@ from ostracion_app.views.apps.accounting.forms import (
 )
 
 from ostracion_app.views.apps.accounting.models.Ledger import Ledger
+from ostracion_app.views.apps.accounting.models.Actor import Actor
 from ostracion_app.views.apps.accounting.accountingUtils import (
     isLedgerId,
 )
@@ -68,6 +69,10 @@ from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetUsersForLedger,
     dbAddUserToLedger,
     dbRemoveUserFromLedger,
+    dbGetActorsForLedger,
+    dbAddActorToLedger,
+    dbGetActor,
+    dbDeleteActor,
 )
 
 from ostracion_app.app_main import app
@@ -124,7 +129,7 @@ def accountingNewLedgerView():
     #
     form = AccountingBaseLedgerForm()
     if form.validate_on_submit():
-        if isLedgerId(db, form.ledgerId.data, user):
+        if isLedgerId(db, user, form.ledgerId.data):
             # for the convenience of keeping filled form fields,
             # this flashMessage is not made into a raised error
             flashMessage(
@@ -209,25 +214,24 @@ def accountingEditLedgerView(ledgerId):
     )
     #
     form = AccountingBaseLedgerForm()
-    ledger = dbGetLedger(db, ledgerId)
-    #
-    usersInLedger = sorted(
-        dbGetUsersForLedger(db, user, ledgerId),
-        key=lambda u: u.username.lower(),
-    )
-    usernamesInLedger = {u.username for u in usersInLedger}
-    usersOutsideLedger = sorted(
-        [
-            u
-            for u in dbGetAllUsers(db, user)
-            if u.username not in usernamesInLedger
-        ],
-        key=lambda u: u.username.lower(),
-    )
-    #
+    ledger = dbGetLedger(db, user, ledgerId)
     if ledger is None:
         raise OstracionError('Unknown ledger "%s"' % ledgerId)
     else:
+        usersInLedger = sorted(
+            dbGetUsersForLedger(db, user, ledger),
+            key=lambda u: u.username.lower(),
+        )
+        usernamesInLedger = {u.username for u in usersInLedger}
+        usersOutsideLedger = sorted(
+            [
+                u
+                for u in dbGetAllUsers(db, user)
+                if u.username not in usernamesInLedger
+            ],
+            key=lambda u: u.username.lower(),
+        )
+        #
         if form.validate_on_submit():
             if form.ledgerId.data == ledgerId:
                 newLedger = Ledger(**recursivelyMergeDictionaries(
@@ -277,10 +281,11 @@ def accountingDeleteLedgerView(ledgerId):
         'accountingIndexView',
         lsPathString='',
     )
+    ledger = dbGetLedger(db, user, ledgerId)
     dbDeleteLedger(
         db,
         user,
-        ledgerId,
+        ledger,
     )
     return redirect(url_for('accountingIndexView'))
 
@@ -309,26 +314,24 @@ def accountingLedgerUsersView(ledgerId):
             'name': 'Users for ledger',
         }],
     )
-    ledger = dbGetLedger(db, ledgerId)
-    #
-    usersInLedger = sorted(
-        dbGetUsersForLedger(db, user, ledgerId),
-        key=lambda u: u.username.lower(),
-    )
-    usernamesInLedger = {u.username for u in usersInLedger}
-    usersOutsideLedger = sorted(
-        [
-            u
-            for u in dbGetAllUsers(db, user)
-            if u.username not in usernamesInLedger
-        ],
-        key=lambda u: u.username.lower(),
-    )
-    #
+    ledger = dbGetLedger(db, user, ledgerId)
     if ledger is None:
         raise OstracionError('Unknown ledger "%s"' % ledgerId)
     else:
-                #
+        usersInLedger = sorted(
+            dbGetUsersForLedger(db, user, ledger),
+            key=lambda u: u.username.lower(),
+        )
+        usernamesInLedger = {u.username for u in usersInLedger}
+        usersOutsideLedger = sorted(
+            [
+                u
+                for u in dbGetAllUsers(db, user)
+                if u.username not in usernamesInLedger
+            ],
+            key=lambda u: u.username.lower(),
+        )
+        #
         return render_template(
             'apps/accounting/ledgerusers.html',
             user=user,
@@ -360,7 +363,7 @@ def accountingAddUserToLedgerView(ledgerId, username):
         ledgerId=ledgerId,
     )
     #
-    ledger = dbGetLedger(db, ledgerId)
+    ledger = dbGetLedger(db, user, ledgerId)
     userToAdd = dbGetUser(db, username)
     #
     if ledger is not None:
@@ -388,7 +391,7 @@ def accountingRemoveUserFromLedgerView(ledgerId, username):
         ledgerId=ledgerId,
     )
     #
-    ledger = dbGetLedger(db, ledgerId)
+    ledger = dbGetLedger(db, user, ledgerId)
     userToRemove = dbGetUser(db, username)
     #
     if ledger is not None:
@@ -403,3 +406,95 @@ def accountingRemoveUserFromLedgerView(ledgerId, username):
             raise OstracionError('Unknown user')
     else:
         raise OstracionError('Unknown ledger')
+
+
+@app.route('/apps/accounting/ledgeractors/<ledgerId>', methods=['GET', 'POST'])
+@userRoleRequired({('system', 'admin')})
+def accountingLedgerActorsView(ledgerId):
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'accountingIndexView',
+        lsPathString='',
+    )
+    #
+    pageFeatures = prepareTaskPageFeatures(
+        appsPageDescriptor,
+        ['root', 'accounting'],
+        g,
+        overrides={
+            'pageTitle': 'Actors for ledger "%s"' % ledgerId,
+            'pageSubtitle': 'Configure actors taking part in the ledger',
+        },
+        appendedItems=[{
+            'kind': 'link',
+            'target': None,
+            'name': 'Actors for ledger',
+        }],
+    )
+    ledger = dbGetLedger(db, user, ledgerId)
+    if ledger is None:
+        raise OstracionError('Unknown ledger "%s"' % ledgerId)
+    else:
+        actorform = AccountingLedgerActorForm()
+        if actorform.validate_on_submit():
+            newActor = Actor(
+                ledger_id=ledger.ledger_id,
+                actor_id=actorform.actorId.data,
+                name=actorform.name.data,
+            )
+            dbAddActorToLedger(db, user, ledger, newActor)
+            return redirect(url_for(
+                'accountingLedgerActorsView',
+                ledgerId=ledger.ledger_id,
+            ))
+        else:
+            #
+            actorsInLedger = sorted(
+                dbGetActorsForLedger(db, user, ledger),
+                key=lambda a: a.actor_id.lower(),
+            )
+            #
+            return render_template(
+                'apps/accounting/ledgeractors.html',
+                user=user,
+                #
+                ledger=ledger,
+                #
+                actorsInLedger=actorsInLedger,
+                actorform=actorform,
+                #
+                bgcolor=g.settings['color']['app_colors'][
+                    'accounting_main_color']['value'],
+                admin_bgcolor=g.settings['color']['app_colors'][
+                    'accounting_admin_color']['value'],
+                backToUrl=url_for('accountingIndexView'),
+                **pageFeatures,
+            )
+
+
+@app.route('/apps/accounting/deleteledgeractor/<ledgerId>/<actorId>')
+@userRoleRequired({('system', 'admin')})
+def accountingRemoveActorView(ledgerId, actorId):
+    """Remove an actor from a ledger."""
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'accountingIndexView',
+        lsPathString='',
+    )
+    #
+    ledger = dbGetLedger(db, user, ledgerId)
+    actor = dbGetActor(db, user, ledgerId, actorId)
+    #
+    if ledger is not None:
+        if actor is not None:
+            dbDeleteActor(db, user, ledger, actor)
+            return redirect(url_for(
+                'accountingLedgerActorsView',
+                ledgerId=ledger.ledger_id,
+            ))
+        else:
+            raise OstracionError('Unknown actor "%s"' % actorId)
+    else:
+        raise OstracionError('Unknown ledger "%s"' % ledgerId)

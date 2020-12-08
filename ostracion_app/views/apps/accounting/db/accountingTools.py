@@ -39,7 +39,7 @@ from ostracion_app.utilities.database.dbSchema import (
 )
 
 
-def dbGetLedger(db, ledgerId):
+def dbGetLedger(db, user, ledgerId):
     """Retrieve ledger given its id."""
     ledgerDict = dbRetrieveRecordByKey(
         db,
@@ -94,7 +94,7 @@ def dbGetAllLedgers(db, user):
         raise OstracionError('Insufficient permissions')
 
 
-def dbDeleteLedger(db, user, ledgerId):
+def dbDeleteLedger(db, user, ledger):
     """
         Delete a ledger and all its sibling rows in
         foreign-key-related tables.
@@ -104,7 +104,7 @@ def dbDeleteLedger(db, user, ledgerId):
         dbDeleteRecordsByKey(
             db,
             'accounting_ledgers',
-            {'ledger_id': ledgerId},
+            {'ledger_id': ledger.ledger_id},
             dbTablesDesc=dbSchema,
         )
         db.commit()
@@ -112,7 +112,7 @@ def dbDeleteLedger(db, user, ledgerId):
         raise OstracionError('Insufficient permissions')
 
 
-def dbGetUsersForLedger(db, user, ledgerId):
+def dbGetUsersForLedger(db, user, ledger):
     """Return a list of the users subscribed to a ledger."""
     if userIsAdmin(db, user):
         return (
@@ -123,7 +123,7 @@ def dbGetUsersForLedger(db, user, ledgerId):
             for l in dbRetrieveRecordsByKey(
                 db,
                 'accounting_ledgers_users',
-                {'ledger_id': ledgerId},
+                {'ledger_id': ledger.ledger_id},
                 dbTablesDesc=dbSchema,
             )
         )
@@ -131,12 +131,12 @@ def dbGetUsersForLedger(db, user, ledgerId):
         raise OstracionError('Insufficient permissions')
 
 
-def dbGetLedgerUser(db, user, ledgerId, username):
+def dbGetLedgerUser(db, user, ledger, username):
     """Return a relation row user/ledger."""
     ledgerUserDict = dbRetrieveRecordByKey(
         db,
         'accounting_ledgers_users',
-        {'ledger_id': ledgerId, 'username': username},
+        {'ledger_id': ledger.ledger_id, 'username': username},
         dbTablesDesc=dbSchema,
     )
     return LedgerUser(**ledgerUserDict) if ledgerUserDict is not None else None
@@ -144,7 +144,7 @@ def dbGetLedgerUser(db, user, ledgerId, username):
 
 def dbAddUserToLedger(db, user, ledger, userToAdd):
     """Subscribe a user to a ledger. Raise error if already subscribed."""
-    rel = dbGetLedgerUser(db, user, ledger.ledger_id, userToAdd.username)
+    rel = dbGetLedgerUser(db, user, ledger, userToAdd.username)
     if rel is None:
         # adding the relation
         newLedgerUser = LedgerUser(
@@ -165,7 +165,7 @@ def dbAddUserToLedger(db, user, ledger, userToAdd):
 
 def dbRemoveUserFromLedger(db, user, ledger, userToRemove):
     """Subscribe a user to a ledger. Raise error if already subscribed."""
-    rel = dbGetLedgerUser(db, user, ledger.ledger_id, userToRemove.username)
+    rel = dbGetLedgerUser(db, user, ledger, userToRemove.username)
     if rel is not None:
         # removing the relation
         dbDeleteRecordsByKey(
@@ -181,3 +181,61 @@ def dbRemoveUserFromLedger(db, user, ledger, userToRemove):
         db.commit()
     else:
         raise OstracionError('User already not subscribed to ledger')
+
+
+def dbGetActorsForLedger(db, user, ledger):
+    """Return a list of Actor objects for a ledger."""
+    return (
+        Actor(**l)
+        for l in dbRetrieveRecordsByKey(
+            db,
+            'accounting_actors',
+            {'ledger_id': ledger.ledger_id},
+            dbTablesDesc=dbSchema,
+        )
+    )
+
+
+def dbAddActorToLedger(db, user, ledger, newActor):
+    """Add and actor to a ledger."""
+    actor = dbGetActor(db, user, ledger.ledger_id, newActor.actor_id)
+    if actor is None:
+        dbAddRecordToTable(
+            db,
+            'accounting_actors',
+            newActor.asDict(),
+            dbTablesDesc=dbSchema,
+        )
+        #
+        db.commit()
+    else:
+        raise OstracionError('Actor exists already')
+
+
+def dbGetActor(db, user, ledgerId, actorId):
+    """Retrieve a single actor by its key."""
+    actorDict = dbRetrieveRecordByKey(
+        db,
+        'accounting_actors',
+        {'ledger_id': ledgerId, 'actor_id': actorId},
+        dbTablesDesc=dbSchema,
+    )
+    if actorDict is None:
+        return None
+    else:
+        return Actor(**actorDict)
+
+
+def dbDeleteActor(db, user, ledger, actor):
+    """Delete an actor from a ledger."""
+    if userIsAdmin(db, user):
+        # TODO delete rows from other related tables
+        dbDeleteRecordsByKey(
+            db,
+            'accounting_actors',
+            {'ledger_id': ledger.ledger_id, 'actor_id': actor.actor_id},
+            dbTablesDesc=dbSchema,
+        )
+        db.commit()
+    else:
+        raise OstracionError('Insufficient permissions')

@@ -359,11 +359,10 @@ dbSchema = {
         ],
         'foreign_keys': {
             'accounting_ledger_movements': [
-                [['ledger_id'], ['ledger_id']],
-                [['movement_id'], ['movement_id']],
+                [['ledger_id', 'movement_id'], ['ledger_id', 'movement_id']],
             ],
             'accounting_actors': [
-                [['actor_id'], ['actor_id']],
+                [['ledger_id', 'actor_id'], ['ledger_id', 'actor_id']],
             ],
         },
     },

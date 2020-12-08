@@ -89,3 +89,4 @@ Closing todos:
   - add removal of items from tables when erasing a user
   - getAllLedgers is for admins only: make getUserLedgers to handle ordinary view (which for admins covers all)
   - in dbDeleteLedger, handle other tables related to this
+  - in dbRemoveActor, handle other tables (or raise error whatever)
