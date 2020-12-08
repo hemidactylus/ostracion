@@ -33,6 +33,7 @@
                         [<a href="{{ url_for('accountingEditLedgerView', ledgerId=led.ledger_id) }}">E</a>]
                         [<a href="{{ url_for('accountingLedgerUsersView', ledgerId=led.ledger_id) }}">U</a>]
                         [<a href="{{ url_for('accountingLedgerActorsView', ledgerId=led.ledger_id) }}">A</a>]
+                        [<a href="{{ url_for('accountingLedgerCategoriesView', ledgerId=led.ledger_id) }}">C</a>]
                         [<a href="{{ url_for('accountingDeleteLedgerView', ledgerId=led.ledger_id) }}">X</a>]
                     </div>
                 {% endfor %}

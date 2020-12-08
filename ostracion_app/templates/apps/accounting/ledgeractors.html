@@ -16,39 +16,39 @@
 
                 <div class="col-md-12">
                     <div class="jumbotron" style="background-color: {{ g.settings.color.task_colors.table.value }}; padding-top: 10px;">
-                        <form method="post" name="addactor" action="">
-                          <div class="row">
-                            {{ actorform.hidden_tag() }}
-
-                            <div class="col col-md-1">
-                              {{ actorform.actorId(class_="form-control",placeholder="New actor ID",tabindex=1) }}
-                              {% for error in actorform.actorId.errors %}
-                                <small class="form-text text-muted">{{ error }}</small>
-                              {% endfor %}
-                            </div>
-                            <div class="col col-md-3">
-                              {{ actorform.name(class_="form-control",placeholder="New actor name",tabindex=2) }}
-                              {% for error in actorform.name.errors %}
-                                <small class="form-text text-muted">{{ error }}</small>
-                              {% endfor %}
-                            </div>
-                            <div class="col col-md-2">
-                              {{ actorform.submit(class_='btn btn-primary btn-md',style='margin-right: 25px;',tabindex=3) }}
-                            </div>
-                          </div>
-                        </form>
-
                         <div class="row" style="margin-top:15px;">
 
                           <table class="table table-hover">
                               <thead>
                                   <tr>
-                                      <th class="col-md-1">Actor ID</th>
+                                      <th class="col-md-2">Actor ID</th>
                                       <th class="col-md-3">Name</th>
                                       <th class="col-md-2">Actions</th>
                                   </tr>
                               </thead>
                               <tbody>
+
+                              <form class="form-inline" method="post" name="addactor" action="">
+                                  {{ actorform.hidden_tag() }}
+                                  <tr>
+                                    <td style="font-family: monospace;">
+                                      {{ actorform.actorId(class_="form-control",placeholder="New actor ID",tabindex=1) }}
+                                      {% for error in actorform.actorId.errors %}
+                                        <small class="form-text text-muted">{{ error }}</small>
+                                      {% endfor %}
+                                    </td>
+                                    <td>
+                                      {{ actorform.name(class_="form-control",placeholder="New actor name",tabindex=2) }}
+                                      {% for error in actorform.name.errors %}
+                                        <small class="form-text text-muted">{{ error }}</small>
+                                      {% endfor %}
+                                    </td>
+                                    <td>
+                                      {{ actorform.submit(class_='btn btn-primary btn-sm',style='margin-right: 25px;', tabindex=3, value="+") }}
+                                    </td>
+                                  </tr>
+                                </form>
+
                                 {% for actor in actorsInLedger %}
                                   <tr>
                                     <td style="font-family: monospace;">
@@ -59,7 +59,7 @@
                                     </td>
                                     <td>
                                       <span>
-                                        <a href="{{ url_for('accountingRemoveActorView', ledgerId=ledger.ledger_id, actorId=actor.actor_id) }}" class="btn btn-danger btn-md" data-toggle="tooltip" title="Delete">
+                                        <a href="{{ url_for('accountingRemoveActorView', ledgerId=ledger.ledger_id, actorId=actor.actor_id) }}" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
                                           X
                                         </a>
                                       </span>
@@ -69,14 +69,12 @@
 
                               </tbody>
                           </table>
+
                         </div>
                     </div>
                 </div>
-
               </div>
-
               <a href="{{ url_for('accountingIndexView') }}" class="btn btn-success">Back to ledgers</a>
-
             </div>
         </div>
     </div>

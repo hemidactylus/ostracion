@@ -74,19 +74,16 @@ A system-messages table (login protection alerts, etc).
 
 Boxes of type 'real fs'
 
-### Apps
-
-Boxes of type 'app'.
-
-1. Accounting app in particular and its special config, see later
-
-2. Move biblio here?
+### Biblio app
 
 
-### Accounting app
+### Accounting app - DOING -
 
-Closing todos:
+Accumulated todos:
   - add removal of items from tables when erasing a user
   - getAllLedgers is for admins only: make getUserLedgers to handle ordinary view (which for admins covers all)
   - in dbDeleteLedger, handle other tables related to this
   - in dbRemoveActor, handle other tables (or raise error whatever)
+  - tooltip in in-table "add" button, how to?
+  - filter ledger-user-choice with: those with the accounting app only
+  - how to deal with: user loses the 'accounting' app role, yet they are in some ledgers

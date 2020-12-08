@@ -6,7 +6,7 @@ from ostracion_app.utilities.models.DictableObject import DictableObject
 
 
 class MovementSubcategory(DictableObject):
-    namedFields = ['ledger_id', 'category_id', 'subcategory_id', 'name',
+    namedFields = ['ledger_id', 'category_id', 'subcategory_id', 'description',
                    'sort_index']
 
     def __init__(self, **kwargs):

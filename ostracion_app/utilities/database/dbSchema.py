@@ -292,7 +292,7 @@ dbSchema = {
             ('category_id', 'TEXT'),
         ],
         'columns': [
-            ('name', 'TEXT'),
+            ('description', 'TEXT'),
             ('sort_index', 'INTEGER')
         ],
         'foreign_keys': {
@@ -308,7 +308,7 @@ dbSchema = {
             ('subcategory_id', 'TEXT'),
         ],
         'columns': [
-            ('name', 'TEXT'),
+            ('description', 'TEXT'),
             ('sort_index', 'INTEGER')
         ],
         'foreign_keys': {
@@ -316,7 +316,7 @@ dbSchema = {
                 [['ledger_id'], ['ledger_id']],
             ],
             'accounting_movement_categories': [
-                [['category_id'], ['category_id']],
+                [['ledger_id', 'category_id'], ['ledger_id', 'category_id']],
             ],
         },
     },

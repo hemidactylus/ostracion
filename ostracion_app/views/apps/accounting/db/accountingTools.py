@@ -80,7 +80,7 @@ def dbUpdateLedger(db, user, newLedger):
 
 
 def dbGetAllLedgers(db, user):
-    """Get a listing of all existing ledgers."""
+    """Get an iterable listing of all existing ledgers."""
     if userIsAdmin(db, user):
         return (
             Ledger(**l)
@@ -113,7 +113,7 @@ def dbDeleteLedger(db, user, ledger):
 
 
 def dbGetUsersForLedger(db, user, ledger):
-    """Return a list of the users subscribed to a ledger."""
+    """Return an iterable of the users subscribed to a ledger."""
     if userIsAdmin(db, user):
         return (
             dbGetUser(
@@ -184,7 +184,7 @@ def dbRemoveUserFromLedger(db, user, ledger, userToRemove):
 
 
 def dbGetActorsForLedger(db, user, ledger):
-    """Return a list of Actor objects for a ledger."""
+    """Return an iterable of Actor objects for a ledger."""
     return (
         Actor(**l)
         for l in dbRetrieveRecordsByKey(
@@ -239,3 +239,89 @@ def dbDeleteActor(db, user, ledger, actor):
         db.commit()
     else:
         raise OstracionError('Insufficient permissions')
+
+
+def dbGetCategoriesForLedger(db, user, ledger):
+    """Return an iterable of MovementCategory objects for a ledger."""
+    return (
+        MovementCategory(**l)
+        for l in dbRetrieveRecordsByKey(
+            db,
+            'accounting_movement_categories',
+            {'ledger_id': ledger.ledger_id},
+            dbTablesDesc=dbSchema,
+        )
+    )
+
+
+def dbGetCategory(db, user, ledgerId, categoryId):
+    """Retrieve a single movement category by its key."""
+    categoryDict = dbRetrieveRecordByKey(
+        db,
+        'accounting_movement_categories',
+        {'ledger_id': ledgerId, 'category_id': categoryId},
+        dbTablesDesc=dbSchema,
+    )
+    if categoryDict is None:
+        return None
+    else:
+        return MovementCategory(**categoryDict)
+
+
+def dbAddCategoryToLedger(db, user, ledger, newCategory):
+    """Add a MovementCategory under a given ledger."""
+    if newCategory.ledger_id == ledger.ledger_id:
+        category = dbGetCategory(db, user, ledger.ledger_id,
+                                 newCategory.category_id)
+        if category is None:
+            dbAddRecordToTable(
+                db,
+                'accounting_movement_categories',
+                newCategory.asDict(),
+                dbTablesDesc=dbSchema,
+            )
+            #
+            db.commit()
+        else:
+            raise OstracionError('Category exists already')
+    else:
+        raise OstracionError('Illegitimate category')
+
+
+def dbAddSubcategoryToLedger(db, user, ledger, newSubcategory):
+    """
+        Add a MovementSubcategory under a given ledger.
+        The corresponding category must exist.
+    """
+    if ledger.ledger_id == newSubcategory.ledger_id:
+        category = dbGetCategory(db, user, ledger.ledger_id,
+                                 newSubcategory.category_id)
+        if category is not None:
+            dbAddRecordToTable(
+                db,
+                'accounting_movement_subcategories',
+                newSubcategory.asDict(),
+                dbTablesDesc=dbSchema,
+            )
+            #
+            db.commit()
+        else:
+            raise OstracionError('Unknown category')
+    else:
+        raise OstracionError('Illegitimate category')
+
+
+def dbGetSubcategoriesForLedger(db, user, ledger, category):
+    """Give an iterable of MovementSubategory objects for a ledger/category."""
+    return (
+        MovementSubcategory(**l)
+        for l in dbRetrieveRecordsByKey(
+            db,
+            'accounting_movement_subcategories',
+            {
+                'ledger_id': ledger.ledger_id,
+                'category_id': category.category_id,
+            },
+            dbTablesDesc=dbSchema,
+        )
+    )

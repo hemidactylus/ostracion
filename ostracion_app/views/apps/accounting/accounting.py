@@ -53,12 +53,23 @@ from ostracion_app.utilities.viewTools.pathTools import (
 from ostracion_app.views.apps.accounting.forms import (
     AccountingBaseLedgerForm,
     AccountingLedgerActorForm,
+    AccountingLedgerCategoryForm,
+    AccountingLedgerSubcategoryForm,
 )
 
 from ostracion_app.views.apps.accounting.models.Ledger import Ledger
 from ostracion_app.views.apps.accounting.models.Actor import Actor
+from ostracion_app.views.apps.accounting.models.MovementCategory import (
+    MovementCategory,
+)
+from ostracion_app.views.apps.accounting.models.MovementSubcategory import (
+    MovementSubcategory,
+)
+#
 from ostracion_app.views.apps.accounting.accountingUtils import (
     isLedgerId,
+    extractLedgerCategoryTree,
+    prepareAccountingCategoryViewFeatures,
 )
 from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetLedger,
@@ -73,6 +84,9 @@ from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbAddActorToLedger,
     dbGetActor,
     dbDeleteActor,
+    dbAddCategoryToLedger,
+    dbGetCategory,
+    dbAddSubcategoryToLedger,
 )
 
 from ostracion_app.app_main import app
@@ -411,6 +425,7 @@ def accountingRemoveUserFromLedgerView(ledgerId, username):
 @app.route('/apps/accounting/ledgeractors/<ledgerId>', methods=['GET', 'POST'])
 @userRoleRequired({('system', 'admin')})
 def accountingLedgerActorsView(ledgerId):
+    """Actors configured for a ledger."""
     user = g.user
     db = dbGetDatabase()
     request._onErrorUrl = url_for(
@@ -498,3 +513,195 @@ def accountingRemoveActorView(ledgerId, actorId):
             raise OstracionError('Unknown actor "%s"' % actorId)
     else:
         raise OstracionError('Unknown ledger "%s"' % ledgerId)
+
+
+@app.route('/apps/accounting/ledgercategories/<ledgerId>')
+@userRoleRequired({('system', 'admin')})
+def accountingLedgerCategoriesView(ledgerId):
+    """
+        Categories configured for a ledger.
+        This is a GET view only, the two 'add' POSTs go to separate views
+    """
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'accountingIndexView',
+        lsPathString='',
+    )
+    #
+    pageFeatures = prepareAccountingCategoryViewFeatures(g, ledgerId)
+    ledger = dbGetLedger(db, user, ledgerId)
+    if ledger is None:
+        raise OstracionError('Unknown ledger "%s"' % ledgerId)
+    else:
+        categoryTree = extractLedgerCategoryTree(db, user, ledger)
+        categoryform = AccountingLedgerCategoryForm()
+        subcategoryform = AccountingLedgerSubcategoryForm()
+        subcategoryform.fillCategoryChoices(
+            [cObj['category'].category_id for cObj in categoryTree],
+        )
+        #
+        return render_template(
+            'apps/accounting/ledgercategories.html',
+            user=user,
+            #
+            ledger=ledger,
+            #
+            categoryTree=categoryTree,
+            categoryform=categoryform,
+            subcategoryform=subcategoryform,
+            #
+            bgcolor=g.settings['color']['app_colors'][
+                'accounting_main_color']['value'],
+            admin_bgcolor=g.settings['color']['app_colors'][
+                'accounting_admin_color']['value'],
+            backToUrl=url_for('accountingIndexView'),
+            **pageFeatures,
+        )
+
+
+@app.route('/apps/accounting/ledgercategories/addcategory/<ledgerId>',
+           methods=['POST'])
+@userRoleRequired({('system', 'admin')})
+def accountingLedgerAddCategoryView(ledgerId):
+    """
+        POST-only view to receive requests to add category to ledger.
+        Once processed, user is redirected to the categories view (GET).
+    """
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'accountingLedgerCategoriesView',
+        ledgerId=ledgerId,
+    )
+    ledger = dbGetLedger(db, user, ledgerId)
+    if ledger is None:
+        raise OstracionError('Unknown ledger "%s"' % ledgerId)
+    else:
+        pageFeatures = prepareAccountingCategoryViewFeatures(g, ledgerId)
+        #
+        categoryTree = extractLedgerCategoryTree(db, user, ledger)
+        subcategoryform = AccountingLedgerSubcategoryForm()
+        subcategoryform.fillCategoryChoices(
+            [cObj['category'].category_id for cObj in categoryTree],
+        )
+        categoryform = AccountingLedgerCategoryForm()
+        #
+        if categoryform.validate_on_submit():
+            if len(categoryTree) > 0:
+                newSortIndex = 1 + max(
+                    cO['category'].sort_index for cO in categoryTree
+                )
+            else:
+                newSortIndex = 0
+            newCategory = MovementCategory(
+                ledger_id=ledger.ledger_id,
+                category_id=categoryform.categoryId.data,
+                description=categoryform.description.data,
+                sort_index=newSortIndex,
+            )
+            dbAddCategoryToLedger(db, user, ledger, newCategory)
+            return redirect(url_for(
+                'accountingLedgerCategoriesView',
+                ledgerId=ledgerId,
+            ))
+        else:
+            return render_template(
+                'apps/accounting/ledgercategories.html',
+                user=user,
+                #
+                ledger=ledger,
+                #
+                categoryTree=categoryTree,
+                categoryform=categoryform,
+                subcategoryform=subcategoryform,
+                #
+                bgcolor=g.settings['color']['app_colors'][
+                    'accounting_main_color']['value'],
+                admin_bgcolor=g.settings['color']['app_colors'][
+                    'accounting_admin_color']['value'],
+                backToUrl=url_for('accountingIndexView'),
+                **pageFeatures,
+            )
+
+
+@app.route('/apps/accounting/ledgercategories/addsubcategory/<ledgerId>',
+           methods=['POST'])
+@userRoleRequired({('system', 'admin')})
+def accountingLedgerAddSubcategoryView(ledgerId):
+    """
+        POST-only view to receive requests for adding a subcategory to
+        a ledger.
+        The category ID is part of the POST parameters, hence read through the
+        appropriate form.
+    """
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'accountingLedgerCategoriesView',
+        ledgerId=ledgerId,
+    )
+    ledger = dbGetLedger(db, user, ledgerId)
+    if ledger is None:
+        raise OstracionError('Unknown ledger "%s"' % ledgerId)
+    else:
+        pageFeatures = prepareAccountingCategoryViewFeatures(g, ledgerId)
+        #
+        categoryTree = extractLedgerCategoryTree(db, user, ledger)
+        subcategoryform = AccountingLedgerSubcategoryForm()
+        subcategoryform.fillCategoryChoices(
+            [cObj['category'].category_id for cObj in categoryTree],
+        )
+        categoryform = AccountingLedgerCategoryForm()
+        #
+        if subcategoryform.validate_on_submit():
+            categoryId = subcategoryform.categoryId.data
+            # this is a hack to get the match or None if missing
+            targetCategoryObj = {
+                i: v
+                for i, v in enumerate(
+                    cObj
+                    for cObj in categoryTree
+                    if cObj['category'].category_id == categoryId
+                )
+            }.get(0)
+            if targetCategoryObj is not None:
+                if len(targetCategoryObj['subcategories']) > 0:
+                    newSortIndex = 1 + max(
+                        subCat.sort_index
+                        for subCat in targetCategoryObj['subcategories']
+                    )
+                else:
+                    newSortIndex = 0
+                newSubcategory = MovementSubcategory(
+                    ledger_id=ledger.ledger_id,
+                    category_id=categoryId,
+                    subcategory_id=subcategoryform.subcategoryId.data,
+                    description=subcategoryform.description.data,
+                    sort_index=newSortIndex,
+                )
+                dbAddSubcategoryToLedger(db, user, ledger, newSubcategory)
+                return redirect(url_for(
+                    'accountingLedgerCategoriesView',
+                    ledgerId=ledgerId,
+                ))
+            else:
+                raise OstracionError('Unknown category')
+        else:
+            return render_template(
+                'apps/accounting/ledgercategories.html',
+                user=user,
+                #
+                ledger=ledger,
+                #
+                categoryTree=categoryTree,
+                categoryform=categoryform,
+                subcategoryform=subcategoryform,
+                #
+                bgcolor=g.settings['color']['app_colors'][
+                    'accounting_main_color']['value'],
+                admin_bgcolor=g.settings['color']['app_colors'][
+                    'accounting_admin_color']['value'],
+                backToUrl=url_for('accountingIndexView'),
+                **pageFeatures,
+            )
