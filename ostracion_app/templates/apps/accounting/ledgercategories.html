@@ -47,7 +47,7 @@
                                       {% endfor %}
                                     </td>
                                     <td>
-                                      {{ categoryform.submit(class_='btn btn-primary btn-sm',style='margin-right: 25px;', tabindex=3, value="+") }}
+                                      {{ categoryform.submit(class_='btn btn-primary btn-md',style='margin-right: 25px;', tabindex=3, value="+") }}
                                     </td>
                                   </tr>
                                 </form>
@@ -74,7 +74,7 @@
                                       {% endfor %}
                                     </td>
                                     <td>
-                                      {{ subcategoryform.submit(class_='btn btn-primary btn-sm',style='margin-right: 25px;', tabindex=7, value="+") }}
+                                      {{ subcategoryform.submit(class_='btn btn-primary btn-md',style='margin-right: 25px;', tabindex=7, value="+") }}
                                     </td>
                                   </tr>
                                 </form>
@@ -89,11 +89,15 @@
                                     <i>{{ catObj.category.description }}</i>
                                   </td>
                                   <td>
-                                    <span>
-                                      <a href="#" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
-                                        X
-                                      </a>
-                                    </span>
+                                    <a href="#" class="btn btn-success btn-md"
+                                      style="font-family: 'Zapf Dingbats';"
+                                      data-toggle="tooltip" title="Move up">&#9652;</a>
+                                    <a href="#" class="btn btn-success btn-md"
+                                      style="font-family: 'Zapf Dingbats';"
+                                      data-toggle="tooltip" title="Move down">&#9662;</a>
+                                    <a href="{{ url_for('accountingLedgerRemoveCategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id) }}" class="btn btn-danger btn-md" data-toggle="tooltip" title="Delete">
+                                      X
+                                    </a>
                                   </td>
                                 </tr>
                                 {% for subcat in catObj.subcategories %}
@@ -107,12 +111,16 @@
                                     <td style="padding-top: 0.45rem; padding-bottom: 0.15rem; padding-left: 2rem;">
                                       <i>{{ subcat.description }}</i>
                                     </td>
-                                    <td style="padding-top: 0.45rem; padding-bottom: 0.15rem;">
-                                      <span>
-                                        <a href="#" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
-                                          X
-                                        </a>
-                                      </span>
+                                    <td style="padding-top: 0.45rem; padding-bottom: 0.15rem; padding-left: 2rem;">
+                                      <a href="#" class="btn btn-success btn-sm"
+                                        style="font-family: 'Zapf Dingbats';"
+                                        data-toggle="tooltip" title="Move up">&#9652;</a>
+                                      <a href="#" class="btn btn-success btn-sm"
+                                        style="font-family: 'Zapf Dingbats';"
+                                        data-toggle="tooltip" title="Move down">&#9662;</a>
+                                      <a href="{{ url_for('accountingLedgerRemoveSubcategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id, subcategoryId=subcat.subcategory_id) }}" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
+                                        X
+                                      </a>
                                     </td>
                                   </tr>
                                 {% endfor %}

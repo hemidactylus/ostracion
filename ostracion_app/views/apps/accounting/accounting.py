@@ -84,9 +84,12 @@ from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbAddActorToLedger,
     dbGetActor,
     dbDeleteActor,
-    dbAddCategoryToLedger,
     dbGetCategory,
+    dbGetSubcategory,
+    dbAddCategoryToLedger,
     dbAddSubcategoryToLedger,
+    dbEraseCategoryFromLedger,
+    dbDeleteSubcategoryFromLedger,
 )
 
 from ostracion_app.app_main import app
@@ -705,3 +708,55 @@ def accountingLedgerAddSubcategoryView(ledgerId):
                 backToUrl=url_for('accountingIndexView'),
                 **pageFeatures,
             )
+
+
+@app.route((
+            '/apps/accounting/ledgercategories/removecategory/'
+            '<ledgerId>/<categoryId>'
+          ))
+@userRoleRequired({('system', 'admin')})
+def accountingLedgerRemoveCategoryView(ledgerId, categoryId):
+    """Removal of a category from a ledger setup. All subcats go as well."""
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'accountingLedgerCategoriesView',
+        ledgerId=ledgerId,
+    )
+    ledger = dbGetLedger(db, user, ledgerId)
+    category = dbGetCategory(db, user, ledgerId, categoryId)
+    if ledger is not None and category is not None:
+        dbEraseCategoryFromLedger(db, user, ledger, category)
+        return redirect(url_for(
+            'accountingLedgerCategoriesView',
+            ledgerId=ledger.ledger_id,
+        ))
+    else:
+        raise OstracionError('Ledger/category not found')
+
+
+@app.route((
+            '/apps/accounting/ledgercategories/removesubcategory/'
+            '<ledgerId>/<categoryId>/<subcategoryId>'
+          ))
+@userRoleRequired({('system', 'admin')})
+def accountingLedgerRemoveSubcategoryView(ledgerId, categoryId, subcategoryId):
+    """Removal of a subcategory from a ledger setup. All subcats go as well."""
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'accountingLedgerCategoriesView',
+        ledgerId=ledgerId,
+    )
+    ledger = dbGetLedger(db, user, ledgerId)
+    category = dbGetCategory(db, user, ledgerId, categoryId)
+    subcategory = dbGetSubcategory(db, user, ledgerId, categoryId,
+                                   subcategoryId)
+    if ledger is not None and category is not None and subcategory is not None:
+        dbDeleteSubcategoryFromLedger(db, user, ledger, category, subcategory)
+        return redirect(url_for(
+            'accountingLedgerCategoriesView',
+            ledgerId=ledger.ledger_id,
+        ))
+    else:
+        raise OstracionError('Ledger/category/subcategory not found')

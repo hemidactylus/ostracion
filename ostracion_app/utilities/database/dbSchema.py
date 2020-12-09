@@ -341,8 +341,10 @@ dbSchema = {
                 [['ledger_id'], ['ledger_id']],
             ],
             'accounting_movement_subcategories': [
-                [['category_id'], ['category_id']],
-                [['subcategory_id'], ['subcategory_id']],
+                [
+                    ['ledger_id', 'category_id', 'subcategory_id'],
+                    ['ledger_id', 'category_id', 'subcategory_id']
+                ],
             ],
         },
     },

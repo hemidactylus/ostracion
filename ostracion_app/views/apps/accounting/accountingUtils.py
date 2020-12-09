@@ -9,7 +9,7 @@ from ostracion_app.utilities.viewTools.pathTools import (
 from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetLedger,
     dbGetCategoriesForLedger,
-    dbGetSubcategoriesForLedger,
+    dbGetSubcategoriesForLedger
 )
 
 def isLedgerId(db, user, ledgerId):

@@ -268,6 +268,24 @@ def dbGetCategory(db, user, ledgerId, categoryId):
         return MovementCategory(**categoryDict)
 
 
+def dbGetSubcategory(db, user, ledgerId, categoryId, subcategoryId):
+    """Retrieve a single movement subcategory by its key."""
+    subcategoryDict = dbRetrieveRecordByKey(
+        db,
+        'accounting_movement_subcategories',
+        {
+            'ledger_id': ledgerId,
+            'category_id': categoryId,
+            'subcategory_id': subcategoryId,
+        },
+        dbTablesDesc=dbSchema,
+    )
+    if subcategoryDict is None:
+        return None
+    else:
+        return MovementSubcategory(**subcategoryDict)
+
+
 def dbAddCategoryToLedger(db, user, ledger, newCategory):
     """Add a MovementCategory under a given ledger."""
     if newCategory.ledger_id == ledger.ledger_id:
@@ -325,3 +343,56 @@ def dbGetSubcategoriesForLedger(db, user, ledger, category):
             dbTablesDesc=dbSchema,
         )
     )
+
+
+def dbDeleteSubcategoryFromLedger(db, user, ledger, category, subcategory,
+                                  skipCommit=False):
+    dbDeleteRecordsByKey(
+        db,
+        'accounting_movement_subcategories',
+        {
+            'ledger_id': ledger.ledger_id,
+            'category_id': category.category_id,
+            'subcategory_id': subcategory.subcategory_id,
+        },
+        dbTablesDesc=dbSchema,
+    )
+    if not skipCommit:
+        db.commit()
+
+
+def dbDeleteCategoryFromLedger(db, user, ledger, category,
+                               skipCommit=False):
+    dbDeleteRecordsByKey(
+        db,
+        'accounting_movement_categories',
+        {
+            'ledger_id': ledger.ledger_id,
+            'category_id': category.category_id,
+        },
+        dbTablesDesc=dbSchema,
+    )
+    if not skipCommit:
+        db.commit()
+
+
+def dbEraseCategoryFromLedger(db, user, ledger, category):
+    """Clear a whole category from a ledger setup, incl. subcats."""
+    subCats = dbGetSubcategoriesForLedger(db, user, ledger, category)
+    for sCat in subCats:
+        dbDeleteSubcategoryFromLedger(
+            db,
+            user,
+            ledger,
+            category,
+            sCat,
+            skipCommit=True,
+        )
+    dbDeleteCategoryFromLedger(
+        db,
+        user,
+        ledger,
+        category,
+        skipCommit=True,
+    )
+    db.commit()
