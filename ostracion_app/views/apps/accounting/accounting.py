@@ -90,6 +90,8 @@ from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbAddSubcategoryToLedger,
     dbEraseCategoryFromLedger,
     dbDeleteSubcategoryFromLedger,
+    dbMoveCategoryInLedger,
+    dbMoveSubcategoryInLedger,
 )
 
 from ostracion_app.app_main import app
@@ -273,7 +275,7 @@ def accountingEditLedgerView(ledgerId):
                 ledgerform=form,
                 #
                 ledger=ledger,
-                # These two (the first) suppresses the actor section of the form
+                # These two (the first) suppress the actor section of the form
                 actorform=None,
                 actors=[],
                 #
@@ -281,7 +283,10 @@ def accountingEditLedgerView(ledgerId):
                     'accounting_main_color']['value'],
                 admin_bgcolor=g.settings['color']['app_colors'][
                     'accounting_admin_color']['value'],
-                formaction=url_for('accountingEditLedgerView', ledgerId=ledgerId),
+                formaction=url_for(
+                    'accountingEditLedgerView',
+                    ledgerId=ledgerId,
+                ),
                 lockLedgerId=True,
                 backToUrl=url_for('accountingIndexView'),
                 **pageFeatures,
@@ -754,6 +759,60 @@ def accountingLedgerRemoveSubcategoryView(ledgerId, categoryId, subcategoryId):
                                    subcategoryId)
     if ledger is not None and category is not None and subcategory is not None:
         dbDeleteSubcategoryFromLedger(db, user, ledger, category, subcategory)
+        return redirect(url_for(
+            'accountingLedgerCategoriesView',
+            ledgerId=ledger.ledger_id,
+        ))
+    else:
+        raise OstracionError('Ledger/category/subcategory not found')
+
+
+@app.route((
+            '/apps/accounting/ledgercategories/movecategory/'
+            '<ledgerId>/<categoryId>/<direction>'
+          ))
+@userRoleRequired({('system', 'admin')})
+def accountingLedgerMoveCategoryView(ledgerId, categoryId, direction):
+    """Reshuffle of a category in a ledger setup."""
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'accountingLedgerCategoriesView',
+        ledgerId=ledgerId,
+    )
+    ledger = dbGetLedger(db, user, ledgerId)
+    category = dbGetCategory(db, user, ledgerId, categoryId)
+    if ledger is not None and category is not None:
+        dbMoveCategoryInLedger(db, user, ledger, category, direction)
+        return redirect(url_for(
+            'accountingLedgerCategoriesView',
+            ledgerId=ledger.ledger_id,
+        ))
+    else:
+        raise OstracionError('Ledger/category not found')
+
+
+@app.route((
+            '/apps/accounting/ledgercategories/movesubcategory/'
+            '<ledgerId>/<categoryId>/<subcategoryId>/<direction>'
+          ))
+@userRoleRequired({('system', 'admin')})
+def accountingLedgerMoveSubcategoryView(ledgerId, categoryId, subcategoryId,
+                                        direction):
+    """Reshuffle of a subcategory in a ledger setup."""
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for(
+        'accountingLedgerCategoriesView',
+        ledgerId=ledgerId,
+    )
+    ledger = dbGetLedger(db, user, ledgerId)
+    category = dbGetCategory(db, user, ledgerId, categoryId)
+    subcategory = dbGetSubcategory(db, user, ledgerId, categoryId,
+                                   subcategoryId)
+    if ledger is not None and category is not None and subcategory is not None:
+        dbMoveSubcategoryInLedger(db, user, ledger, category, subcategory,
+                                  direction)
         return redirect(url_for(
             'accountingLedgerCategoriesView',
             ledgerId=ledger.ledger_id,

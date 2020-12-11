@@ -12,6 +12,7 @@ from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetSubcategoriesForLedger
 )
 
+
 def isLedgerId(db, user, ledgerId):
     """
         Check if the ledgerId corresponds to a ledger
@@ -30,15 +31,18 @@ def extractLedgerCategoryTree(db, user, ledger):
         [
             {
                 'category': cat,
-                'subcategories': [
-                    subcat
-                    for subcat in dbGetSubcategoriesForLedger(
-                        db,
-                        user,
-                        ledger,
-                        cat,
-                    )
-                ],
+                'subcategories': sorted(
+                    [
+                        subcat
+                        for subcat in dbGetSubcategoriesForLedger(
+                            db,
+                            user,
+                            ledger,
+                            cat,
+                        )
+                    ],
+                    key=lambda subcat: subcat.sort_index,
+                )
             }
             for cat in dbGetCategoriesForLedger(db, user, ledger)
         ],

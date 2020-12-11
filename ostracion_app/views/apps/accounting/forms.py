@@ -20,6 +20,7 @@ from ostracion_app.utilities.forms.validators.validators import (
 
 from ostracion_app.views.apps.accounting.validators import ProhibitedIDChoice
 
+
 class AccountingBaseLedgerForm(FlaskForm):
     """Basic ledger properties form"""
     ledgerId = StringField(
@@ -68,4 +69,5 @@ class AccountingLedgerSubcategoryForm(FlaskForm):
     submit = SubmitField('Add')
 
     def fillCategoryChoices(self, choices):
-        self.categoryId.choices = [('', 'Choose category...')] + [(cId, cId) for cId in choices]
+        self.categoryId.choices = ([('', 'Choose category...')]
+                                   + [(cId, cId) for cId in choices])

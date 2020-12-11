@@ -38,7 +38,7 @@
                                         <small class="form-text text-muted">{{ error }}</small>
                                       {% endfor %}
                                     </td>
-                                    <td>
+                                    <td style="font-family: monospace;">
                                     </td>
                                     <td>
                                       {{ categoryform.description(class_="form-control",placeholder="Description",tabindex=2) }}
@@ -61,7 +61,7 @@
                                         <small class="form-text text-muted">{{ error }}</small>
                                       {% endfor %}
                                     </td>
-                                    <td>
+                                    <td style="font-family: monospace;">
                                       {{ subcategoryform.subcategoryId(class_="form-control",placeholder="New subcategory ID",tabindex=5) }}
                                       {% for error in subcategoryform.subcategoryId.errors %}
                                         <small class="form-text text-muted">{{ error }}</small>
@@ -89,10 +89,10 @@
                                     <i>{{ catObj.category.description }}</i>
                                   </td>
                                   <td>
-                                    <a href="#" class="btn btn-success btn-md"
+                                    <a href="{{ url_for('accountingLedgerMoveCategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id, direction='up') }}" class="btn btn-md {% if loop.first -%}disabled btn-secondary{%- else -%}btn-success{%- endif %}"
                                       style="font-family: 'Zapf Dingbats';"
                                       data-toggle="tooltip" title="Move up">&#9652;</a>
-                                    <a href="#" class="btn btn-success btn-md"
+                                    <a href="{{ url_for('accountingLedgerMoveCategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id, direction='down') }}" class="btn {% if loop.last -%}disabled btn-secondary{%- else -%}btn-success{%- endif %}"
                                       style="font-family: 'Zapf Dingbats';"
                                       data-toggle="tooltip" title="Move down">&#9662;</a>
                                     <a href="{{ url_for('accountingLedgerRemoveCategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id) }}" class="btn btn-danger btn-md" data-toggle="tooltip" title="Delete">
@@ -112,10 +112,10 @@
                                       <i>{{ subcat.description }}</i>
                                     </td>
                                     <td style="padding-top: 0.45rem; padding-bottom: 0.15rem; padding-left: 2rem;">
-                                      <a href="#" class="btn btn-success btn-sm"
+                                      <a href="{{ url_for('accountingLedgerMoveSubcategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id, subcategoryId=subcat.subcategory_id, direction='up') }}" class="btn btn-sm {% if loop.first -%}disabled btn-secondary{%- else -%}btn-success{%- endif %}"
                                         style="font-family: 'Zapf Dingbats';"
                                         data-toggle="tooltip" title="Move up">&#9652;</a>
-                                      <a href="#" class="btn btn-success btn-sm"
+                                      <a href="{{ url_for('accountingLedgerMoveSubcategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id, subcategoryId=subcat.subcategory_id, direction='down') }}" class="btn btn-sm {% if loop.last -%}disabled btn-secondary{%- else -%}btn-success{%- endif %}"
                                         style="font-family: 'Zapf Dingbats';"
                                         data-toggle="tooltip" title="Move down">&#9662;</a>
                                       <a href="{{ url_for('accountingLedgerRemoveSubcategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id, subcategoryId=subcat.subcategory_id) }}" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">

@@ -2,6 +2,10 @@
     Accounting-related database operations.
 """
 
+from ostracion_app.utilities.tools.dictTools import (
+    recursivelyMergeDictionaries
+)
+
 from ostracion_app.views.apps.accounting.models.Actor import Actor
 from ostracion_app.views.apps.accounting.models.\
     LedgerMovementContribution import LedgerMovementContribution
@@ -330,7 +334,9 @@ def dbAddSubcategoryToLedger(db, user, ledger, newSubcategory):
 
 
 def dbGetSubcategoriesForLedger(db, user, ledger, category):
-    """Give an iterable of MovementSubategory objects for a ledger/category."""
+    """
+        Give an iterable of MovementSubcategory objects for a ledger/category.
+    """
     return (
         MovementSubcategory(**l)
         for l in dbRetrieveRecordsByKey(
@@ -343,6 +349,41 @@ def dbGetSubcategoriesForLedger(db, user, ledger, category):
             dbTablesDesc=dbSchema,
         )
     )
+
+
+def updateCategoryInLedger(db, user, ledger, newCategory, skipCommit=False):
+    """Update a ledger movement category."""
+    if ledger.ledger_id != newCategory.ledger_id:
+        raise OstracionError('Ledger mismatch')
+    else:
+        dbUpdateRecordOnTable(
+            db,
+            'accounting_movement_categories',
+            newCategory.asDict(),
+            dbTablesDesc=dbSchema,
+        )
+        if not skipCommit:
+            db.commit()
+
+
+def updateSubcategoryInLedger(db, user, ledger, category, newSubcategory,
+                              skipCommit=False):
+    """Update a ledger movement subcategory."""
+    if ledger.ledger_id != category.ledger_id:
+        raise OstracionError('Ledger mismatch')
+    elif ledger.ledger_id != newSubcategory.ledger_id:
+        raise OstracionError('Ledger mismatch')
+    elif category.category_id != newSubcategory.category_id:
+        raise OstracionError('Category mismatch')
+    else:
+        dbUpdateRecordOnTable(
+            db,
+            'accounting_movement_subcategories',
+            newSubcategory.asDict(),
+            dbTablesDesc=dbSchema,
+        )
+        if not skipCommit:
+            db.commit()
 
 
 def dbDeleteSubcategoryFromLedger(db, user, ledger, category, subcategory,
@@ -396,3 +437,105 @@ def dbEraseCategoryFromLedger(db, user, ledger, category):
         skipCommit=True,
     )
     db.commit()
+
+
+def dbMoveCategoryInLedger(db, user, ledger, category, direction):
+    """
+        Move 'up'/'down' a category within a ledger by reshuffling the indices.
+    """
+    allCategories = sorted(
+        dbGetCategoriesForLedger(db, user, ledger),
+        key=lambda cat: cat.sort_index,
+    )
+    moveeIndices = [
+        catI
+        for catI, cat in enumerate(allCategories)
+        if cat.category_id == category.category_id
+    ]
+    if len(moveeIndices) > 0:
+        # the moving: reindexing map
+        moveeIndex = moveeIndices[0]
+        if direction == 'down':
+            if moveeIndex + 1 >= len(allCategories):
+                reMap = {}
+            else:
+                reMap = {
+                    moveeIndex: moveeIndex + 1,
+                    moveeIndex + 1: moveeIndex,
+                }
+        elif direction == 'up':
+            if moveeIndex <= 0:
+                reMap = {}
+            else:
+                reMap = {
+                    moveeIndex: moveeIndex - 1,
+                    moveeIndex - 1: moveeIndex,
+                }
+        else:
+            raise OstracionError('Unknown direction')
+        # the actual overwriting of sort_index
+        for catIndex, cat in enumerate(allCategories):
+            newIndex = reMap.get(catIndex, catIndex)
+            newCat = MovementCategory(**recursivelyMergeDictionaries(
+                {
+                    'sort_index': newIndex,
+                },
+                defaultMap=cat.asDict(),
+            ))
+            updateCategoryInLedger(db, user, ledger, newCat, skipCommit=True)
+        #
+        db.commit()
+    else:
+        raise OstracionError('Unknown category')
+
+
+def dbMoveSubcategoryInLedger(db, user, ledger, category, subcategory,
+                              direction):
+    """
+        Move 'up'/'down' a subcat. within a ledger by reshuffling the indices.
+    """
+    allSubcategories = sorted(
+        dbGetSubcategoriesForLedger(db, user, ledger, category),
+        key=lambda subcat: subcat.sort_index,
+    )
+    moveeIndices = [
+        scatI
+        for scatI, scat in enumerate(allSubcategories)
+        if scat.subcategory_id == subcategory.subcategory_id
+    ]
+    if len(moveeIndices) > 0:
+        # the moving: reindexing map
+        moveeIndex = moveeIndices[0]
+        if direction == 'down':
+            if moveeIndex + 1 >= len(allSubcategories):
+                reMap = {}
+            else:
+                reMap = {
+                    moveeIndex: moveeIndex + 1,
+                    moveeIndex + 1: moveeIndex,
+                }
+        elif direction == 'up':
+            if moveeIndex <= 0:
+                reMap = {}
+            else:
+                reMap = {
+                    moveeIndex: moveeIndex - 1,
+                    moveeIndex - 1: moveeIndex,
+                }
+        else:
+            raise OstracionError('Unknown direction')
+        # the actual overwriting of sort_index
+        for scatIndex, scat in enumerate(allSubcategories):
+            newIndex = reMap.get(scatIndex, scatIndex)
+            newSubcat = MovementSubcategory(**recursivelyMergeDictionaries(
+                {
+                    'sort_index': newIndex,
+                },
+                defaultMap=scat.asDict(),
+            ))
+            updateSubcategoryInLedger(db, user, ledger, category, newSubcat,
+                                      skipCommit=True)
+        #
+        db.commit()
+    else:
+        raise OstracionError('Unknown subcategory')
