@@ -82,8 +82,9 @@ Boxes of type 'real fs'
 Accumulated todos:
   - add removal of items from tables when erasing a user
   - getAllLedgers is for admins only: make getUserLedgers to handle ordinary view (which for admins covers all)
-  - in dbDeleteLedger, handle other tables related to this
+  - in dbDeleteLedger:
+      in the view, replace with an appropriate "confirm deletion op" icon, accountingDeleteLedgerView
   - in dbRemoveActor, handle other tables (or raise error whatever)
   - tooltip in in-table "add" button, how to?
   - filter ledger-user-choice with: those with the accounting app only
-  - how to deal with: user loses the 'accounting' app role, yet they are in some ledgers
+  - how to deal with: user loses the 'accounting' app role, yet they are in some ledgers?

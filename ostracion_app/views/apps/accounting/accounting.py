@@ -44,6 +44,10 @@ from ostracion_app.utilities.database.userTools import (
     dbGetUser,
 )
 
+from ostracion_app.utilities.database.settingsTools import (
+    makeSettingImageUrl,
+)
+
 from ostracion_app.views.apps.appsPageTreeDescriptor import appsPageDescriptor
 
 from ostracion_app.utilities.viewTools.pathTools import (
@@ -135,10 +139,7 @@ def accountingNewLedgerView():
     """Add a ledger. Uses the 'basic ledger properties' form."""
     user = g.user
     db = dbGetDatabase()
-    request._onErrorUrl = url_for(
-        'accountingIndexView',
-        lsPathString='',
-    )
+    request._onErrorUrl = url_for('accountingIndexView')
     #
     pageFeatures = prepareTaskPageFeatures(
         appsPageDescriptor,
@@ -212,10 +213,7 @@ def accountingEditLedgerView(ledgerId):
     """Edit an existing ledger's 'basic properties'."""
     user = g.user
     db = dbGetDatabase()
-    request._onErrorUrl = url_for(
-        'accountingIndexView',
-        lsPathString='',
-    )
+    request._onErrorUrl = url_for('accountingIndexView')
     #
     pageFeatures = prepareTaskPageFeatures(
         appsPageDescriptor,
@@ -294,22 +292,74 @@ def accountingEditLedgerView(ledgerId):
 
 
 @app.route('/apps/accounting/deleteledger/<ledgerId>')
+@app.route('/apps/accounting/deleteledger/<ledgerId>/<int:confirm>')
 @userRoleRequired({('system', 'admin')})
-def accountingDeleteLedgerView(ledgerId):
+def accountingDeleteLedgerView(ledgerId, confirm=0):
     """Delete a ledger."""
     user = g.user
     db = dbGetDatabase()
-    request._onErrorUrl = url_for(
-        'accountingIndexView',
-        lsPathString='',
-    )
+    request._onErrorUrl = url_for('accountingIndexView')
     ledger = dbGetLedger(db, user, ledgerId)
-    dbDeleteLedger(
-        db,
-        user,
-        ledger,
-    )
-    return redirect(url_for('accountingIndexView'))
+    if ledger is not None:
+        if confirm == 0:
+            pageFeatures = prepareTaskPageFeatures(
+                appsPageDescriptor,
+                ['root', 'accounting'],
+                g,
+                appendedItems=[
+                    {
+                        'kind': 'link',
+                        'link': False,
+                        'target': url_for(
+                            'accountingDeleteLedgerView',
+                            ledgerId=ledgerId,
+                        ),
+                        'name': 'Delete ledger',
+                    }
+                ],
+                overrides={
+                    'iconUrl': makeSettingImageUrl(
+                        g,
+                        'user_images',
+                        'delete_account',
+                    ),
+                    'pageTitle': None,
+                    'pageSubtitle': None,
+                }
+            )
+            return render_template(
+                'confirmoperation.html',
+                contents={},
+                user=user,
+                confirmation={
+                    'heading': ('Warning: this will irreversibly delete '
+                                'ledger "%s", its configuration and all '
+                                'movements registered therein. It is a '
+                                'destructive operation: there is no way back'
+                               ) % ledger.name,
+                    'forwardToUrl': url_for(
+                        'accountingDeleteLedgerView',
+                        ledgerId=ledgerId,
+                        confirm=1,
+                    ),
+                    'backToUrl': url_for('accountingIndexView'),
+                },
+                **pageFeatures,
+            )
+        else:
+            dbDeleteLedger(
+                db,
+                user,
+                ledger,
+            )
+            flashMessage(
+                'Success',
+                'Success',
+                'Ledger "%s" successfully deleted' % ledger.name,
+            )
+            return redirect(url_for('accountingIndexView'))
+    else:
+        raise OstracionError('Ledger not found')
 
 
 @app.route('/apps/accounting/ledgerusers/<ledgerId>')
@@ -317,10 +367,7 @@ def accountingDeleteLedgerView(ledgerId):
 def accountingLedgerUsersView(ledgerId):
     user = g.user
     db = dbGetDatabase()
-    request._onErrorUrl = url_for(
-        'accountingIndexView',
-        lsPathString='',
-    )
+    request._onErrorUrl = url_for('accountingIndexView')
     #
     pageFeatures = prepareTaskPageFeatures(
         appsPageDescriptor,
@@ -436,10 +483,7 @@ def accountingLedgerActorsView(ledgerId):
     """Actors configured for a ledger."""
     user = g.user
     db = dbGetDatabase()
-    request._onErrorUrl = url_for(
-        'accountingIndexView',
-        lsPathString='',
-    )
+    request._onErrorUrl = url_for('accountingIndexView')
     #
     pageFeatures = prepareTaskPageFeatures(
         appsPageDescriptor,
@@ -502,10 +546,7 @@ def accountingRemoveActorView(ledgerId, actorId):
     """Remove an actor from a ledger."""
     user = g.user
     db = dbGetDatabase()
-    request._onErrorUrl = url_for(
-        'accountingIndexView',
-        lsPathString='',
-    )
+    request._onErrorUrl = url_for('accountingIndexView')
     #
     ledger = dbGetLedger(db, user, ledgerId)
     actor = dbGetActor(db, user, ledgerId, actorId)
@@ -532,10 +573,7 @@ def accountingLedgerCategoriesView(ledgerId):
     """
     user = g.user
     db = dbGetDatabase()
-    request._onErrorUrl = url_for(
-        'accountingIndexView',
-        lsPathString='',
-    )
+    request._onErrorUrl = url_for('accountingIndexView')
     #
     pageFeatures = prepareAccountingCategoryViewFeatures(g, ledgerId)
     ledger = dbGetLedger(db, user, ledgerId)
@@ -608,11 +646,21 @@ def accountingLedgerAddCategoryView(ledgerId):
                 description=categoryform.description.data,
                 sort_index=newSortIndex,
             )
-            dbAddCategoryToLedger(db, user, ledger, newCategory)
-            return redirect(url_for(
-                'accountingLedgerCategoriesView',
-                ledgerId=ledgerId,
-            ))
+            if newCategory.category_id not in {
+                catObj['category'].category_id
+                for catObj in categoryTree
+            }:
+                dbAddCategoryToLedger(db, user, ledger, newCategory)
+                return redirect(url_for(
+                    'accountingLedgerCategoriesView',
+                    ledgerId=ledgerId,
+                ))
+            else:
+                flashMessage('Warning', 'Warning', 'Category exists already')
+                return redirect(url_for(
+                    'accountingLedgerCategoriesView',
+                    ledgerId=ledger.ledger_id,
+                ))
         else:
             return render_template(
                 'apps/accounting/ledgercategories.html',
@@ -688,11 +736,25 @@ def accountingLedgerAddSubcategoryView(ledgerId):
                     description=subcategoryform.description.data,
                     sort_index=newSortIndex,
                 )
-                dbAddSubcategoryToLedger(db, user, ledger, newSubcategory)
-                return redirect(url_for(
-                    'accountingLedgerCategoriesView',
-                    ledgerId=ledgerId,
-                ))
+                if newSubcategory.subcategory_id not in {
+                    subcat.subcategory_id
+                    for subcat in targetCategoryObj['subcategories']
+                }:
+                    dbAddSubcategoryToLedger(db, user, ledger, newSubcategory)
+                    return redirect(url_for(
+                        'accountingLedgerCategoriesView',
+                        ledgerId=ledgerId,
+                    ))
+                else:
+                    flashMessage(
+                        'Warning',
+                        'Warning',
+                        'Subcategory exists already',
+                    )
+                    return redirect(url_for(
+                        'accountingLedgerCategoriesView',
+                        ledgerId=ledger.ledger_id,
+                    ))
             else:
                 raise OstracionError('Unknown category')
         else:

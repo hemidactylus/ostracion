@@ -104,7 +104,22 @@ def dbDeleteLedger(db, user, ledger):
         foreign-key-related tables.
     """
     if userIsAdmin(db, user):
-        # TODO delete rows from other related tables
+        # delete rows from all related tables
+        for relatedTableName in [
+            'accounting_movement_contributions',
+            'accounting_ledger_movements',
+            'accounting_movement_subcategories',
+            'accounting_movement_categories',
+            'accounting_actors',
+            'accounting_ledgers_users',
+        ]:
+            dbDeleteRecordsByKey(
+                db,
+                relatedTableName,
+                {'ledger_id': ledger.ledger_id},
+                dbTablesDesc=dbSchema,
+            )
+        # delete the ledger itself
         dbDeleteRecordsByKey(
             db,
             'accounting_ledgers',

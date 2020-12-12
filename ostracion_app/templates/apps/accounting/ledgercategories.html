@@ -86,7 +86,7 @@
                                   </td>
                                   <td style="font-family: monospace;"></td>
                                   <td>
-                                    <i>{{ catObj.category.description }}</i>
+                                    <i>{% if catObj.category.description == '' %}[{{ catObj.category.category_id }}]{% else %}{{ catObj.category.description }}{% endif %}</i>
                                   </td>
                                   <td>
                                     <a href="{{ url_for('accountingLedgerMoveCategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id, direction='up') }}" class="btn btn-md {% if loop.first -%}disabled btn-secondary{%- else -%}btn-success{%- endif %}"
@@ -109,7 +109,7 @@
                                       {{ subcat.subcategory_id }}
                                     </td>
                                     <td style="padding-top: 0.45rem; padding-bottom: 0.15rem; padding-left: 2rem;">
-                                      <i>{{ subcat.description }}</i>
+                                      <i>{% if subcat.description == '' %}[{{ subcat.subcategory_id }}]{% else %}{{ subcat.description }}{% endif %}</i>
                                     </td>
                                     <td style="padding-top: 0.45rem; padding-bottom: 0.15rem; padding-left: 2rem;">
                                       <a href="{{ url_for('accountingLedgerMoveSubcategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id, subcategoryId=subcat.subcategory_id, direction='up') }}" class="btn btn-sm {% if loop.first -%}disabled btn-secondary{%- else -%}btn-success{%- endif %}"
