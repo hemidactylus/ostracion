@@ -7,7 +7,8 @@ from ostracion_app.utilities.models.DictableObject import DictableObject
 
 class Ledger(DictableObject):
     namedFields = ['ledger_id', 'name', 'description', 'creator_username',
-                   'creation_date']
+                   'creation_date',  'configuration_date', 'last_edit_date',
+                   'last_edit_username']
 
     def __init__(self, **kwargs):
         """ Standard 'DictableObject' init."""

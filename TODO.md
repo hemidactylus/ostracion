@@ -84,7 +84,9 @@ Accumulated todos:
   - getAllLedgers is for admins only: make getUserLedgers to handle ordinary view (which for admins covers all)
   - in dbDeleteLedger:
       in the view, replace with an appropriate "confirm deletion op" icon, accountingDeleteLedgerView
-  - in dbRemoveActor, handle other tables (or raise error whatever)
+  - in dbRemoveActor, make it impossible to remove actors if they have movement contribs
   - tooltip in in-table "add" button, how to?
   - filter ledger-user-choice with: those with the accounting app only
   - how to deal with: user loses the 'accounting' app role, yet they are in some ledgers?
+
+Remove the 'apps' task if it's empty (e.g. for anon user), as it is not there in the menu
