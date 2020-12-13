@@ -257,6 +257,9 @@ dbSchema = {
             ('configuration_date', 'TIMESTAMP'),
             ('last_edit_date', 'TIMESTAMP'),
             ('last_edit_username', 'TEXT'),
+            ('icon_file_id', 'TEXT'),
+            ('icon_file_id_username', 'TEXT'),
+            ('icon_mime_type', 'TEXT'),
         ],
         'foreign_keys': {
             'users': [

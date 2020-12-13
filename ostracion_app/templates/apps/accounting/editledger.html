@@ -51,29 +51,6 @@
 
               </form>
 
-              {% if actorform %}
-                <p>ACTOR FORM HERE</p>
-              {% endif %}
-
-              {% if handleUsers %}
-                <div>
-                  IN:
-                  {% for u in usersInLedger %}
-                    <a href="{{ url_for('accountingRemoveUserFromLedgerView', ledgerId=ledger.ledger_id, username=u.username) }}" class="badge badge-primary">
-                      {{ u.fullname }}
-                    </a>
-                  {% endfor %}
-                </div>
-                <div>
-                  OUT:
-                  {% for u in usersOutsideLedger %}
-                    <a href="{{ url_for('accountingAddUserToLedgerView', ledgerId=ledger.ledger_id, username=u.username) }}" class="badge badge-secondary">
-                      {{ u.fullname }}
-                    </a>
-                  {% endfor %}
-                </div>
-              {% endif %}
-
             </div>
         </div>
     </div>

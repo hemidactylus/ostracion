@@ -59,11 +59,6 @@
       V
     </a>
   {% endif %}
-  {% if actions.delete %}
-    <a href="{{ actions.delete }}" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
-      X
-    </a>
-  {% endif %}
 
   {% if actions.gallery_prev %}
     <a href="{{ actions.gallery_prev }}" class="btn btn-primary btn-sm"
@@ -96,6 +91,30 @@
       style="font-family: 'Zapf Dingbats';"
       data-toggle="tooltip" title="Next">
       &#9656;
+    </a>
+  {% endif %}
+
+  <!-- Accounting app actions -->
+  {% if actions.app_accounting_users %}
+    <a href="{{ actions.app_accounting_users }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Users">
+      U
+    </a>
+  {% endif %}
+  {% if actions.app_accounting_actors %}
+    <a href="{{ actions.app_accounting_actors }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Actors">
+      A
+    </a>
+  {% endif %}
+  {% if actions.app_accounting_categories %}
+    <a href="{{ actions.app_accounting_categories }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Categories">
+      C
+    </a>
+  {% endif %}
+  <!-- End of accounting app actions -->
+
+  {% if actions.delete %}
+    <a href="{{ actions.delete }}" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
+      X
     </a>
   {% endif %}
 

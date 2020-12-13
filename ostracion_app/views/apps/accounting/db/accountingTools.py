@@ -26,7 +26,10 @@ from ostracion_app.utilities.exceptions.exceptions import (
     OstracionError,
 )
 
-from ostracion_app.utilities.database.permissions import userIsAdmin
+from ostracion_app.utilities.database.permissions import (
+    userHasRole,
+    userIsAdmin,
+)
 
 from ostracion_app.utilities.database.userTools import dbGetUser
 
@@ -83,6 +86,18 @@ def dbUpdateLedger(db, user, newLedger):
         raise OstracionError('Insufficient permissions')
 
 
+def userCanSeeLedger(db, user, ledgerId):
+    return dbRetrieveRecordByKey(
+        db,
+        'accounting_ledgers_users',
+        {
+            'ledger_id': ledgerId,
+            'username': user.username,
+        },
+        dbTablesDesc=dbSchema,
+    ) is not None
+
+
 def dbGetAllLedgers(db, user):
     """Get an iterable listing of all existing ledgers."""
     if userIsAdmin(db, user):
@@ -95,7 +110,18 @@ def dbGetAllLedgers(db, user):
             )
         )
     else:
-        raise OstracionError('Insufficient permissions')
+        if userHasRole(db, user, 'app', 'accounting'):
+            return (
+                Ledger(**l)
+                for l in dbRetrieveAllRecords(
+                    db,
+                    'accounting_ledgers',
+                    dbTablesDesc=dbSchema,
+                )
+                if userCanSeeLedger(db, user, l['ledger_id'])
+            )
+        else:
+            raise OstracionError('Insufficient permissions')
 
 
 def dbDeleteLedger(db, user, ledger):

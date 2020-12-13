@@ -74,6 +74,8 @@ from ostracion_app.views.apps.accounting.accountingUtils import (
     isLedgerId,
     extractLedgerCategoryTree,
     prepareAccountingCategoryViewFeatures,
+    prepareLedgerActions,
+    prepareLedgerInfo,
 )
 from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetLedger,
@@ -119,15 +121,24 @@ def accountingIndexView():
         g,
     )
     #
-    ledgers = dbGetAllLedgers(db, user)
+    ledgers = [
+        {
+            'ledger': ledger,
+            # 'path': boxPath + [file.name],
+            # 'nice_size': formatBytesSize(file.size),
+            'info': prepareLedgerInfo(db, ledger),
+            'actions': prepareLedgerActions(
+                db,
+                ledger,
+                user,
+            ),
+        }
+        for ledger in dbGetAllLedgers(db, user)
+    ]
     #
     return render_template(
         'apps/accounting/index.html',
         user=user,
-        bgcolor=g.settings['color']['app_colors'][
-            'accounting_main_color']['value'],
-        admin_bgcolor=g.settings['color']['app_colors'][
-            'accounting_admin_color']['value'],
         ledgers=ledgers,
         **pageFeatures,
     )
@@ -167,10 +178,6 @@ def accountingNewLedgerView():
                 # This prevents the add/remove-users part
                 handleUsers=False,
                 #
-                bgcolor=g.settings['color']['app_colors'][
-                    'accounting_main_color']['value'],
-                admin_bgcolor=g.settings['color']['app_colors'][
-                    'accounting_admin_color']['value'],
                 formaction=url_for('accountingNewLedgerView'),
                 backToUrl=url_for('accountingIndexView'),
                 **pageFeatures,
@@ -183,6 +190,12 @@ def accountingNewLedgerView():
                 description=form.description.data,
                 creator_username=user.username,
                 creation_date=datetime.datetime.now(),
+                configuration_date=datetime.datetime.now(),
+                last_edit_date=datetime.datetime.now(),
+                last_edit_username=user.username,
+                icon_file_id='',
+                icon_file_id_username=user.username,
+                icon_mime_type='',
             )
             dbCreateLedger(db, user, newLedger)
             return redirect(url_for('accountingIndexView'))
@@ -197,10 +210,6 @@ def accountingNewLedgerView():
             # This prevents the add/remove-users part
             handleUsers=False,
             #
-            bgcolor=g.settings['color']['app_colors'][
-                'accounting_main_color']['value'],
-            admin_bgcolor=g.settings['color']['app_colors'][
-                'accounting_admin_color']['value'],
             formaction=url_for('accountingNewLedgerView'),
             backToUrl=url_for('accountingIndexView'),
             **pageFeatures,
@@ -256,6 +265,7 @@ def accountingEditLedgerView(ledgerId):
                         'ledger_id': form.ledgerId.data,
                         'name': form.name.data,
                         'description': form.description.data,
+                        'configuration_date': datetime.datetime.now(),
                     },
                     defaultMap=ledger.asDict(),
                 ))
@@ -277,10 +287,6 @@ def accountingEditLedgerView(ledgerId):
                 actorform=None,
                 actors=[],
                 #
-                bgcolor=g.settings['color']['app_colors'][
-                    'accounting_main_color']['value'],
-                admin_bgcolor=g.settings['color']['app_colors'][
-                    'accounting_admin_color']['value'],
                 formaction=url_for(
                     'accountingEditLedgerView',
                     ledgerId=ledgerId,
@@ -410,10 +416,6 @@ def accountingLedgerUsersView(ledgerId):
             usersInLedger=usersInLedger,
             usersOutsideLedger=usersOutsideLedger,
             #
-            bgcolor=g.settings['color']['app_colors'][
-                'accounting_main_color']['value'],
-            admin_bgcolor=g.settings['color']['app_colors'][
-                'accounting_admin_color']['value'],
             formaction=url_for('accountingEditLedgerView', ledgerId=ledgerId),
             lockLedgerId=True,
             backToUrl=url_for('accountingIndexView'),
@@ -437,6 +439,14 @@ def accountingAddUserToLedgerView(ledgerId, username):
     #
     if ledger is not None:
         if userToAdd is not None:
+            # record config editing
+            newLedger = Ledger(**recursivelyMergeDictionaries(
+                {
+                    'configuration_date': datetime.datetime.now(),
+                },
+                defaultMap=ledger.asDict(),
+            ))
+            dbUpdateLedger(db, user, newLedger)
             # actual adding
             dbAddUserToLedger(db, user, ledger, userToAdd)
             return redirect(url_for(
@@ -465,6 +475,14 @@ def accountingRemoveUserFromLedgerView(ledgerId, username):
     #
     if ledger is not None:
         if userToRemove is not None:
+            # record config editing
+            newLedger = Ledger(**recursivelyMergeDictionaries(
+                {
+                    'configuration_date': datetime.datetime.now(),
+                },
+                defaultMap=ledger.asDict(),
+            ))
+            dbUpdateLedger(db, user, newLedger)
             # actual adding
             dbRemoveUserFromLedger(db, user, ledger, userToRemove)
             return redirect(url_for(
@@ -505,6 +523,15 @@ def accountingLedgerActorsView(ledgerId):
     else:
         actorform = AccountingLedgerActorForm()
         if actorform.validate_on_submit():
+            # record config editing
+            newLedger = Ledger(**recursivelyMergeDictionaries(
+                {
+                    'configuration_date': datetime.datetime.now(),
+                },
+                defaultMap=ledger.asDict(),
+            ))
+            dbUpdateLedger(db, user, newLedger)
+            # adding the actor
             newActor = Actor(
                 ledger_id=ledger.ledger_id,
                 actor_id=actorform.actorId.data,
@@ -531,10 +558,6 @@ def accountingLedgerActorsView(ledgerId):
                 actorsInLedger=actorsInLedger,
                 actorform=actorform,
                 #
-                bgcolor=g.settings['color']['app_colors'][
-                    'accounting_main_color']['value'],
-                admin_bgcolor=g.settings['color']['app_colors'][
-                    'accounting_admin_color']['value'],
                 backToUrl=url_for('accountingIndexView'),
                 **pageFeatures,
             )
@@ -553,6 +576,15 @@ def accountingRemoveActorView(ledgerId, actorId):
     #
     if ledger is not None:
         if actor is not None:
+            # record config editing
+            newLedger = Ledger(**recursivelyMergeDictionaries(
+                {
+                    'configuration_date': datetime.datetime.now(),
+                },
+                defaultMap=ledger.asDict(),
+            ))
+            dbUpdateLedger(db, user, newLedger)
+            # removing the actor
             dbDeleteActor(db, user, ledger, actor)
             return redirect(url_for(
                 'accountingLedgerActorsView',
@@ -597,10 +629,6 @@ def accountingLedgerCategoriesView(ledgerId):
             categoryform=categoryform,
             subcategoryform=subcategoryform,
             #
-            bgcolor=g.settings['color']['app_colors'][
-                'accounting_main_color']['value'],
-            admin_bgcolor=g.settings['color']['app_colors'][
-                'accounting_admin_color']['value'],
             backToUrl=url_for('accountingIndexView'),
             **pageFeatures,
         )
@@ -650,6 +678,15 @@ def accountingLedgerAddCategoryView(ledgerId):
                 catObj['category'].category_id
                 for catObj in categoryTree
             }:
+                # record config editing
+                newLedger = Ledger(**recursivelyMergeDictionaries(
+                    {
+                        'configuration_date': datetime.datetime.now(),
+                    },
+                    defaultMap=ledger.asDict(),
+                ))
+                dbUpdateLedger(db, user, newLedger)
+                # add category
                 dbAddCategoryToLedger(db, user, ledger, newCategory)
                 return redirect(url_for(
                     'accountingLedgerCategoriesView',
@@ -672,10 +709,6 @@ def accountingLedgerAddCategoryView(ledgerId):
                 categoryform=categoryform,
                 subcategoryform=subcategoryform,
                 #
-                bgcolor=g.settings['color']['app_colors'][
-                    'accounting_main_color']['value'],
-                admin_bgcolor=g.settings['color']['app_colors'][
-                    'accounting_admin_color']['value'],
                 backToUrl=url_for('accountingIndexView'),
                 **pageFeatures,
             )
@@ -740,6 +773,15 @@ def accountingLedgerAddSubcategoryView(ledgerId):
                     subcat.subcategory_id
                     for subcat in targetCategoryObj['subcategories']
                 }:
+                    # record config editing
+                    newLedger = Ledger(**recursivelyMergeDictionaries(
+                        {
+                            'configuration_date': datetime.datetime.now(),
+                        },
+                        defaultMap=ledger.asDict(),
+                    ))
+                    dbUpdateLedger(db, user, newLedger)
+                    # add subcategory
                     dbAddSubcategoryToLedger(db, user, ledger, newSubcategory)
                     return redirect(url_for(
                         'accountingLedgerCategoriesView',
@@ -768,10 +810,6 @@ def accountingLedgerAddSubcategoryView(ledgerId):
                 categoryform=categoryform,
                 subcategoryform=subcategoryform,
                 #
-                bgcolor=g.settings['color']['app_colors'][
-                    'accounting_main_color']['value'],
-                admin_bgcolor=g.settings['color']['app_colors'][
-                    'accounting_admin_color']['value'],
                 backToUrl=url_for('accountingIndexView'),
                 **pageFeatures,
             )
@@ -793,6 +831,15 @@ def accountingLedgerRemoveCategoryView(ledgerId, categoryId):
     ledger = dbGetLedger(db, user, ledgerId)
     category = dbGetCategory(db, user, ledgerId, categoryId)
     if ledger is not None and category is not None:
+        # record config editing
+        newLedger = Ledger(**recursivelyMergeDictionaries(
+            {
+                'configuration_date': datetime.datetime.now(),
+            },
+            defaultMap=ledger.asDict(),
+        ))
+        dbUpdateLedger(db, user, newLedger)
+        # erase category
         dbEraseCategoryFromLedger(db, user, ledger, category)
         return redirect(url_for(
             'accountingLedgerCategoriesView',
@@ -820,6 +867,15 @@ def accountingLedgerRemoveSubcategoryView(ledgerId, categoryId, subcategoryId):
     subcategory = dbGetSubcategory(db, user, ledgerId, categoryId,
                                    subcategoryId)
     if ledger is not None and category is not None and subcategory is not None:
+        # record config editing
+        newLedger = Ledger(**recursivelyMergeDictionaries(
+            {
+                'configuration_date': datetime.datetime.now(),
+            },
+            defaultMap=ledger.asDict(),
+        ))
+        dbUpdateLedger(db, user, newLedger)
+        # erase subcategory
         dbDeleteSubcategoryFromLedger(db, user, ledger, category, subcategory)
         return redirect(url_for(
             'accountingLedgerCategoriesView',
@@ -845,6 +901,15 @@ def accountingLedgerMoveCategoryView(ledgerId, categoryId, direction):
     ledger = dbGetLedger(db, user, ledgerId)
     category = dbGetCategory(db, user, ledgerId, categoryId)
     if ledger is not None and category is not None:
+        # record config editing
+        newLedger = Ledger(**recursivelyMergeDictionaries(
+            {
+                'configuration_date': datetime.datetime.now(),
+            },
+            defaultMap=ledger.asDict(),
+        ))
+        dbUpdateLedger(db, user, newLedger)
+        # move category
         dbMoveCategoryInLedger(db, user, ledger, category, direction)
         return redirect(url_for(
             'accountingLedgerCategoriesView',
@@ -873,6 +938,15 @@ def accountingLedgerMoveSubcategoryView(ledgerId, categoryId, subcategoryId,
     subcategory = dbGetSubcategory(db, user, ledgerId, categoryId,
                                    subcategoryId)
     if ledger is not None and category is not None and subcategory is not None:
+        # record config editing
+        newLedger = Ledger(**recursivelyMergeDictionaries(
+            {
+                'configuration_date': datetime.datetime.now(),
+            },
+            defaultMap=ledger.asDict(),
+        ))
+        dbUpdateLedger(db, user, newLedger)
+        # move subcategory
         dbMoveSubcategoryInLedger(db, user, ledger, category, subcategory,
                                   direction)
         return redirect(url_for(
