@@ -256,9 +256,13 @@ dbSchema = {
             ('creation_date', 'TIMESTAMP'),
             ('configuration_date', 'TIMESTAMP'),
             ('last_edit_date', 'TIMESTAMP'),
-            ('last_edit_username', 'TIMESTAMP'),
+            ('last_edit_username', 'TEXT'),
         ],
-        'foreign_keys': {},
+        'foreign_keys': {
+            'users': [
+                [['last_edit_username'], ['username']],
+            ],        
+        },
     },
     'accounting_ledgers_users': {
         'primary_key': [
@@ -269,7 +273,6 @@ dbSchema = {
         'foreign_keys': {
             'users': [
                 [['username'], ['username']],
-                [['last_edit_username'], ['username']],
             ],
             'accounting_ledgers': [
                 [['ledger_id'], ['ledger_id']],
@@ -335,7 +338,7 @@ dbSchema = {
             ('date', 'TIMESTAMP'),
             ('description', 'TEXT'),
             ('last_edit_date', 'TIMESTAMP'),
-            ('last_edit_username', 'TIMESTAMP'),
+            ('last_edit_username', 'TEXT'),
         ],
         'indices': {
             'accounting_ledger_movements_date_index': [
