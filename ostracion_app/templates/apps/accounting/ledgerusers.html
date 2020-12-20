@@ -13,20 +13,20 @@
               ) }}
 
               <div>
-                IN:
-                {% for u in usersInLedger %}
-                  <a href="{{ url_for('accountingRemoveUserFromLedgerView', ledgerId=ledger.ledger_id, username=u.username) }}" class="badge badge-primary">
-                    {{ u.fullname }}
-                  </a>
-                {% endfor %}
-              </div>
-              <div>
-                OUT:
-                {% for u in usersOutsideLedger %}
-                  <a href="{{ url_for('accountingAddUserToLedgerView', ledgerId=ledger.ledger_id, username=u.username) }}" class="badge badge-secondary">
-                    {{ u.fullname }}
-                  </a>
-                {% endfor %}
+                Users ({{ usersInLedger | count }} currently in ledger):
+                <p>
+                  {% for u in richUserObjects %}
+                    {% if u.in_ledger %}
+                      <a href="{{ url_for('accountingRemoveUserFromLedgerView', ledgerId=ledger.ledger_id, username=u.user.username) }}" class="badge badge-primary" data-toggle="tooltip" title="Remove {{ u.user.username }}">
+                        {{ u.user.fullname }}
+                      </a>
+                    {% else %}
+                      <a href="{{ url_for('accountingAddUserToLedgerView', ledgerId=ledger.ledger_id, username=u.user.username) }}" class="badge badge-secondary" data-toggle="tooltip" title="Insert {{ u.user.username }}">
+                        {{ u.user.fullname }}
+                      </a>
+                    {% endif %}
+                  {% endfor %}
+                </p>
               </div>
 
               <a href="{{ url_for('accountingIndexView') }}" class="btn btn-success">Back to ledgers</a>

@@ -397,15 +397,18 @@ def accountingLedgerUsersView(ledgerId):
             dbGetUsersForLedger(db, user, ledger),
             key=lambda u: u.username.lower(),
         )
+        #
         usernamesInLedger = {u.username for u in usersInLedger}
-        usersOutsideLedger = sorted(
-            [
-                u
-                for u in dbGetAllUsers(db, user)
-                if u.username not in usernamesInLedger
-            ],
-            key=lambda u: u.username.lower(),
-        )
+        richUserObjects = [
+            {
+                'user': u,
+                'in_ledger': u.username in usernamesInLedger,
+            }
+            for u in sorted(
+                dbGetAllUsers(db, user),
+                key=lambda usr: usr.username.lower(),
+            )
+        ]
         #
         return render_template(
             'apps/accounting/ledgerusers.html',
@@ -414,7 +417,7 @@ def accountingLedgerUsersView(ledgerId):
             ledger=ledger,
             #
             usersInLedger=usersInLedger,
-            usersOutsideLedger=usersOutsideLedger,
+            richUserObjects=richUserObjects,
             #
             formaction=url_for('accountingEditLedgerView', ledgerId=ledgerId),
             lockLedgerId=True,
