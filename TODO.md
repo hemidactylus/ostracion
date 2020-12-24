@@ -82,17 +82,12 @@ Boxes of type 'real fs'
 Accumulated todos:
   - add removal of items from tables when erasing a user
   - getAllLedgers is for admins only: make getUserLedgers to handle ordinary view (which for admins covers all)
-  - in dbDeleteLedger:
-      in the view, replace with an appropriate "confirm deletion op" icon, accountingDeleteLedgerView
   - in dbRemoveActor, make it impossible to remove actors if they have movement contribs
   - tooltip in in-table "add" button, how to?
   - filter ledger-user-choice with: those with the accounting app only
-  - how to deal with: user loses the 'accounting' app role, yet they are in some ledgers?
+    - how to deal with: user loses the 'accounting' app role, yet they are in some ledgers?
   - handle last_edit_date / last_edit_username at each movement operation on ledger
-  - ledger customised thumbnail (as usual) + thumbnail_username etc (also in info)
-      * thumbnail-returning endpoint
-      * thumbnail-selection route(s)
-      * delete thumbnail file when ledger deleted/thb replaced
   - upon user deletion, what to do with the movements? and anonymize user contribs to ledger
+  - Actual images (=default images for ledger, add-ledger and so on)
 
-Remove the 'apps' task if it's empty (e.g. for anon user), as it is not there in the menu
+  - Remove the 'apps' task if it's empty (e.g. for anon user), as it is not there in the menu

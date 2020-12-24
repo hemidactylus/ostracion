@@ -156,10 +156,10 @@ def prepareLedgerInfo(db, user, ledger):
                               != ledger.last_edit_username)
                           else None),
             },
-            # {
-            #     'action': 'Icon',
-            #     'actor': getUserFullName(db, ledger.icon_file_id_username),
-            # },
+            {
+                'action': 'Icon',
+                'actor': getUserFullName(db, ledger.icon_file_id_username),
+            },
         )
         if infoItem['actor'] is not None
     ]
