@@ -20,7 +20,9 @@ from ostracion_app.utilities.database.permissions import (
 from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetLedger,
     dbGetCategoriesForLedger,
-    dbGetSubcategoriesForLedger
+    dbGetSubcategoriesForLedger,
+    dbGetUsersForLedger,
+    dbGetActorsForLedger,
 )
 
 
@@ -86,7 +88,7 @@ def prepareAccountingCategoryViewFeatures(g, ledgerId):
     return pageFeatures
 
 
-def prepareLedgerActions(db, ledger, user):
+def prepareLedgerActions(db, user, ledger):
     """
         Prepare the ledger-specific actions for display in cards.
     """
@@ -118,7 +120,22 @@ def prepareLedgerActions(db, ledger, user):
     return lActions
 
 
-def prepareLedgerInfo(db, ledger):
+def prepareLedgerSummary(db, user, ledger):
+    """Calculate a text summary of a ledger."""
+    namedFields = ['ledger_id', 'name', 'description', 'creator_username',
+                   'creation_date',  'configuration_date', 'last_edit_date',
+                   'last_edit_username', 'icon_file_id',
+                   'icon_file_id_username', 'icon_mime_type']
+    numActors = len(list(dbGetActorsForLedger(db, user, ledger)))
+    lastEditDate = ledger.last_edit_date
+    return '%i actor%s. Last edited: %s' % (
+        numActors,
+        '' if numActors == 1 else 's',
+        lastEditDate.strftime(' %b %d %H:%M'),
+    )
+
+
+def prepareLedgerInfo(db, user, ledger):
     """Calculate ledger information for display."""
     return [
         infoItem

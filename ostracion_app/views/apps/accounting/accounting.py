@@ -75,6 +75,7 @@ from ostracion_app.views.apps.accounting.accountingUtils import (
     extractLedgerCategoryTree,
     prepareAccountingCategoryViewFeatures,
     prepareLedgerActions,
+    prepareLedgerSummary,
     prepareLedgerInfo,
 )
 from ostracion_app.views.apps.accounting.db.accountingTools import (
@@ -126,12 +127,13 @@ def accountingIndexView():
             'ledger': ledger,
             # 'path': boxPath + [file.name],
             # 'nice_size': formatBytesSize(file.size),
-            'info': prepareLedgerInfo(db, ledger),
+            'info': prepareLedgerInfo(db, user, ledger),
             'actions': prepareLedgerActions(
                 db,
-                ledger,
                 user,
+                ledger,
             ),
+            'summary': prepareLedgerSummary(db, user, ledger),
         }
         for ledger in dbGetAllLedgers(db, user)
     ]
@@ -326,8 +328,8 @@ def accountingDeleteLedgerView(ledgerId, confirm=0):
                 overrides={
                     'iconUrl': makeSettingImageUrl(
                         g,
-                        'user_images',
-                        'delete_account',
+                        'custom_apps_images',
+                        'accounting_delete_ledger',
                     ),
                     'pageTitle': None,
                     'pageSubtitle': None,

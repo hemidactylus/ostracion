@@ -21,10 +21,10 @@
 
         {% for ledStructure in ledgers %}
           {{ cardtools.file_card(
-            title=ledStructure['ledger'].ledger_id,
-            titleit=ledStructure['ledger'].name,
+            title=ledStructure['ledger'].name,
+            titleit=ledStructure['ledger'].ledger_id,
             subtitle=ledStructure['ledger'].description,
-            subtitleit=None,
+            subtitleit=ledStructure['summary'],
             infratitlesmall=None,
             target_url='#',
             icon_url='',
