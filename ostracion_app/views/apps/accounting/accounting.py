@@ -142,6 +142,11 @@ def accountingIndexView():
         'apps/accounting/index.html',
         user=user,
         ledgers=ledgers,
+        newLedgerImageUrl=makeSettingImageUrl(
+            g,
+            'custom_apps_images',
+            'accounting_new_ledger',
+        ),
         **pageFeatures,
     )
 

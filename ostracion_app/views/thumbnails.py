@@ -251,7 +251,7 @@ def settingThumbnailView(dummyId, settingGroupId, settingId):
         'fs_directory']['value']
     setting = g.settings['image'][settingGroupId][settingId]['setting']
     if setting.klass != 'image':
-        raise RuntimeError('unexpected setting of non-image klass')
+        raise OstracionError('unexpected setting of non-image klass')
     else:
         if setting.value != '':
             filePhysicalPath, filePhysicalName = fileIdToSplitPath(
@@ -285,7 +285,6 @@ def unsetIconView(mode, itemPathString=''):
         )
     else:
         user = g.user
-        form = UploadIconForm()
         db = dbGetDatabase()
         #
         tempFileDirectory = g.settings['system']['system_directories'][
@@ -330,7 +329,7 @@ def unsetIconView(mode, itemPathString=''):
             else:
                 raise OstracionError('Insufficient permissions')
         else:
-            raise RuntimeError('Unknown mode encountered')
+            raise OstracionError('Unknown mode encountered')
         #
         storageSuccess = storeFileAsThumbnail(
             db,
@@ -370,7 +369,7 @@ def unsetIconView(mode, itemPathString=''):
                 'adminHomeSettingsImagesView',
             ))
         else:
-            raise RuntimeError('Unknown mode encountered')
+            raise OstracionError('Unknown mode encountered')
 
 
 @app.route('/seticon/<mode>/<path:itemPathString>', methods=['GET', 'POST'])
@@ -531,7 +530,7 @@ def setIconView(mode, itemPathString=''):
             else:
                 raise OstracionError('Insufficient permissions')
         else:
-            raise RuntimeError('Unknown mode encountered')
+            raise OstracionError('Unknown mode encountered')
         #
         if form.validate_on_submit():
             #
@@ -573,7 +572,7 @@ def setIconView(mode, itemPathString=''):
                     'adminHomeSettingsImagesView',
                 ))
             else:
-                raise RuntimeError('Unknown mode encountered')
+                raise OstracionError('Unknown mode encountered')
         else:
             #
             titleMap = {

@@ -769,6 +769,21 @@ initialDbValues = {
                 'ordering':         20,
             },
             {
+                'id':               'accounting_new_ledger',
+                'klass':            'image',
+                'type':             'image',
+                'value':            '',
+                'title':            'Accounting, new ledger',
+                'description':      'Icon for "new ledger: in app "Accounting"',
+                'default_value':    'accounting_new_ledger.png',
+                'default_icon_mime_type':   'image/png',
+                'metadata':         '{"thumbnailFormat":"thumbnail"}',
+                'group_id':         'custom_apps_images',
+                'group_title':      'Apps image settings',
+                'group_ordering':   40,
+                'ordering':         25,
+            },
+            {
                 'id':               'accounting_delete_ledger',
                 'klass':            'image',
                 'type':             'image',
@@ -781,7 +796,7 @@ initialDbValues = {
                 'group_id':         'custom_apps_images',
                 'group_title':      'Apps image settings',
                 'group_ordering':   40,
-                'ordering':         25,
+                'ordering':         30,
             },
             #
             {
