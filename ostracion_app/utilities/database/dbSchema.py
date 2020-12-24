@@ -264,7 +264,7 @@ dbSchema = {
         'foreign_keys': {
             'users': [
                 [['last_edit_username'], ['username']],
-            ],        
+            ],
         },
     },
     'accounting_ledgers_users': {

@@ -345,7 +345,8 @@ def accountingDeleteLedgerView(ledgerId, confirm=0):
                 contents={},
                 user=user,
                 confirmation={
-                    'heading': ('Warning: this will irreversibly delete '
+                    'heading': (
+                                'Warning: this will irreversibly delete '
                                 'ledger "%s", its configuration and all '
                                 'movements registered therein. It is a '
                                 'destructive operation: there is no way back'

@@ -72,7 +72,7 @@ def dbCreateLedger(db, user, newLedger):
         raise OstracionError('Insufficient permissions')
 
 
-def dbUpdateLedger(db, user, newLedger):
+def dbUpdateLedger(db, user, newLedger, skipCommit=False):
     """Update an existing ledger row."""
     if userIsAdmin(db, user):
         dbUpdateRecordOnTable(
@@ -81,7 +81,8 @@ def dbUpdateLedger(db, user, newLedger):
             newLedger.asDict(),
             dbTablesDesc=dbSchema,
         )
-        db.commit()
+        if not skipCommit:
+            db.commit()
     else:
         raise OstracionError('Insufficient permissions')
 

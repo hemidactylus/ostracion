@@ -89,6 +89,11 @@ from ostracion_app.views.viewTools.adminPageTreeDescriptor import (
     adminPageDescriptor,
 )
 
+# App-related import to handle set-icon flows
+from ostracion_app.views.apps.appRegisteredPlugins import (
+    appsSetIconModes,
+)
+
 
 @app.route('/favicon.ico')
 def faviconView():
@@ -329,7 +334,18 @@ def unsetIconView(mode, itemPathString=''):
             else:
                 raise OstracionError('Insufficient permissions')
         else:
-            raise OstracionError('Unknown mode encountered')
+            # the 'unknown' mode may fall into the app-related modes
+            # or be really unknown:
+            if mode in appsSetIconModes:
+                thisItem = appsSetIconModes[mode]['extractors']['thisItemer'](
+                    db,
+                    g,
+                    user,
+                    itemPathString,
+                )
+                parentBox = None
+            else:
+                raise OstracionError('Unknown mode encountered')
         #
         storageSuccess = storeFileAsThumbnail(
             db,
@@ -369,7 +385,18 @@ def unsetIconView(mode, itemPathString=''):
                 'adminHomeSettingsImagesView',
             ))
         else:
-            raise OstracionError('Unknown mode encountered')
+            # the 'unknown' mode may fall into the app-related modes
+            # or be really unknown:
+            if mode in appsSetIconModes:
+                return redirect(
+                    appsSetIconModes[mode]['pages']['endOfFlowPager'](
+                        db,
+                        user,
+                        thisItem,
+                    )
+                )
+            else:
+                raise OstracionError('Unknown mode encountered')
 
 
 @app.route('/seticon/<mode>/<path:itemPathString>', methods=['GET', 'POST'])
@@ -409,6 +436,11 @@ def setIconView(mode, itemPathString=''):
                         'name': 'Icon',
                     }],
                 ),
+                'iconUrl': url_for(
+                    'boxThumbnailView',
+                    dummyId=thisItem.icon_file_id + '_',
+                    boxPathString='/'.join(boxPath[1:]),
+                ),
             }
         elif mode == 'f':
             fullPath = splitPathString(itemPathString)
@@ -435,6 +467,11 @@ def setIconView(mode, itemPathString=''):
                             'name': 'Icon',
                         }
                     ],
+                ),
+                'iconUrl': url_for(
+                    'fileThumbnailView',
+                    dummyId=thisItem.icon_file_id + '_',
+                    fsPathString='/'.join(boxPath[1:] + [thisItem.name]),
                 ),
             }
         elif mode == 'l':
@@ -463,8 +500,16 @@ def setIconView(mode, itemPathString=''):
                         }
                     ],
                 ),
+                'iconUrl': url_for(
+                    'linkThumbnailView',
+                    dummyId=thisItem.icon_file_id + '_',
+                    fsPathString='/'.join(boxPath[1:] + [thisItem.name]),
+                ),
             }
         elif mode == 'u':
+            thisItem = user
+            itemName = thisItem.getName()
+            parentBox = None
             pageFeatures = prepareTaskPageFeatures(
                 userProfilePageDescriptor,
                 ['root', 'icon'],
@@ -472,13 +517,20 @@ def setIconView(mode, itemPathString=''):
                 overrides={
                     'pageTitle': None,
                     'pageSubtitle': None,
-                    'iconUrl': None,
+                    'iconUrl': url_for(
+                        'userThumbnailView',
+                        dummyId='%s_' % thisItem.icon_file_id,
+                        username=thisItem.username,
+                    ),
                 },
             )
-            thisItem = user
-            itemName = thisItem.getName()
-            parentBox = None
         elif mode == 'au':
+            if userIsAdmin(db, user):
+                thisItem = dbGetUser(db, itemPathString)
+                itemName = thisItem.getName()
+                parentBox = None
+            else:
+                raise OstracionError('Insufficient permissions')
             pageFeatures = prepareTaskPageFeatures(
                 adminPageDescriptor,
                 ['root', 'users'],
@@ -494,16 +546,21 @@ def setIconView(mode, itemPathString=''):
                 overrides={
                     'pageTitle': None,
                     'pageSubtitle': None,
-                    'iconUrl': None,
+                    'iconUrl': url_for(
+                        'userThumbnailView',
+                        dummyId='%s_' % thisItem.icon_file_id,
+                        username=thisItem.username,
+                    ),
                 },
             )
+        elif mode == 's':
             if userIsAdmin(db, user):
-                thisItem = dbGetUser(db, itemPathString)
-                itemName = thisItem.getName()
+                settingGroupId, settingId = itemPathString.split('/')
+                thisItem = g.settings['image'][settingGroupId][settingId]
+                itemName = thisItem['setting'].getName()
                 parentBox = None
             else:
                 raise OstracionError('Insufficient permissions')
-        elif mode == 's':
             pageFeatures = prepareTaskPageFeatures(
                 adminPageDescriptor,
                 ['root', 'settings', 'images'],
@@ -519,18 +576,42 @@ def setIconView(mode, itemPathString=''):
                 overrides={
                     'pageTitle': None,
                     'pageSubtitle': None,
-                    'iconUrl': None,
+                    'iconUrl': makeSettingImageUrl(
+                        g,
+                        settingGroupId,
+                        settingId,
+                    ),
                 },
             )
-            if userIsAdmin(db, user):
-                settingGroupId, settingId = itemPathString.split('/')
-                thisItem = g.settings['image'][settingGroupId][settingId]
-                itemName = thisItem['setting'].getName()
-                parentBox = None
-            else:
-                raise OstracionError('Insufficient permissions')
         else:
-            raise OstracionError('Unknown mode encountered')
+            # the 'unknown' mode may fall into the app-related modes
+            # or be really unknown:
+            if mode in appsSetIconModes:
+                thisItem = appsSetIconModes[mode]['extractors']['thisItemer'](
+                    db,
+                    g,
+                    user,
+                    itemPathString,
+                )
+                itemName = appsSetIconModes[mode]['extractors']['itemNamer'](
+                    db,
+                    g,
+                    user,
+                    thisItem,
+                    itemPathString,
+                )
+                parentBox = None
+                #
+                pageFeatures = appsSetIconModes[mode]['extractors'][
+                        'pageFeaturer'](
+                    db,
+                    g,
+                    user,
+                    thisItem,
+                    itemPathString,
+                )
+            else:
+                raise OstracionError('Unknown mode encountered')
         #
         if form.validate_on_submit():
             #
@@ -572,25 +653,46 @@ def setIconView(mode, itemPathString=''):
                     'adminHomeSettingsImagesView',
                 ))
             else:
-                raise OstracionError('Unknown mode encountered')
+                if mode in appsSetIconModes:
+                    return redirect(
+                        appsSetIconModes[mode]['pages']['endOfFlowPager'](
+                            db,
+                            user,
+                            thisItem,
+                        )
+                    )
+                else:
+                    raise OstracionError('Unknown mode encountered')
         else:
             #
-            titleMap = {
-                'f': 'Set File Icon',
-                'l': 'Set Link Icon',
-                'b': 'Set Box Icon',
-                'u': 'Set User Icon',
-                'au': 'Set User Icon (as admin)',
-                's': 'Set Application Image',
-            }
-            modeNameMap = {
-                'f': 'for file',
-                'l': 'for link',
-                'b': 'for box',
-                'u': 'for user',
-                'au': '(as admin) for user',
-                's': 'for setting',
-            }
+            titleMap = recursivelyMergeDictionaries(
+                {
+                    appMode: appValue['texts']['formTitle']
+                    for appMode, appValue in appsSetIconModes.items()
+                },
+                defaultMap={
+                    'f': 'Set File Icon',
+                    'l': 'Set Link Icon',
+                    'b': 'Set Box Icon',
+                    'u': 'Set User Icon',
+                    'au': 'Set User Icon (as admin)',
+                    's': 'Set Application Image',
+                },
+            )
+            modeNameMap = recursivelyMergeDictionaries(
+                {
+                    appMode: appValue['texts']['formModeName']
+                    for appMode, appValue in appsSetIconModes.items()
+                },
+                defaultMap={
+                    'f': 'for file',
+                    'l': 'for link',
+                    'b': 'for box',
+                    'u': 'for user',
+                    'au': '(as admin) for user',
+                    's': 'for setting',
+                },
+            )
             finalPageFeatures = recursivelyMergeDictionaries(
                 {
                     'pageTitle': titleMap[mode],
@@ -601,42 +703,6 @@ def setIconView(mode, itemPathString=''):
                 },
                 defaultMap=pageFeatures,
             )
-            if mode == 'u':
-                finalPageFeatures['iconUrl'] = url_for(
-                    'userThumbnailView',
-                    dummyId='%s_' % thisItem.icon_file_id,
-                    username=thisItem.username,
-                )
-            elif mode == 'au':
-                finalPageFeatures['iconUrl'] = url_for(
-                    'userThumbnailView',
-                    dummyId='%s_' % thisItem.icon_file_id,
-                    username=thisItem.username,
-                )
-            elif mode == 's':
-                finalPageFeatures['iconUrl'] = makeSettingImageUrl(
-                    g,
-                    settingGroupId,
-                    settingId,
-                )
-            elif mode == 'b':
-                finalPageFeatures['iconUrl'] = url_for(
-                    'boxThumbnailView',
-                    dummyId=thisItem.icon_file_id + '_',
-                    boxPathString='/'.join(boxPath[1:]),
-                )
-            elif mode == 'f':
-                finalPageFeatures['iconUrl'] = url_for(
-                    'fileThumbnailView',
-                    dummyId=thisItem.icon_file_id + '_',
-                    fsPathString='/'.join(boxPath[1:] + [thisItem.name]),
-                )
-            elif mode == 'l':
-                finalPageFeatures['iconUrl'] = url_for(
-                    'linkThumbnailView',
-                    dummyId=thisItem.icon_file_id + '_',
-                    fsPathString='/'.join(boxPath[1:] + [thisItem.name]),
-                )
             #
             return render_template(
                 'uploadicon.html',

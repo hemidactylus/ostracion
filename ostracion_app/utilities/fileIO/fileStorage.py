@@ -55,6 +55,11 @@ from ostracion_app.utilities.fileIO.physical import (
 
 from ostracion_app.utilities.models.File import File
 
+# App-items handling import
+from ostracion_app.views.apps.appRegisteredPlugins import (
+    appsSetIconModes,
+)
+
 
 def saveAndAnalyseFilesInBox(db, files, parentBox, user, thumbnailFormat,
                              fileStorageDirectory,
@@ -259,7 +264,20 @@ def storeFileAsThumbnail(db, fileToSave, mode, thumbnailFormat, targetItem,
                 fileStorageDirectory=fileStorageDirectory
             )
         else:
-            raise NotImplementedError('Unhandled storeFileAsThumbnail mode')
+            if mode in appsSetIconModes:
+                fsDeleteQueue = appsSetIconModes[mode]['changers'][
+                        'thumbnailUpdater'](
+                    db,
+                    targetItem,
+                    thumbnailId,
+                    thbMimeType,
+                    user,
+                    fileStorageDirectory=fileStorageDirectory
+                )
+            else:
+                raise NotImplementedError(
+                    'Unhandled storeFileAsThumbnail mode'
+                )
         flushFsDeleteQueue(fsDeleteQueue)
     #
     return not failures

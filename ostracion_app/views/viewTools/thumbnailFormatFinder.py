@@ -5,6 +5,11 @@
 """
 
 
+from ostracion_app.views.apps.appRegisteredPlugins import (
+    appsSetIconModes,
+)
+
+
 def determineThumbnailFormatByModeAndTarget(db, mode, target):
     """ Helper function to get the 'thumbnail format'
         before resizing an image.
@@ -21,7 +26,13 @@ def determineThumbnailFormatByModeAndTarget(db, mode, target):
     elif mode == 's':
         return target['metadata']['thumbnailFormat']
     else:
-        raise NotImplementedError(
-            ('Unknown mode "%s" in '
-             'determineThumbnailFormatByModeAndTarget') % mode
-        )
+        if mode in appsSetIconModes:
+            return appsSetIconModes[mode]['extractors']['thumbnailModer'](
+                db,
+                target,
+            )
+        else:
+            raise NotImplementedError(
+                ('Unknown mode "%s" in '
+                 'determineThumbnailFormatByModeAndTarget') % mode
+            )

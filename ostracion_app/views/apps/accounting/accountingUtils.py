@@ -116,6 +116,11 @@ def prepareLedgerActions(db, user, ledger):
                 'accountingDeleteLedgerView',
                 ledgerId=ledger.ledger_id,
             )
+            lActions['icon'] = url_for(
+                'setIconView',
+                mode='accounting_ledger',
+                itemPathString=ledger.ledger_id,
+            )
     #
     return lActions
 
@@ -147,7 +152,8 @@ def prepareLedgerInfo(db, user, ledger):
             {
                 'action': 'Last edited',
                 'actor': (getUserFullName(db, ledger.last_edit_username)
-                          if ledger.creator_username != ledger.last_edit_username
+                          if (ledger.creator_username
+                              != ledger.last_edit_username)
                           else None),
             },
             # {

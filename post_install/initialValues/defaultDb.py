@@ -774,7 +774,8 @@ initialDbValues = {
                 'type':             'image',
                 'value':            '',
                 'title':            'Accounting, new ledger',
-                'description':      'Icon for "new ledger: in app "Accounting"',
+                'description':      ('Icon for "new ledger: in app '
+                                     '"Accounting"'),
                 'default_value':    'accounting_new_ledger.png',
                 'default_icon_mime_type':   'image/png',
                 'metadata':         '{"thumbnailFormat":"thumbnail"}',
@@ -789,7 +790,8 @@ initialDbValues = {
                 'type':             'image',
                 'value':            '',
                 'title':            'Accounting, delete ledger',
-                'description':      'Icon for "delete ledger: in app "Accounting"',
+                'description':      ('Icon for "delete ledger: in app '
+                                     '"Accounting"'),
                 'default_value':    'accounting_delete_ledger.png',
                 'default_icon_mime_type':   'image/png',
                 'metadata':         '{"thumbnailFormat":"thumbnail"}',
