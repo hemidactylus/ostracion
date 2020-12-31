@@ -54,7 +54,25 @@ def dbGetLedger(db, user, ledgerId):
         {'ledger_id': ledgerId},
         dbTablesDesc=dbSchema,
     )
-    return Ledger(**ledgerDict) if ledgerDict is not None else None
+    if ledgerDict is None:
+        return None
+    else:
+        # permission check
+        ledger = Ledger(**ledgerDict)
+        if userIsAdmin(db, user):
+            return ledger
+        else:
+            # is the user allowed to see this ledger?
+            ledgerUserDict = dbRetrieveRecordByKey(
+                db,
+                'accounting_ledgers_users',
+                {'ledger_id': ledgerId, 'username': user.username},
+                dbTablesDesc=dbSchema,
+            )
+            if ledgerUserDict is not None:
+                return ledger
+            else:
+                raise OstracionError('Insufficient permissions')
 
 
 def dbCreateLedger(db, user, newLedger):

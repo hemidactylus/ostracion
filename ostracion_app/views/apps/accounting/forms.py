@@ -71,3 +71,70 @@ class AccountingLedgerSubcategoryForm(FlaskForm):
     def fillCategoryChoices(self, choices):
         self.categoryId.choices = ([('', 'Choose category...')]
                                    + [(cId, cId) for cId in choices])
+
+
+def generateAccountingMovementForm(categoryTree, actors):
+    """ Generate a form for a movement in a particular accounting ledger."""
+
+    class _aForm(FlaskForm):
+        submit = SubmitField('+')
+        date = StringField('Date')
+        description = StringField('Description')
+        categoryId = SelectField(
+            'Category',
+            default='',
+            validators=[
+                ProhibitedIDChoice(
+                    message='Please choose one',
+                ),
+            ],
+            choices=(
+                [('', 'Choose category...')] + [
+                    (
+                        catO['category'].category_id,
+                        catO['category'].category_id,
+                    )
+                    for catO in categoryTree
+                ]
+            ),
+        )
+        subcategoryId = SelectField(
+            'Subcategory',
+            default='',
+            validators=[
+                ProhibitedIDChoice(
+                    message='Please choose one',
+                ),
+            ],
+            choices=(
+                [('', 'Choose subcategory...')] + [
+                    (
+                        '%s.%s' % (
+                            catO['category'].category_id,
+                            subcat.subcategory_id,
+                        ),
+                        subcat.subcategory_id,
+                    )
+                    for catO in categoryTree
+                    for subcat in catO['subcategories']
+                ]
+            ),
+        )
+    #
+    for actor in actors:
+        actorName = actor.name
+        actorPaidId = 'actorpaid_%s' % actor.actor_id
+        actorPropId = 'actorprop_%s' % actor.actor_id
+
+        paidField = StringField(
+            '%s (paid)' % actorName,
+            validators=[]
+        )
+        propField = StringField(
+            '%s (prop)' % actorName,
+            validators=[]
+        )
+        setattr(_aForm, actorPaidId, paidField)
+        setattr(_aForm, actorPropId, propField)
+
+    return _aForm()

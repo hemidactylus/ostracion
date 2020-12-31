@@ -89,5 +89,10 @@ Accumulated todos:
   - handle last_edit_date / last_edit_username at each movement operation on ledger
   - upon user deletion, what to do with the movements? and anonymize user contribs to ledger
   - Actual images (=default images for ledger, add-ledger and so on)
-
+  - native sqlite joins for movement/movcontribs
   - Remove the 'apps' task if it's empty (e.g. for anon user), as it is not there in the menu
+  - icons to "apps" in the menu
+
+  - in movement form, date is compulsory + its validator!
+  - and float + int validators
+  + js to adapt subcats / show the description

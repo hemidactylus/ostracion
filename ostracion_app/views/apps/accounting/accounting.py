@@ -59,6 +59,7 @@ from ostracion_app.views.apps.accounting.forms import (
     AccountingLedgerActorForm,
     AccountingLedgerCategoryForm,
     AccountingLedgerSubcategoryForm,
+    generateAccountingMovementForm,
 )
 
 from ostracion_app.views.apps.accounting.models.Ledger import Ledger
@@ -106,7 +107,7 @@ from ostracion_app.app_main import app
 
 @app.route('/apps/accounting/')
 @app.route('/apps/accounting/index')
-@userRoleRequired({('app', 'calendarmaker'), ('system', 'admin')})
+@userRoleRequired({('app', 'accounting'), ('system', 'admin')})
 def accountingIndexView():
     """Main accounting view."""
     user = g.user
@@ -179,11 +180,6 @@ def accountingNewLedgerView():
                 'apps/accounting/editledger.html',
                 user=user,
                 ledgerform=form,
-                # This suppresses the actor section of the form
-                actorform=None,
-                actors=[],
-                # This prevents the add/remove-users part
-                handleUsers=False,
                 #
                 formaction=url_for('accountingNewLedgerView'),
                 backToUrl=url_for('accountingIndexView'),
@@ -211,11 +207,6 @@ def accountingNewLedgerView():
             'apps/accounting/editledger.html',
             user=user,
             ledgerform=form,
-            # These two (the first) suppresses the actor section of the form
-            actorform=None,
-            actors=[],
-            # This prevents the add/remove-users part
-            handleUsers=False,
             #
             formaction=url_for('accountingNewLedgerView'),
             backToUrl=url_for('accountingIndexView'),
@@ -251,20 +242,6 @@ def accountingEditLedgerView(ledgerId):
     if ledger is None:
         raise OstracionError('Unknown ledger "%s"' % ledgerId)
     else:
-        usersInLedger = sorted(
-            dbGetUsersForLedger(db, user, ledger),
-            key=lambda u: u.username.lower(),
-        )
-        usernamesInLedger = {u.username for u in usersInLedger}
-        usersOutsideLedger = sorted(
-            [
-                u
-                for u in dbGetAllUsers(db, user)
-                if u.username not in usernamesInLedger
-            ],
-            key=lambda u: u.username.lower(),
-        )
-        #
         if form.validate_on_submit():
             if form.ledgerId.data == ledgerId:
                 newLedger = Ledger(**recursivelyMergeDictionaries(
@@ -288,12 +265,7 @@ def accountingEditLedgerView(ledgerId):
                 'apps/accounting/editledger.html',
                 user=user,
                 ledgerform=form,
-                #
                 ledger=ledger,
-                # These two (the first) suppress the actor section of the form
-                actorform=None,
-                actors=[],
-                #
                 formaction=url_for(
                     'accountingEditLedgerView',
                     ledgerId=ledgerId,
@@ -966,3 +938,61 @@ def accountingLedgerMoveSubcategoryView(ledgerId, categoryId, subcategoryId,
         ))
     else:
         raise OstracionError('Ledger/category/subcategory not found')
+
+
+@app.route('/apps/accounting/ledger/<ledgerId>')
+def accountingLedgerView(ledgerId):
+    """Ledger view, to act on it in various vays."""
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for('accountingIndexView')
+    ledger = dbGetLedger(db, user, ledgerId)
+    if ledger is not None:
+        #
+        categoryTree = extractLedgerCategoryTree(db, user, ledger)
+        actorsInLedger = sorted(
+            dbGetActorsForLedger(db, user, ledger),
+            key=lambda a: a.actor_id.lower(),
+        )
+        pageFeatures = prepareTaskPageFeatures(
+                appsPageDescriptor,
+                ['root', 'accounting'],
+                g,
+                appendedItems=[{
+                    'kind': 'link',
+                    'target': url_for(
+                        'accountingLedgerView',
+                        ledgerId=ledger.ledger_id,
+                    ),
+                    'name': 'Ledger "%s"' % ledger.name,
+                }],
+            )
+        #
+        addmovementform = generateAccountingMovementForm(
+            categoryTree,
+            actorsInLedger,
+        )
+        paidFormFieldMap = {
+            actor.actor_id: getattr(addmovementform,
+                                    'actorpaid_%s' % actor.actor_id)
+            for actor in actorsInLedger
+        }
+        propFormFieldMap = {
+            actor.actor_id: getattr(addmovementform,
+                                    'actorprop_%s' % actor.actor_id)
+            for actor in actorsInLedger
+        }
+        #
+        return render_template(
+            'apps/accounting/ledger.html',
+            user=user,
+            ledger=ledger,
+            actors=actorsInLedger,
+            numActors=len(actorsInLedger),
+            addmovementform=addmovementform,
+            paidFormFieldMap=paidFormFieldMap,
+            propFormFieldMap=propFormFieldMap,
+            **pageFeatures,
+        )
+    else:
+        raise OstracionError('Ledger not found')

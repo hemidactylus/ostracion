@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+      <div class="row">
+        <div class="col">
+
+            <div class="jumbotron" style="padding: 10px;">
+
+                <div class="row">
+                    <div class="col" style="max-width: 90px;">
+                        <img src="{{ url_for('appItemThumbnailView', mode='accounting_ledger', dummyId=ledger.icon_file_id+'_', itemId=ledger.ledger_id) }}" class="rounded" width="100%">
+                    </div>
+                    <div class="col">
+                        <h5>
+                            {{ ledger.name }}
+                            <i>({{ ledger.ledger_id }})</i>
+                        </h5>
+                        {% if ledger.description %}
+                            <p>
+                                {{ ledger.description }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    <div class="col">
+                        <div class="row">
+                            <div class="col">
+                                Dues: X, Y, Z
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <i>(as of: 2020-12-31)</i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        pagination
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col">
+
+                      <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="col-md-1">Date</th>
+                                <th class="col-md-2">Category</th>
+                                <th class="col-md-2">Subcategory</th>
+                                <th class="col-md-2">Paid</th>
+                                <th class="col-md-2">Due</th>
+                                <th class="col-md-2">Description</th>
+                                <th class="col-md-1">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            <form class="form-inline" method="post" name="addmovement" action="">
+                                {{ addmovementform.hidden_tag() }}
+                                <tr>
+                                  <td style="font-family: monospace;">
+                                    {{ addmovementform.date(class_="form-control",placeholder="YYYY/MM/DD",tabindex=1) }}
+                                    {% for error in addmovementform.date.errors %}
+                                      <small class="form-text text-muted">{{ error }}</small>
+                                    {% endfor %}
+                                  </td>
+                                  <td style="font-family: monospace;">
+                                    {{ addmovementform.categoryId(class_="form-control",tabindex=2) }}
+                                    {% for error in addmovementform.categoryId.errors %}
+                                      <small class="form-text text-muted">{{ error }}</small>
+                                    {% endfor %}
+                                  </td>
+                                  <td style="font-family: monospace;">
+                                    {{ addmovementform.subcategoryId(class_="form-control",tabindex=3) }}
+                                    {% for error in addmovementform.subcategoryId.errors %}
+                                      <small class="form-text text-muted">{{ error }}</small>
+                                    {% endfor %}
+                                  </td>
+
+                                  <td>
+                                        {% for actor in actors %}
+                                            <div class="row" style="width:90%;">
+                                                {{ paidFormFieldMap[actor.actor_id](class_="form-control form-control-sm",placeholder=actor.name, tabindex=3+loop.index) }}
+                                                {% for error in paidFormFieldMap[actor.actor_id].errors %}
+                                                  <small class="form-text text-muted">{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endfor %}
+                                  </td>
+                                  <td>
+                                        {% for actor in actors %}
+                                            <div class="row" style="width:90%;">
+                                                {{ propFormFieldMap[actor.actor_id](class_="form-control form-control-sm",placeholder=actor.name, tabindex=3+numActors+loop.index) }}
+                                                {% for error in propFormFieldMap[actor.actor_id].errors %}
+                                                  <small class="form-text text-muted">{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endfor %}
+                                  </td>
+
+                                  <td style="font-family: monospace;">
+                                    {{ addmovementform.description(class_="form-control",placeholder="description...",tabindex=2*numActors+4) }}
+                                    {% for error in addmovementform.description.errors %}
+                                      <small class="form-text text-muted">{{ error }}</small>
+                                    {% endfor %}
+                                  </td>
+                                  <td>
+                                    {{ addmovementform.submit(class_='btn btn-primary btn-md',style='margin-right: 25px;', tabindex=2*numActors+5, value="+") }}
+                                  </td>
+                                </tr>
+                            </form>
+
+                        </tbody>
+                      </table>
+
+                    </div>
+                </div>
+
+                <hr>
+                    <div class="col">
+                        pagination
+                    </div>
+
+            </div>
+
+        </div>
+      </div>
+
+{% endblock %}

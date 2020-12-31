@@ -26,7 +26,7 @@
             subtitle=ledStructure['ledger'].description,
             subtitleit=ledStructure['summary'],
             infratitlesmall=None,
-            target_url='#',
+            target_url=url_for('accountingLedgerView', ledgerId=ledStructure['ledger'].ledger_id),
             icon_url=url_for('appItemThumbnailView', mode='accounting_ledger', dummyId=ledStructure['ledger'].icon_file_id+'_', itemId=ledStructure['ledger'].ledger_id),
             icon_subtitle=ledStructure['ledger'].creation_date.strftime('%b %d, %Y'),
             info=ledStructure.info,
