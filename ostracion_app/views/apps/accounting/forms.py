@@ -16,9 +16,19 @@ from wtforms.validators import (
 
 from ostracion_app.utilities.forms.validators.validators import (
     CharacterSelector,
+    OptionalPositiveInteger,
+    OptionalFloat,
 )
 
-from ostracion_app.views.apps.accounting.validators import ProhibitedIDChoice
+from ostracion_app.views.apps.accounting.validators import (
+    ProhibitedIDChoice,
+    ValidDateTime,
+)
+
+from ostracion_app.views.apps.accounting.settings import (
+    ledgerDatetimeFormat,
+    ledgerDatetimeFormatDesc,
+)
 
 
 class AccountingBaseLedgerForm(FlaskForm):
@@ -78,7 +88,13 @@ def generateAccountingMovementForm(categoryTree, actors):
 
     class _aForm(FlaskForm):
         submit = SubmitField('+')
-        date = StringField('Date')
+        date = StringField(
+            'Date',
+            validators=[ValidDateTime(
+                ledgerDatetimeFormat,
+                'Insert a valid "%s" date' % ledgerDatetimeFormatDesc,
+            )],
+        )
         description = StringField('Description')
         categoryId = SelectField(
             'Category',
@@ -128,11 +144,11 @@ def generateAccountingMovementForm(categoryTree, actors):
 
         paidField = StringField(
             '%s (paid)' % actorName,
-            validators=[]
+            validators=[OptionalFloat(admitCommas=True)]
         )
         propField = StringField(
             '%s (prop)' % actorName,
-            validators=[]
+            validators=[OptionalPositiveInteger()]
         )
         setattr(_aForm, actorPaidId, paidField)
         setattr(_aForm, actorPropId, propField)

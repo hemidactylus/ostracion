@@ -71,6 +71,10 @@ from ostracion_app.views.apps.accounting.models.MovementSubcategory import (
     MovementSubcategory,
 )
 #
+from ostracion_app.views.apps.accounting.settings import (
+    ledgerDatetimeFormat,
+    ledgerDatetimeFormatDesc,
+)
 from ostracion_app.views.apps.accounting.accountingUtils import (
     isLedgerId,
     extractLedgerCategoryTree,
@@ -78,6 +82,7 @@ from ostracion_app.views.apps.accounting.accountingUtils import (
     prepareLedgerActions,
     prepareLedgerSummary,
     prepareLedgerInfo,
+    parseNewMovementForm,
 )
 from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetLedger,
@@ -100,6 +105,8 @@ from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbDeleteSubcategoryFromLedger,
     dbMoveCategoryInLedger,
     dbMoveSubcategoryInLedger,
+    dbAddFullMovementToLedger,
+    dbGetLedgerFullMovements,
 )
 
 from ostracion_app.app_main import app
@@ -940,7 +947,7 @@ def accountingLedgerMoveSubcategoryView(ledgerId, categoryId, subcategoryId,
         raise OstracionError('Ledger/category/subcategory not found')
 
 
-@app.route('/apps/accounting/ledger/<ledgerId>')
+@app.route('/apps/accounting/ledger/<ledgerId>', methods=['GET', 'POST'])
 def accountingLedgerView(ledgerId):
     """Ledger view, to act on it in various vays."""
     user = g.user
@@ -972,27 +979,66 @@ def accountingLedgerView(ledgerId):
             categoryTree,
             actorsInLedger,
         )
-        paidFormFieldMap = {
-            actor.actor_id: getattr(addmovementform,
-                                    'actorpaid_%s' % actor.actor_id)
-            for actor in actorsInLedger
-        }
-        propFormFieldMap = {
-            actor.actor_id: getattr(addmovementform,
-                                    'actorprop_%s' % actor.actor_id)
-            for actor in actorsInLedger
-        }
-        #
-        return render_template(
-            'apps/accounting/ledger.html',
-            user=user,
-            ledger=ledger,
-            actors=actorsInLedger,
-            numActors=len(actorsInLedger),
-            addmovementform=addmovementform,
-            paidFormFieldMap=paidFormFieldMap,
-            propFormFieldMap=propFormFieldMap,
-            **pageFeatures,
-        )
+        if addmovementform.validate_on_submit():
+            newMovementStructure = parseNewMovementForm(
+                db,
+                user,
+                ledger,
+                addmovementform,
+                categoryTree,
+                actorsInLedger,
+            )
+            if newMovementStructure is not None:
+                # perform the actual DB insertions and redirect user to ledger
+                dbAddFullMovementToLedger(
+                    db,
+                    user,
+                    ledger,
+                    newMovementStructure['movement'],
+                    newMovementStructure['contributions'],
+                )
+                #
+                return redirect(url_for(
+                    'accountingLedgerView',
+                    ledgerId=ledgerId,
+                ))
+            else:
+                request._onErrorUrl = url_for(
+                    'accountingLedgerView',
+                    ledgerId=ledgerId,
+                )
+                raise OstracionError('Malformed movement insertion')
+        else:
+            #
+            movementObjects = dbGetLedgerFullMovements(db, user, ledger)
+            #
+            addmovementform.date.data = datetime.datetime.now().strftime(
+                ledgerDatetimeFormat,
+            )
+            paidFormFieldMap = {
+                actor.actor_id: getattr(addmovementform,
+                                        'actorpaid_%s' % actor.actor_id)
+                for actor in actorsInLedger
+            }
+            propFormFieldMap = {
+                actor.actor_id: getattr(addmovementform,
+                                        'actorprop_%s' % actor.actor_id)
+                for actor in actorsInLedger
+            }
+            #
+            return render_template(
+                'apps/accounting/ledger.html',
+                user=user,
+                ledger=ledger,
+                actors=actorsInLedger,
+                movementObjects=movementObjects,
+                ledgerDatetimeFormat=ledgerDatetimeFormat,
+                ledgerDatetimeFormatDesc=ledgerDatetimeFormatDesc,
+                numActors=len(actorsInLedger),
+                addmovementform=addmovementform,
+                paidFormFieldMap=paidFormFieldMap,
+                propFormFieldMap=propFormFieldMap,
+                **pageFeatures,
+            )
     else:
         raise OstracionError('Ledger not found')

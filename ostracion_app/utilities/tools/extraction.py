@@ -18,6 +18,17 @@ def safeInt(val, default=None):
         return default
 
 
+def safeFloat(val, default=None, admitCommas=False):
+    """Try to make a string into a Float and default to 'default'."""
+    try:
+        if admitCommas:
+            return float(val.replace(',','.'))
+        else:
+            return float(val)
+    except (ValueError, TypeError):
+        return default
+
+
 def safeUnquotePlus(val, default=None):
     """Try to urllib.parse.unquote_plus the input, defaulting to 'default'."""
     try:

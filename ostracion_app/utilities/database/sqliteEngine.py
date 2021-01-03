@@ -258,7 +258,8 @@ def dbRetrieveAllRecords(db, tableName, dbTablesDesc=None):
 
 
 def dbRetrieveRecordsByKey(db, tableName, keys,
-                           whereClauses=[], dbTablesDesc=None):
+                           whereClauses=[], dbTablesDesc=None,
+                           order=None):
     """ Fetch records (an iterable, possibly empty) from a table
         according to a certain query.
 
@@ -267,6 +268,9 @@ def dbRetrieveRecordsByKey(db, tableName, keys,
         whereClauses, the non-equals part of the query, is a mixed
         collection of strings or 2-tuples ('... ? ...', value)
         which is properly routed to the parameterisation for the execute call.
+
+        "order", if not None, must be a list of 2-tuples (first ones first)
+            [(fieldName, 'ASC'/'DESC'). ...]
     """
     cur = db.cursor()
     if len(keys) > 0:
@@ -283,12 +287,23 @@ def dbRetrieveRecordsByKey(db, tableName, keys,
         wc[0] if isinstance(wc, tuple) else wc
         for wc in whereClauses
     ]
+    columnList = listColumns(tableName, dbTablesDesc)
     whereClause = ' AND '.join(fullWhereClauses)
-    columnNames = ', '.join(listColumns(tableName, dbTablesDesc))
-    selectStatement = 'SELECT %s FROM %s WHERE %s' % (
+    columnNames = ', '.join(columnList)
+    #
+    if order is None or len(order) == 0:
+        orderClause = ''
+    else:
+        orderClause = ' ORDER BY %s' % (', '.join(
+            '%s %s' % (ordPair[0], ordPair[1])
+            for ordPair in order
+        ))
+    #
+    selectStatement = 'SELECT %s FROM %s WHERE %s%s' % (
         columnNames,
         tableName,
         whereClause,
+        orderClause,
     )
     if DB_DEBUG:
         print('[dbRetrieveRecordsByKey] %s' % selectStatement)
@@ -300,7 +315,7 @@ def dbRetrieveRecordsByKey(db, tableName, keys,
     docTupleList = cur.fetchall()
     if docTupleList is not None:
         return (
-            dict(zip(listColumns(tableName, dbTablesDesc), docT))
+            dict(zip(columnList, docT))
             for docT in docTupleList
         )
     else:

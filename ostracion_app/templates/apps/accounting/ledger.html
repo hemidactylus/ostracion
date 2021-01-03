@@ -35,12 +35,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col">
-                        pagination
-                    </div>
-                </div>
 
+                <div class="col">
+                    pagination
+                </div>
                 <hr>
 
                 <div class="row">
@@ -49,13 +47,13 @@
                       <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th class="col-md-1">Date</th>
-                                <th class="col-md-2">Category</th>
-                                <th class="col-md-2">Subcategory</th>
-                                <th class="col-md-2">Paid</th>
-                                <th class="col-md-2">Due</th>
-                                <th class="col-md-2">Description</th>
-                                <th class="col-md-1">Actions</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Category</th>
+                                <th scope="col">Subcategory</th>
+                                <th scope="col">Paid</th>
+                                <th scope="col">Due</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -64,7 +62,7 @@
                                 {{ addmovementform.hidden_tag() }}
                                 <tr>
                                   <td style="font-family: monospace;">
-                                    {{ addmovementform.date(class_="form-control",placeholder="YYYY/MM/DD",tabindex=1) }}
+                                    {{ addmovementform.date(class_="form-control",placeholder=ledgerDatetimeFormatDesc,tabindex=1) }}
                                     {% for error in addmovementform.date.errors %}
                                       <small class="form-text text-muted">{{ error }}</small>
                                     {% endfor %}
@@ -103,7 +101,7 @@
                                         {% endfor %}
                                   </td>
 
-                                  <td style="font-family: monospace;">
+                                  <td>
                                     {{ addmovementform.description(class_="form-control",placeholder="description...",tabindex=2*numActors+4) }}
                                     {% for error in addmovementform.description.errors %}
                                       <small class="form-text text-muted">{{ error }}</small>
@@ -115,6 +113,61 @@
                                 </tr>
                             </form>
 
+                            {% for movementObj in movementObjects %}
+                                <tr>
+                                  <td style="font-family: monospace;">
+                                    {{ movementObj['movement'].date.strftime(ledgerDatetimeFormat) }}
+                                  </td>
+                                  <td style="font-family: monospace;">
+                                    <strong>{{ movementObj['movement'].category_id }}</strong>
+                                  </td>
+                                  <td style="font-family: monospace;">
+                                    {{ movementObj['movement'].subcategory_id }}
+                                  </td>
+                                  <td>
+                                        {% for actor in actors %}
+                                            {% if movementObj['contributions'][actor.actor_id] %}
+                                              {% if movementObj['contributions'][actor.actor_id].paid %}
+                                                <span class="badge badge-primary">
+                                                  <i>{{ actor.name }}</i>: <strong>{{ '%.2f' % movementObj['contributions'][actor.actor_id].paid }}</strong>
+                                                </span>
+                                              {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                  </td>
+                                  <td>
+                                        {% for actor in actors %}
+                                            {% if movementObj['contributions'][actor.actor_id] %}
+                                              {% if movementObj['contributions'][actor.actor_id].proportion %}
+                                                <span class="badge badge-secondary">
+                                                  <i>{{ actor.name }}</i>: {{ movementObj['contributions'][actor.actor_id].proportion | int }}/{{ movementObj['contribution_prop_total'] | int }}
+                                                </span>
+                                              {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                  </td>
+                                  <td>
+                                    {{ movementObj['movement'].description }}
+                                  </td>
+                                  <td>
+                                    <a href="#" class="btn btn-secondary btn-sm" data-toggle="tooltip" data-html="true" 
+                                    title="<div align='left'>
+                                        Changed: <b>Actor</b> <br>
+                                        Changed: <b>Actor</b> <br>
+                                        Changed: <b>Actor</b>
+                                    </div>">
+                                      i
+                                    </a>
+                                    <a href="#" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Edit">
+                                      E
+                                    </a>
+                                    <a href="#" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
+                                      X
+                                    </a>
+                                  </td>
+                                </tr>
+                            {% endfor %}
+
                         </tbody>
                       </table>
 
@@ -122,9 +175,9 @@
                 </div>
 
                 <hr>
-                    <div class="col">
-                        pagination
-                    </div>
+                <div class="col">
+                    pagination
+                </div>
 
             </div>
 

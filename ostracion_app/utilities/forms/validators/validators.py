@@ -115,6 +115,44 @@ class OptionalInteger():
                 raise ValidationError(self.message)
 
 
+class OptionalPositiveInteger():
+    """<empty string or integer>0 as a string> validator."""
+    def __init__(self, message=None):
+        if message is None:
+            self.message = 'Insert a positive number or leave empty'
+        else:
+            self.message = message
+
+    def __call__(self, form, field):
+        if field.data is not None and field.data.strip() != '':
+            try:
+                v = int(field.data)
+                if v < 1:
+                    raise ValidationError(self.message)
+            except Exception:
+                raise ValidationError(self.message)
+
+
+class OptionalFloat():
+    """<empty string or float as a string> validator."""
+    def __init__(self, message=None, admitCommas=False):
+        self.admitCommas = admitCommas
+        if message is None:
+            self.message = 'Insert a floating-point number or leave empty'
+        else:
+            self.message = message
+
+    def __call__(self, form, field):
+        if field.data is not None and field.data.strip() != '':
+            try:
+                if self.admitCommas:
+                    v = float(field.data.replace(',', '.'))
+                else:
+                    v = float(field.data)
+            except Exception:
+                raise ValidationError(self.message)
+
+
 class ColorString():
     """<6-digit hexcolor as a string> validator."""
     def __init__(self, allowEmpty=True, poundOptional=True, message=None):

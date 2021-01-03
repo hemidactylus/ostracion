@@ -93,6 +93,4 @@ Accumulated todos:
   - Remove the 'apps' task if it's empty (e.g. for anon user), as it is not there in the menu
   - icons to "apps" in the menu
 
-  - in movement form, date is compulsory + its validator!
-  - and float + int validators
   + js to adapt subcats / show the description

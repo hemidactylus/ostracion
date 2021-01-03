@@ -1,6 +1,14 @@
 """ accountingUtils.py: utilities behind the accounting app. """
 
 from flask import url_for
+import datetime
+import uuid
+
+from ostracion_app.utilities.tools.extraction import (
+    safeNone,
+    safeInt,
+    safeFloat,
+)
 
 from ostracion_app.views.apps.appsPageTreeDescriptor import appsPageDescriptor
 
@@ -24,6 +32,16 @@ from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetUsersForLedger,
     dbGetActorsForLedger,
 )
+from ostracion_app.views.apps.accounting.settings import ledgerDatetimeFormat
+from ostracion_app.views.apps.accounting.models.LedgerMovement import (
+    LedgerMovement,
+)
+from ostracion_app.views.apps.accounting.models.\
+    LedgerMovementContribution import LedgerMovementContribution
+
+
+def makeItemUniqueId():
+    return str(uuid.uuid4())
 
 
 def isLedgerId(db, user, ledgerId):
@@ -163,3 +181,119 @@ def prepareLedgerInfo(db, user, ledger):
         )
         if infoItem['actor'] is not None
     ]
+
+
+def parseNewMovementContributions(db, user, ledger, movementForm, actors,
+                                  movement):
+    """
+        Parse and normalize the contributions part of a movement from a form.
+        Use data from the 'movement' (in part. the movement_id)
+
+        May return None upon unparseable inputs (which fails the whole parsing)
+    """
+    # string(/None) actor-to-input maps
+    paidMap = {
+        a.actor_id: safeFloat(
+            getattr(
+                movementForm,
+                'actorpaid_%s' % a.actor_id,
+            ).data,
+            admitCommas=True,
+        )
+        for a in actors
+    }
+    propMap = {
+        a.actor_id: safeInt(
+            getattr(
+                movementForm,
+                'actorprop_%s' % a.actor_id,
+            ).data
+        )
+        for a in actors
+    }
+    # proportions logic (with fallback)
+    if all(v is None for v in propMap.values()):
+        # default, equidistribution
+        finalPropMap = {k: 1 for k in propMap.keys()}
+    else:
+        # normalisation of the input integers
+        finalPropMap = {k: safeNone(v, 0) for k, v in propMap.items()}
+    #
+    finalPaidMap = {k: safeNone(v, 0) for k, v in paidMap.items()}
+    totalPaid = sum(finalPaidMap.values())
+    totalProp = sum(finalPropMap.values())
+    if totalProp > 0:
+        dueMap = {
+            k: totalPaid * v / totalProp
+            for k, v in finalPropMap.items()
+        }
+        # preparation of the contributions
+        contributions = {
+            actor.actor_id: LedgerMovementContribution(
+                ledger_id=ledger.ledger_id,
+                movement_id=movement.movement_id,
+                actor_id=actor.actor_id,
+                paid=finalPaidMap[actor.actor_id],
+                due=dueMap[actor.actor_id],
+                proportion=finalPropMap[actor.actor_id],
+            )
+            for actor in actors
+        }
+        #
+        return contributions
+    else:
+        return None
+
+
+def parseNewMovementForm(db, user, ledger, movementForm, categoryTree, actors):
+    """
+        Parse the contents of a new-movement-form into (either None or)
+        a structure describing the full movement information
+    """
+    # noncategory fields from form
+    mvDate = datetime.datetime.strptime(
+        movementForm.date.data,
+        ledgerDatetimeFormat,
+    )
+    mvDescription = safeNone(movementForm.description.data)
+    # sub/category normalisation
+    categoryMap = {cObj['category'].category_id: cObj for cObj in categoryTree}
+    mvCatId = movementForm.categoryId.data
+    subcategoryMap = {
+        sc.subcategory_id: sc
+        for sc in categoryMap[mvCatId]['subcategories']
+    }
+    # in the form this is "cat_id.subcat_id" for unicity, so:
+    splCatId, splSubcatId = movementForm.subcategoryId.data.split('.')
+    if splCatId != mvCatId or splSubcatId not in subcategoryMap:
+        return None
+    else:
+        mvSubcatId = subcategoryMap[splSubcatId].subcategory_id
+        # movement generation
+        movementId = makeItemUniqueId()
+        movement = LedgerMovement(
+            ledger_id=ledger.ledger_id,
+            movement_id=movementId,
+            category_id=mvCatId,
+            subcategory_id=mvSubcatId,
+            date=mvDate,
+            description=mvDescription,
+            last_edit_date=datetime.datetime.now(),
+            last_edit_username=user.username,
+        )
+        # contributions logic
+        contributions = parseNewMovementContributions(
+            db,
+            user,
+            ledger,
+            movementForm,
+            actors,
+            movement,
+        )
+        if contributions is None:
+            return None
+        else:
+            return {
+                'movement': movement,
+                'contributions': contributions,
+            }

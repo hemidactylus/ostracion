@@ -333,7 +333,7 @@ dbSchema = {
     'accounting_ledger_movements': {
         'primary_key': [
             ('ledger_id', 'TEXT'),
-            ('movement_id', 'INTEGER'),
+            ('movement_id', 'TEXT'),
         ],
         'columns': [
             ('category_id', 'TEXT'),
@@ -346,6 +346,7 @@ dbSchema = {
         'indices': {
             'accounting_ledger_movements_date_index': [
                 ('date', 'DESC'),
+                ('last_edit_date', 'DESC'),
             ],
         },
         'foreign_keys': {
@@ -366,8 +367,8 @@ dbSchema = {
     'accounting_movement_contributions': {
         'primary_key': [
             ('ledger_id', 'TEXT'),
-            ('movement_id', 'INTEGER'),
-            ('actor_id', 'INTEGER'),
+            ('movement_id', 'TEXT'),
+            ('actor_id', 'TEXT'),
         ],
         'columns': [
             ('paid', 'REAL'),
