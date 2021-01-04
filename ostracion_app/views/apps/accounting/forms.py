@@ -12,6 +12,12 @@ from wtforms import (
 
 from wtforms.validators import (
     InputRequired,
+    Length,
+)
+
+from config import (
+    maxShortIdentifierLength,
+    maxIdentifierLength,
 )
 
 from ostracion_app.utilities.forms.validators.validators import (
@@ -35,10 +41,23 @@ class AccountingBaseLedgerForm(FlaskForm):
     """Basic ledger properties form"""
     ledgerId = StringField(
         'ledgerId',
-        validators=[InputRequired(), CharacterSelector()],
+        validators=[
+            InputRequired(),
+            CharacterSelector(),
+            Length(max=maxShortIdentifierLength),
+        ],
     )
-    name = StringField('name', validators=[InputRequired()])
-    description = StringField('description')
+    name = StringField(
+        'name',
+        validators=[
+            InputRequired(),
+            Length(max=maxShortIdentifierLength)
+        ],
+    )
+    description = StringField(
+        'description',
+        validators=[Length(max=maxIdentifierLength)],
+    )
     submit = SubmitField('Save')
 
 
@@ -46,9 +65,16 @@ class AccountingLedgerActorForm(FlaskForm):
     """A single-actor-form for a ledger"""
     actorId = StringField(
         'actorId',
-        validators=[InputRequired(), CharacterSelector()],
+        validators=[
+            InputRequired(),
+            CharacterSelector(),
+            Length(max=maxShortIdentifierLength),
+        ],
     )
-    name = StringField('name', validators=[InputRequired()])
+    name = StringField(
+        'name',
+        validators=[InputRequired(), Length(max=maxShortIdentifierLength)],
+    )
     submit = SubmitField('Add')
 
 
@@ -56,9 +82,16 @@ class AccountingLedgerCategoryForm(FlaskForm):
     """A category-form for a ledger"""
     categoryId = StringField(
         'categoryId',
-        validators=[InputRequired(), CharacterSelector()],
+        validators=[
+            InputRequired(),
+            CharacterSelector(),
+            Length(max=maxShortIdentifierLength),
+        ],
     )
-    description = StringField('description')
+    description = StringField(
+        'description',
+        validators=[Length(max=maxIdentifierLength)],
+    )
     submit = SubmitField('Add')
 
 
@@ -73,9 +106,18 @@ class AccountingLedgerSubcategoryForm(FlaskForm):
                              ])
     subcategoryId = StringField(
         'subcategoryId',
-        validators=[InputRequired(), CharacterSelector()],
+        validators=[
+            InputRequired(),
+            CharacterSelector(),
+            Length(max=maxShortIdentifierLength),
+        ],
     )
-    description = StringField('description')
+    description = StringField(
+        'description',
+        validators=[
+            Length(max=maxIdentifierLength)
+        ],
+    )
     submit = SubmitField('Add')
 
     def fillCategoryChoices(self, choices):
@@ -90,12 +132,18 @@ def generateAccountingMovementForm(categoryTree, actors):
         submit = SubmitField('+')
         date = StringField(
             'Date',
-            validators=[ValidDateTime(
-                ledgerDatetimeFormat,
-                'Insert a valid "%s" date' % ledgerDatetimeFormatDesc,
-            )],
+            validators=[
+                ValidDateTime(
+                    ledgerDatetimeFormat,
+                    'Insert a valid "%s" date' % ledgerDatetimeFormatDesc,
+                ),
+                Length(max=maxShortIdentifierLength),
+            ],
         )
-        description = StringField('Description')
+        description = StringField(
+            'Description',
+            validators=[Length(max=maxIdentifierLength)],
+        )
         categoryId = SelectField(
             'Category',
             default='',
@@ -144,11 +192,17 @@ def generateAccountingMovementForm(categoryTree, actors):
 
         paidField = StringField(
             '%s (paid)' % actorName,
-            validators=[OptionalFloat(admitCommas=True)]
+            validators=[
+                OptionalFloat(admitCommas=True),
+                Length(max=maxShortIdentifierLength),
+            ],
         )
         propField = StringField(
             '%s (prop)' % actorName,
-            validators=[OptionalPositiveInteger()]
+            validators=[
+                OptionalPositiveInteger(),
+                Length(max=maxShortIdentifierLength),
+            ],
         )
         setattr(_aForm, actorPaidId, paidField)
         setattr(_aForm, actorPropId, propField)

@@ -107,6 +107,8 @@ from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbMoveSubcategoryInLedger,
     dbAddFullMovementToLedger,
     dbGetLedgerFullMovements,
+    dbGetLedgerFullMovement,
+    dbDeleteLedgerFullMovement,
 )
 
 from ostracion_app.app_main import app
@@ -1025,12 +1027,17 @@ def accountingLedgerView(ledgerId):
                                         'actorprop_%s' % actor.actor_id)
                 for actor in actorsInLedger
             }
+            usernameToName = {
+                u.username: u.fullname
+                for u in dbGetUsersForLedger(db, user, ledger)
+            }
             #
             return render_template(
                 'apps/accounting/ledger.html',
                 user=user,
                 ledger=ledger,
                 actors=actorsInLedger,
+                usernameToName=usernameToName,
                 movementObjects=movementObjects,
                 ledgerDatetimeFormat=ledgerDatetimeFormat,
                 ledgerDatetimeFormatDesc=ledgerDatetimeFormatDesc,
@@ -1040,5 +1047,23 @@ def accountingLedgerView(ledgerId):
                 propFormFieldMap=propFormFieldMap,
                 **pageFeatures,
             )
+    else:
+        raise OstracionError('Ledger not found')
+
+
+@app.route('/apps/accounting/ledger/rmmovement/<ledgerId>/<movementId>')
+def accountingLedgerDeleteMovementView(ledgerId, movementId):
+    """Delete a full movement from a ledger."""
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for('accountingIndexView')
+    ledger = dbGetLedger(db, user, ledgerId)
+    if ledger is not None:
+        movementObj = dbGetLedgerFullMovement(db, user, ledger, movementId)
+        if movementObj is not None:
+            dbDeleteLedgerFullMovement(db, user, ledger, movementObj['movement'])
+            return redirect(url_for('accountingLedgerView', ledgerId=ledgerId))
+        else:
+            raise OstracionError('Movement not found')
     else:
         raise OstracionError('Ledger not found')

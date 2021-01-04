@@ -90,6 +90,8 @@ Accumulated todos:
   - upon user deletion, what to do with the movements? and anonymize user contribs to ledger
   - Actual images (=default images for ledger, add-ledger and so on)
   - native sqlite joins for movement/movcontribs
+  - pagination, limit (sqlite) in movements queries
+  - edit movement (uses ledger.html in 'edit mode' or something)
   - Remove the 'apps' task if it's empty (e.g. for anon user), as it is not there in the menu
   - icons to "apps" in the menu
 

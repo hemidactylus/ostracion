@@ -2,6 +2,8 @@
     Accounting-related database operations.
 """
 
+import datetime
+
 from ostracion_app.utilities.tools.dictTools import (
     recursivelyMergeDictionaries
 )
@@ -85,6 +87,7 @@ def dbCreateLedger(db, user, newLedger):
             dbTablesDesc=dbSchema,
         )
         #
+        dbTouchLedger(db, user, newLedger, skipCommit=True)
         db.commit()
     else:
         raise OstracionError('Insufficient permissions')
@@ -99,6 +102,7 @@ def dbUpdateLedger(db, user, newLedger, skipCommit=False):
             newLedger.asDict(),
             dbTablesDesc=dbSchema,
         )
+        dbTouchLedger(db, user, newLedger, skipCommit=True)
         if not skipCommit:
             db.commit()
     else:
@@ -178,7 +182,7 @@ def dbDeleteLedger(db, user, ledger):
 
 def dbGetUsersForLedger(db, user, ledger):
     """Return an iterable of the users subscribed to a ledger."""
-    if userIsAdmin(db, user):
+    if userIsAdmin(db, user) or dbUserCanSeeLedger(db, user, ledger.ledger_id):
         return (
             dbGetUser(
                 db,
@@ -221,6 +225,7 @@ def dbAddUserToLedger(db, user, ledger, userToAdd):
             newLedgerUser.asDict(),
             dbTablesDesc=dbSchema,
         )
+        dbTouchLedger(db, user, ledger, skipCommit=True)
         #
         db.commit()
     else:
@@ -241,6 +246,7 @@ def dbRemoveUserFromLedger(db, user, ledger, userToRemove):
             },
             dbTablesDesc=dbSchema,
         )
+        dbTouchLedger(db, user, ledger, skipCommit=True)
         #
         db.commit()
     else:
@@ -270,6 +276,7 @@ def dbAddActorToLedger(db, user, ledger, newActor):
             newActor.asDict(),
             dbTablesDesc=dbSchema,
         )
+        dbTouchLedger(db, user, ledger, skipCommit=True)
         #
         db.commit()
     else:
@@ -300,6 +307,8 @@ def dbDeleteActor(db, user, ledger, actor):
             {'ledger_id': ledger.ledger_id, 'actor_id': actor.actor_id},
             dbTablesDesc=dbSchema,
         )
+        dbTouchLedger(db, user, ledger, skipCommit=True)
+        #
         db.commit()
     else:
         raise OstracionError('Insufficient permissions')
@@ -362,6 +371,7 @@ def dbAddCategoryToLedger(db, user, ledger, newCategory):
                 newCategory.asDict(),
                 dbTablesDesc=dbSchema,
             )
+            dbTouchLedger(db, user, ledger, skipCommit=True)
             #
             db.commit()
         else:
@@ -385,6 +395,7 @@ def dbAddSubcategoryToLedger(db, user, ledger, newSubcategory):
                 newSubcategory.asDict(),
                 dbTablesDesc=dbSchema,
             )
+            dbTouchLedger(db, user, ledger, skipCommit=True)
             #
             db.commit()
         else:
@@ -422,6 +433,7 @@ def dbUpdateCategoryInLedger(db, user, ledger, newCategory, skipCommit=False):
             newCategory.asDict(),
             dbTablesDesc=dbSchema,
         )
+        dbTouchLedger(db, user, ledger, skipCommit=True)
         if not skipCommit:
             db.commit()
 
@@ -442,6 +454,7 @@ def dbUpdateSubcategoryInLedger(db, user, ledger, category, newSubcategory,
             newSubcategory.asDict(),
             dbTablesDesc=dbSchema,
         )
+        dbTouchLedger(db, user, ledger, skipCommit=True)
         if not skipCommit:
             db.commit()
 
@@ -458,6 +471,7 @@ def dbDeleteSubcategoryFromLedger(db, user, ledger, category, subcategory,
         },
         dbTablesDesc=dbSchema,
     )
+    dbTouchLedger(db, user, ledger, skipCommit=True)
     if not skipCommit:
         db.commit()
 
@@ -473,6 +487,7 @@ def dbDeleteCategoryFromLedger(db, user, ledger, category,
         },
         dbTablesDesc=dbSchema,
     )
+    dbTouchLedger(db, user, ledger, skipCommit=True)
     if not skipCommit:
         db.commit()
 
@@ -496,6 +511,7 @@ def dbEraseCategoryFromLedger(db, user, ledger, category):
         category,
         skipCommit=True,
     )
+    dbTouchLedger(db, user, ledger, skipCommit=True)
     db.commit()
 
 
@@ -544,6 +560,7 @@ def dbMoveCategoryInLedger(db, user, ledger, category, direction):
             ))
             dbUpdateCategoryInLedger(db, user, ledger, newCat, skipCommit=True)
         #
+        dbTouchLedger(db, user, ledger, skipCommit=True)
         db.commit()
     else:
         raise OstracionError('Unknown category')
@@ -596,9 +613,30 @@ def dbMoveSubcategoryInLedger(db, user, ledger, category, subcategory,
             dbUpdateSubcategoryInLedger(db, user, ledger, category, newSubcat,
                                       skipCommit=True)
         #
+        dbTouchLedger(db, user, ledger, skipCommit=True)
         db.commit()
     else:
         raise OstracionError('Unknown subcategory')
+
+
+def dbTouchLedger(db, user, ledger, skipCommit=False):
+    """Update last_edit_date and last_edit_username of a ledger."""
+    if userIsAdmin(db, user) or dbUserCanSeeLedger(db, user, ledger.ledger_id):
+        dbUpdateRecordOnTable(
+            db,
+            'accounting_ledgers',
+            {
+                'ledger_id': ledger.ledger_id,
+                'last_edit_date': datetime.datetime.now(),
+                'last_edit_username': user.username,
+            },
+            dbTablesDesc=dbSchema,
+            allowPartial=True,
+        )
+        if not skipCommit:
+            db.commit()
+    else:
+        raise OstracionError('Insufficient permissions')
 
 
 def dbAddFullMovementToLedger(db, user, ledger, newMovement, newContributions):
@@ -624,6 +662,7 @@ def dbAddFullMovementToLedger(db, user, ledger, newMovement, newContributions):
                         contrib.asDict(),
                         dbTablesDesc=dbSchema,
                     )
+                dbTouchLedger(db, user, ledger, skipCommit=True)
                 #
                 db.commit()
 
@@ -633,35 +672,38 @@ def dbAddFullMovementToLedger(db, user, ledger, newMovement, newContributions):
         raise OstracionError('Insufficient permissions')
 
 
+def _makeFullMovementStructure(_db, _ledger, _movdict):
+    """wrap a ledger movement in a structure describing also its contribs."""
+    movement = LedgerMovement(**_movdict)
+    contribQuery = dbRetrieveRecordsByKey(
+        _db,
+        'accounting_movement_contributions',
+        {
+            'ledger_id': _ledger.ledger_id,
+            'movement_id': movement.movement_id,
+        },
+        dbTablesDesc=dbSchema,
+    )
+    contributions = {
+        contrib.actor_id: contrib
+        for contrib in (
+            LedgerMovementContribution(**_condict)
+            for _condict in contribQuery
+        )
+    }
+    contribPropSum = sum(con.proportion for con in contributions.values())
+    return {
+        'movement': movement,
+        'contributions': contributions,
+        'contribution_prop_total': contribPropSum,
+    }
+
+
 def dbGetLedgerFullMovements(db, user, ledger):
     """
         *TEMPORARY*, will have query driver, pagination, joins.
         Retrieve movements pertaining to a given ledger.
     """
-    def _makeMovementStructure(_db, _ledger, _movdict):
-        movement = LedgerMovement(**_movdict)
-        contribQuery = dbRetrieveRecordsByKey(
-            db,
-            'accounting_movement_contributions',
-            {
-                'ledger_id': ledger.ledger_id,
-                'movement_id': movement.movement_id,
-            },
-            dbTablesDesc=dbSchema,
-        )
-        contributions = {
-            contrib.actor_id: contrib
-            for contrib in (
-                LedgerMovementContribution(**_condict)
-                for _condict in contribQuery
-            )
-        }
-        contribPropSum = sum(con.proportion for con in contributions.values())
-        return {
-            'movement': movement,
-            'contributions': contributions,
-            'contribution_prop_total': contribPropSum,
-        }
 
     if userIsAdmin(db, user) or dbUserCanSeeLedger(db, user, ledger.ledger_id):
         bareMovQuery = dbRetrieveRecordsByKey(
@@ -677,8 +719,56 @@ def dbGetLedgerFullMovements(db, user, ledger):
             ],
         )
         return [
-            _makeMovementStructure(db, ledger, bareMovDict)
+            _makeFullMovementStructure(db, ledger, bareMovDict)
             for bareMovDict in bareMovQuery
         ]
     else:
         raise OstracionError('Insufficient permissions')
+
+
+def dbGetLedgerFullMovement(db, user, ledger, movementId):
+    """
+        *TEMPORARY*, will have query driver, pagination, joins.
+        Retrieve a single movement pertaining to a given ledger.
+    """
+    if userIsAdmin(db, user) or dbUserCanSeeLedger(db, user, ledger.ledger_id):
+        bareMovDict = dbRetrieveRecordByKey(
+            db,
+            'accounting_ledger_movements',
+            {
+                'ledger_id': ledger.ledger_id,
+                'movement_id': movementId,
+            },
+            dbTablesDesc=dbSchema,
+        )
+        if bareMovDict is None:
+            return None
+        else:
+            return _makeFullMovementStructure(db, ledger, bareMovDict)
+    else:
+        raise OstracionError('Insufficient permissions')
+
+
+def dbDeleteLedgerFullMovement(db, user, ledger, movement, skipCommit=False):
+    """Delete a ledger movement and all its contributions."""
+    dbDeleteRecordsByKey(
+        db,
+        'accounting_movement_contributions',
+        {
+            'ledger_id': ledger.ledger_id,
+            'movement_id': movement.movement_id,
+        },
+        dbTablesDesc=dbSchema,
+    )
+    dbDeleteRecordsByKey(
+        db,
+        'accounting_ledger_movements',
+        {
+            'ledger_id': ledger.ledger_id,
+            'movement_id': movement.movement_id,
+        },
+        dbTablesDesc=dbSchema,
+    )
+    dbTouchLedger(db, user, ledger, skipCommit=True)
+    if not skipCommit:
+        db.commit()

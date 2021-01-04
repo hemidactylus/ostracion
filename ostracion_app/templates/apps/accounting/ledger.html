@@ -146,22 +146,25 @@
                                             {% endif %}
                                         {% endfor %}
                                   </td>
-                                  <td>
-                                    {{ movementObj['movement'].description }}
+                                  {% if movementObj['movement'].description | length > 50 %}
+                                    <td data-toggle="tooltip" title="{{ movementObj['movement'].description }}">
+                                  {% else %}
+                                    <td>
+                                  {% endif %}
+                                    {{ movementObj['movement'].description | truncate(64, False, '...') }}
                                   </td>
                                   <td>
                                     <a href="#" class="btn btn-secondary btn-sm" data-toggle="tooltip" data-html="true" 
                                     title="<div align='left'>
-                                        Changed: <b>Actor</b> <br>
-                                        Changed: <b>Actor</b> <br>
-                                        Changed: <b>Actor</b>
+                                        Edited by: <b>{{ usernameToName[movementObj['movement'].last_edit_username] }}</b> <br>
+                                        Edited at: <b>{{ movementObj['movement'].last_edit_date.strftime('%b %d %H:%M') }}</b>
                                     </div>">
                                       i
                                     </a>
                                     <a href="#" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Edit">
                                       E
                                     </a>
-                                    <a href="#" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
+                                    <a href="{{ url_for('accountingLedgerDeleteMovementView', ledgerId=ledger.ledger_id, movementId=movementObj['movement'].movement_id) }}" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
                                       X
                                     </a>
                                   </td>

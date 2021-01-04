@@ -168,7 +168,7 @@ def prepareLedgerInfo(db, user, ledger):
                 'actor': getUserFullName(db, ledger.creator_username),
             },
             {
-                'action': 'Last edited',
+                'action': 'Edited by',
                 'actor': (getUserFullName(db, ledger.last_edit_username)
                           if (ledger.creator_username
                               != ledger.last_edit_username)
