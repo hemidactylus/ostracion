@@ -24,6 +24,7 @@ from ostracion_app.utilities.forms.validators.validators import (
     CharacterSelector,
     OptionalPositiveInteger,
     OptionalFloat,
+    AtLeastOneNonempty,
 )
 
 from ostracion_app.views.apps.accounting.validators import (
@@ -185,26 +186,39 @@ def generateAccountingMovementForm(categoryTree, actors):
             ),
         )
     #
-    for actor in actors:
+    paidFields = {}
+    propFields = {}
+    # standard validators for all such fields
+    baseValidators = [
+        OptionalFloat(admitCommas=True),
+        Length(max=maxShortIdentifierLength),
+    ]
+    #
+    for actorIndex, actor in enumerate(actors):
         actorName = actor.name
         actorPaidId = 'actorpaid_%s' % actor.actor_id
         actorPropId = 'actorprop_%s' % actor.actor_id
 
-        paidField = StringField(
+        if actorIndex == len(actors) - 1:
+            # for the last of the paid forms, a collective validator
+            finalValidators = [
+                AtLeastOneNonempty(list(paidFields.keys())),
+            ]
+        else:
+            finalValidators = []
+
+        paidFields[actorPaidId] = StringField(
             '%s (paid)' % actorName,
-            validators=[
-                OptionalFloat(admitCommas=True),
-                Length(max=maxShortIdentifierLength),
-            ],
+            validators=baseValidators + finalValidators,
         )
-        propField = StringField(
+        propFields[actorPropId] = StringField(
             '%s (prop)' % actorName,
             validators=[
                 OptionalPositiveInteger(),
                 Length(max=maxShortIdentifierLength),
             ],
         )
-        setattr(_aForm, actorPaidId, paidField)
-        setattr(_aForm, actorPropId, propField)
+        setattr(_aForm, actorPaidId, paidFields[actorPaidId])
+        setattr(_aForm, actorPropId, propFields[actorPropId])
 
     return _aForm()

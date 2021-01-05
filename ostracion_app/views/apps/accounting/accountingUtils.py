@@ -245,7 +245,8 @@ def parseNewMovementContributions(db, user, ledger, movementForm, actors,
         return None
 
 
-def parseNewMovementForm(db, user, ledger, movementForm, categoryTree, actors):
+def parseNewMovementForm(db, user, ledger, movementForm, categoryTree,
+                         actors, preexistingId=None):
     """
         Parse the contents of a new-movement-form into (either None or)
         a structure describing the full movement information
@@ -270,7 +271,11 @@ def parseNewMovementForm(db, user, ledger, movementForm, categoryTree, actors):
     else:
         mvSubcatId = subcategoryMap[splSubcatId].subcategory_id
         # movement generation
-        movementId = makeItemUniqueId()
+        movementId = (
+            makeItemUniqueId()
+            if preexistingId is None
+            else preexistingId
+        )
         movement = LedgerMovement(
             ledger_id=ledger.ledger_id,
             movement_id=movementId,

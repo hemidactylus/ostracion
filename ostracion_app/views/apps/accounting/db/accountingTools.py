@@ -439,7 +439,7 @@ def dbUpdateCategoryInLedger(db, user, ledger, newCategory, skipCommit=False):
 
 
 def dbUpdateSubcategoryInLedger(db, user, ledger, category, newSubcategory,
-                              skipCommit=False):
+                                skipCommit=False):
     """Update a ledger movement subcategory."""
     if ledger.ledger_id != category.ledger_id:
         raise OstracionError('Ledger mismatch')
@@ -611,7 +611,7 @@ def dbMoveSubcategoryInLedger(db, user, ledger, category, subcategory,
                 defaultMap=scat.asDict(),
             ))
             dbUpdateSubcategoryInLedger(db, user, ledger, category, newSubcat,
-                                      skipCommit=True)
+                                        skipCommit=True)
         #
         dbTouchLedger(db, user, ledger, skipCommit=True)
         db.commit()
@@ -657,6 +657,40 @@ def dbAddFullMovementToLedger(db, user, ledger, newMovement, newContributions):
                 )
                 for contrib in newContributions.values():
                     dbAddRecordToTable(
+                        db,
+                        'accounting_movement_contributions',
+                        contrib.asDict(),
+                        dbTablesDesc=dbSchema,
+                    )
+                dbTouchLedger(db, user, ledger, skipCommit=True)
+                #
+                db.commit()
+
+        else:
+            raise OstracionError('Malformed movement insertion')
+    else:
+        raise OstracionError('Insufficient permissions')
+
+
+def dbUpdateFullMovementInLedger(db, user, ledger, newMovement,
+                                 newContributions):
+    """
+        Update new movement+contributions of a ledger.
+        Same as 'add' but assumes movement (and its contribs) exist(s) already.
+    """
+    if userIsAdmin(db, user) or dbUserCanSeeLedger(db, user, ledger.ledger_id):
+        if ledger.ledger_id == newMovement.ledger_id:
+            # can insert, proceed
+            if all(c.movement_id == newMovement.movement_id
+                    for c in newContributions.values()):
+                dbUpdateRecordOnTable(
+                    db,
+                    'accounting_ledger_movements',
+                    newMovement.asDict(),
+                    dbTablesDesc=dbSchema,
+                )
+                for contrib in newContributions.values():
+                    dbUpdateRecordOnTable(
                         db,
                         'accounting_movement_contributions',
                         contrib.asDict(),

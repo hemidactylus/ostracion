@@ -1,5 +1,67 @@
 {% extends "base.html" %}
 
+{% macro makemovementtable(mobjects) %}
+
+                            {% for movementObj in mobjects %}
+                                <tr>
+                                  <td style="font-family: monospace;">
+                                    {{ movementObj['movement'].date.strftime(ledgerDatetimeFormat) }}
+                                  </td>
+                                  <td style="font-family: monospace;">
+                                    <strong>{{ movementObj['movement'].category_id }}</strong>
+                                  </td>
+                                  <td style="font-family: monospace;">
+                                    {{ movementObj['movement'].subcategory_id }}
+                                  </td>
+                                  <td>
+                                        {% for actor in actors %}
+                                            {% if movementObj['contributions'][actor.actor_id] %}
+                                              {% if movementObj['contributions'][actor.actor_id].paid %}
+                                                <span class="badge badge-primary">
+                                                  <i>{{ actor.name }}</i>: <strong>{{ '%.2f' % movementObj['contributions'][actor.actor_id].paid }}</strong>
+                                                </span>
+                                              {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                  </td>
+                                  <td>
+                                        {% for actor in actors %}
+                                            {% if movementObj['contributions'][actor.actor_id] %}
+                                              {% if movementObj['contributions'][actor.actor_id].proportion %}
+                                                <span class="badge badge-secondary" data-toggle="tooltip" data-html="true" title="Due: <b>{{ '%.2f' % movementObj['contributions'][actor.actor_id].due }}</b>">
+                                                  <i>{{ actor.name }}</i>: {{ movementObj['contributions'][actor.actor_id].proportion | int }}/{{ movementObj['contribution_prop_total'] | int }}
+                                                </span>
+                                              {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                  </td>
+                                  {% if movementObj['movement'].description | length > 50 %}
+                                    <td data-toggle="tooltip" title="{{ movementObj['movement'].description }}">
+                                  {% else %}
+                                    <td>
+                                  {% endif %}
+                                    {{ movementObj['movement'].description | truncate(64, False, '...') }}
+                                  </td>
+                                  <td>
+                                    <a href="#" class="btn btn-secondary btn-sm" data-toggle="tooltip" data-html="true" 
+                                    title="<div align='left'>
+                                        Edited by: <b>{{ usernameToName[movementObj['movement'].last_edit_username] }}</b> <br>
+                                        Edited at: <b>{{ movementObj['movement'].last_edit_date.strftime('%b %d %H:%M') }}</b>
+                                    </div>">
+                                      i
+                                    </a>
+                                    <a href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id, movementId=movementObj['movement'].movement_id) }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Edit">
+                                      E
+                                    </a>
+                                    <a href="{{ url_for('accountingLedgerDeleteMovementView', ledgerId=ledger.ledger_id, movementId=movementObj['movement'].movement_id) }}" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
+                                      X
+                                    </a>
+                                  </td>
+                                </tr>
+                            {% endfor %}
+
+{% endmacro %}
+
 {% block content %}
 
       <div class="row">
@@ -58,10 +120,13 @@
                         </thead>
                         <tbody>
 
+                            {{ makemovementtable(preMovementObjects) }}
+
                             <form class="form-inline" method="post" name="addmovement" action="">
                                 {{ addmovementform.hidden_tag() }}
                                 <tr>
                                   <td style="font-family: monospace;">
+                                    <a name="movementform"></a>
                                     {{ addmovementform.date(class_="form-control",placeholder=ledgerDatetimeFormatDesc,tabindex=1) }}
                                     {% for error in addmovementform.date.errors %}
                                       <small class="form-text text-muted">{{ error }}</small>
@@ -82,7 +147,7 @@
 
                                   <td>
                                         {% for actor in actors %}
-                                            <div class="row" style="width:90%;">
+                                            <div class="row" style="width:90%; margin-left: 0;">
                                                 {{ paidFormFieldMap[actor.actor_id](class_="form-control form-control-sm",placeholder=actor.name, tabindex=3+loop.index) }}
                                                 {% for error in paidFormFieldMap[actor.actor_id].errors %}
                                                   <small class="form-text text-muted">{{ error }}</small>
@@ -92,7 +157,7 @@
                                   </td>
                                   <td>
                                         {% for actor in actors %}
-                                            <div class="row" style="width:90%;">
+                                            <div class="row" style="width:90%; margin-left: 0;">
                                                 {{ propFormFieldMap[actor.actor_id](class_="form-control form-control-sm",placeholder=actor.name, tabindex=3+numActors+loop.index) }}
                                                 {% for error in propFormFieldMap[actor.actor_id].errors %}
                                                   <small class="form-text text-muted">{{ error }}</small>
@@ -108,68 +173,19 @@
                                     {% endfor %}
                                   </td>
                                   <td>
-                                    {{ addmovementform.submit(class_='btn btn-primary btn-md',style='margin-right: 25px;', tabindex=2*numActors+5, value="+") }}
+                                    {% if editeeMovement %}
+                                      {{ addmovementform.submit(class_='btn btn-primary btn-md', tabindex=2*numActors+5, value="S") }}
+                                      <a href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id) }}" class="btn btn-success btn-md" tabindex="{{ 2*numActors+6 }}" data-toggle="tooltip" title="Cancel editing">
+                                        N
+                                      </a>
+                                    {% else %}
+                                      {{ addmovementform.submit(class_='btn btn-primary btn-md',style='margin-right: 25px;', tabindex=2*numActors+5, value="+") }}
+                                    {% endif %}
                                   </td>
                                 </tr>
                             </form>
 
-                            {% for movementObj in movementObjects %}
-                                <tr>
-                                  <td style="font-family: monospace;">
-                                    {{ movementObj['movement'].date.strftime(ledgerDatetimeFormat) }}
-                                  </td>
-                                  <td style="font-family: monospace;">
-                                    <strong>{{ movementObj['movement'].category_id }}</strong>
-                                  </td>
-                                  <td style="font-family: monospace;">
-                                    {{ movementObj['movement'].subcategory_id }}
-                                  </td>
-                                  <td>
-                                        {% for actor in actors %}
-                                            {% if movementObj['contributions'][actor.actor_id] %}
-                                              {% if movementObj['contributions'][actor.actor_id].paid %}
-                                                <span class="badge badge-primary">
-                                                  <i>{{ actor.name }}</i>: <strong>{{ '%.2f' % movementObj['contributions'][actor.actor_id].paid }}</strong>
-                                                </span>
-                                              {% endif %}
-                                            {% endif %}
-                                        {% endfor %}
-                                  </td>
-                                  <td>
-                                        {% for actor in actors %}
-                                            {% if movementObj['contributions'][actor.actor_id] %}
-                                              {% if movementObj['contributions'][actor.actor_id].proportion %}
-                                                <span class="badge badge-secondary">
-                                                  <i>{{ actor.name }}</i>: {{ movementObj['contributions'][actor.actor_id].proportion | int }}/{{ movementObj['contribution_prop_total'] | int }}
-                                                </span>
-                                              {% endif %}
-                                            {% endif %}
-                                        {% endfor %}
-                                  </td>
-                                  {% if movementObj['movement'].description | length > 50 %}
-                                    <td data-toggle="tooltip" title="{{ movementObj['movement'].description }}">
-                                  {% else %}
-                                    <td>
-                                  {% endif %}
-                                    {{ movementObj['movement'].description | truncate(64, False, '...') }}
-                                  </td>
-                                  <td>
-                                    <a href="#" class="btn btn-secondary btn-sm" data-toggle="tooltip" data-html="true" 
-                                    title="<div align='left'>
-                                        Edited by: <b>{{ usernameToName[movementObj['movement'].last_edit_username] }}</b> <br>
-                                        Edited at: <b>{{ movementObj['movement'].last_edit_date.strftime('%b %d %H:%M') }}</b>
-                                    </div>">
-                                      i
-                                    </a>
-                                    <a href="#" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Edit">
-                                      E
-                                    </a>
-                                    <a href="{{ url_for('accountingLedgerDeleteMovementView', ledgerId=ledger.ledger_id, movementId=movementObj['movement'].movement_id) }}" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
-                                      X
-                                    </a>
-                                  </td>
-                                </tr>
-                            {% endfor %}
+                            {{ makemovementtable(postMovementObjects) }}
 
                         </tbody>
                       </table>

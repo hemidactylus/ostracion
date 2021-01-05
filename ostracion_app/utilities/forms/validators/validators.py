@@ -204,3 +204,27 @@ class AtLeastOneChecked():
                 for otherCheckboxName in self.otherCheckboxNames
             ]):
                 raise ValidationError(self.message)
+
+
+class AtLeastOneNonempty():
+    """
+        At least one of: this textbox and the other provided
+        must be nonempty
+    """
+    def __init__(self, otherTextboxes, message=None):
+        self.otherTextboxes = otherTextboxes
+        if message is None:
+            self.message = 'Fill at least one'
+        else:
+            self.message = message
+
+    def __call__(self, form, field):
+        s = field.data
+        if s == '':
+            # we raise an error if the other provided textboxes
+            # also have an empty string
+            if all([
+                getattr(form, otherTextboxes).data == ''
+                for otherTextboxes in self.otherTextboxes
+            ]):
+                raise ValidationError(self.message)

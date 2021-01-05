@@ -22,7 +22,7 @@ def safeFloat(val, default=None, admitCommas=False):
     """Try to make a string into a Float and default to 'default'."""
     try:
         if admitCommas:
-            return float(val.replace(',','.'))
+            return float(val.replace(',', '.'))
         else:
             return float(val)
     except (ValueError, TypeError):

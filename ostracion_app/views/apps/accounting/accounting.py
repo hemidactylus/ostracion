@@ -3,10 +3,7 @@
         An app to manage ledgers of debts/credits among arbitrary actors
 """
 
-# import os
-# from uuid import uuid4
 import datetime
-# import urllib.parse
 from flask import (
     redirect,
     url_for,
@@ -31,11 +28,12 @@ from ostracion_app.utilities.exceptions.exceptions import (
 
 from ostracion_app.utilities.viewTools.messageTools import flashMessage
 
-# from ostracion_app.utilities.tools.extraction import safeInt
-# from ostracion_app.utilities.tools.formatting import applyDefault
+from ostracion_app.utilities.tools.formatting import (
+    applyDefault,
+    transformIfNotEmpty,
+)
 
 from ostracion_app.utilities.database.permissions import (
-    # userHasPermission,
     userRoleRequired,
 )
 
@@ -106,6 +104,7 @@ from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbMoveCategoryInLedger,
     dbMoveSubcategoryInLedger,
     dbAddFullMovementToLedger,
+    dbUpdateFullMovementInLedger,
     dbGetLedgerFullMovements,
     dbGetLedgerFullMovement,
     dbDeleteLedgerFullMovement,
@@ -950,8 +949,17 @@ def accountingLedgerMoveSubcategoryView(ledgerId, categoryId, subcategoryId,
 
 
 @app.route('/apps/accounting/ledger/<ledgerId>', methods=['GET', 'POST'])
-def accountingLedgerView(ledgerId):
-    """Ledger view, to act on it in various vays."""
+@app.route(
+    '/apps/accounting/ledger/<ledgerId>/editmovement/<movementId>',
+    methods=['GET', 'POST'],
+)
+def accountingLedgerView(ledgerId, movementId=None):
+    """
+        Ledger view, to act on it in various vays.
+        There is a form, used either to add a new movement
+        or to edit a preexisting one (which determines also the form position).
+        These operations go through this single route.
+    """
     user = g.user
     db = dbGetDatabase()
     request._onErrorUrl = url_for('accountingIndexView')
@@ -982,6 +990,23 @@ def accountingLedgerView(ledgerId):
             actorsInLedger,
         )
         if addmovementform.validate_on_submit():
+            # try to load the preexisting movement if ID provided
+            # (it means we are in the edit-existing-movement flow)
+            if movementId is not None:
+                preexistingMovementObj = dbGetLedgerFullMovement(
+                    db,
+                    user,
+                    ledger,
+                    movementId,
+                )
+                if preexistingMovementObj is not None:
+                    preexistingMovementId = preexistingMovementObj[
+                        'movement'].movement_id
+                else:
+                    raise OstracionError('Unknown ledger movement')
+            else:
+                preexistingMovementId = None
+            #
             newMovementStructure = parseNewMovementForm(
                 db,
                 user,
@@ -989,16 +1014,29 @@ def accountingLedgerView(ledgerId):
                 addmovementform,
                 categoryTree,
                 actorsInLedger,
+                preexistingId=preexistingMovementId
             )
             if newMovementStructure is not None:
                 # perform the actual DB insertions and redirect user to ledger
-                dbAddFullMovementToLedger(
-                    db,
-                    user,
-                    ledger,
-                    newMovementStructure['movement'],
-                    newMovementStructure['contributions'],
-                )
+                if preexistingMovementId is None:
+                    # new-item insertion
+                    dbAddFullMovementToLedger(
+                        dbUpdateFullMovementInLedger,
+                        db,
+                        user,
+                        ledger,
+                        newMovementStructure['movement'],
+                        newMovementStructure['contributions'],
+                    )
+                else:
+                    # update-existing-item
+                    dbUpdateFullMovementInLedger(
+                        db,
+                        user,
+                        ledger,
+                        newMovementStructure['movement'],
+                        newMovementStructure['contributions'],
+                    )
                 #
                 return redirect(url_for(
                     'accountingLedgerView',
@@ -1011,12 +1049,36 @@ def accountingLedgerView(ledgerId):
                 )
                 raise OstracionError('Malformed movement insertion')
         else:
+            # we decide how to split (editing/nonediting)
+            fullMovementObjects = dbGetLedgerFullMovements(db, user, ledger)
+            if movementId is not None:
+                splitIndices = [
+                    movIndex
+                    for movIndex, movObj in enumerate(fullMovementObjects)
+                    if movObj['movement'].movement_id == movementId
+                ]
+                if len(splitIndices) > 0:
+                    splitIndex = splitIndices[0]
+                else:
+                    splitIndex = None
+            else:
+                splitIndex = None
             #
-            movementObjects = dbGetLedgerFullMovements(db, user, ledger)
-            #
-            addmovementform.date.data = datetime.datetime.now().strftime(
-                ledgerDatetimeFormat,
+            preMovementObjects = (
+                []
+                if splitIndex is None
+                else fullMovementObjects[:splitIndex]
             )
+            postMovementObjects = (
+                fullMovementObjects
+                if splitIndex is None
+                else fullMovementObjects[splitIndex + 1:]
+            )
+            if splitIndex is None:
+                editeeMovement = None
+            else:
+                editeeMovement = fullMovementObjects[splitIndex]
+            #
             paidFormFieldMap = {
                 actor.actor_id: getattr(addmovementform,
                                         'actorpaid_%s' % actor.actor_id)
@@ -1027,6 +1089,50 @@ def accountingLedgerView(ledgerId):
                                         'actorprop_%s' % actor.actor_id)
                 for actor in actorsInLedger
             }
+            #
+            if editeeMovement is None:
+                # new-movement form: just current date as default
+                addmovementform.date.data = datetime.datetime.now().strftime(
+                    ledgerDatetimeFormat,
+                )
+            else:
+                # edit-movement form: express the full movement
+                addmovementform.date.data = editeeMovement[
+                    'movement'].date.strftime(ledgerDatetimeFormat)
+                addmovementform.description.data = editeeMovement[
+                    'movement'].description
+                addmovementform.categoryId.data = editeeMovement[
+                    'movement'].category_id
+                addmovementform.subcategoryId.data = ('%s.%s' % (
+                    editeeMovement['movement'].category_id,
+                    editeeMovement['movement'].subcategory_id,
+                ))
+                for actor in actorsInLedger:
+                    if actor.actor_id in editeeMovement['contributions']:
+                        tMov = editeeMovement['contributions'][actor.actor_id]
+                        if tMov.paid != 0:
+                            thisPaid = tMov.paid
+                        else:
+                            thisPaid = None
+                        if tMov.proportion != 0:
+                            thisProp = tMov.proportion
+                        else:
+                            thisProp = None
+                    else:
+                        thisPaid = None
+                        thisProp = None
+                    paidFormFieldMap[actor.actor_id].data = applyDefault(
+                        transformIfNotEmpty(
+                            thisPaid,
+                            lambda pd: '%.2f' % pd,
+                        ),
+                        '',
+                    )
+                    propFormFieldMap[actor.actor_id].data = applyDefault(
+                        transformIfNotEmpty(thisProp, int),
+                        '',
+                    )
+            #
             usernameToName = {
                 u.username: u.fullname
                 for u in dbGetUsersForLedger(db, user, ledger)
@@ -1038,7 +1144,9 @@ def accountingLedgerView(ledgerId):
                 ledger=ledger,
                 actors=actorsInLedger,
                 usernameToName=usernameToName,
-                movementObjects=movementObjects,
+                editeeMovement=editeeMovement,
+                preMovementObjects=preMovementObjects,
+                postMovementObjects=postMovementObjects,
                 ledgerDatetimeFormat=ledgerDatetimeFormat,
                 ledgerDatetimeFormatDesc=ledgerDatetimeFormatDesc,
                 numActors=len(actorsInLedger),
@@ -1061,7 +1169,12 @@ def accountingLedgerDeleteMovementView(ledgerId, movementId):
     if ledger is not None:
         movementObj = dbGetLedgerFullMovement(db, user, ledger, movementId)
         if movementObj is not None:
-            dbDeleteLedgerFullMovement(db, user, ledger, movementObj['movement'])
+            dbDeleteLedgerFullMovement(
+                db,
+                user,
+                ledger,
+                movementObj['movement'],
+            )
             return redirect(url_for('accountingLedgerView', ledgerId=ledgerId))
         else:
             raise OstracionError('Movement not found')

@@ -76,6 +76,8 @@ Boxes of type 'real fs'
 
 ### Biblio app
 
+### Calendar app
+(in general, with application in calendar) gather/present information on aspect ratio for images
 
 ### Accounting app - DOING -
 
