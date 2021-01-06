@@ -24,11 +24,11 @@
                                             {% endif %}
                                         {% endfor %}
                                   </td>
-                                  <td>
+                                  <td style="max-width: 50px;">
                                         {% for actor in actors %}
                                             {% if movementObj['contributions'][actor.actor_id] %}
                                               {% if movementObj['contributions'][actor.actor_id].proportion %}
-                                                <span class="badge badge-secondary" data-toggle="tooltip" data-html="true" title="Due: <b>{{ '%.2f' % movementObj['contributions'][actor.actor_id].due }}</b>">
+                                                <span class="badge badge-secondary" data-toggle="tooltip" data-html="true" title="Due: <b>{{ '%.2f' % movementObj['contributions'][actor.actor_id].due }}</b> ({{ '%i' % (100.0 * movementObj['contributions'][actor.actor_id].proportion / movementObj['contribution_prop_total'] ) }}%)">
                                                   <i>{{ actor.name }}</i>: {{ movementObj['contributions'][actor.actor_id].proportion | int }}/{{ movementObj['contribution_prop_total'] | int }}
                                                 </span>
                                               {% endif %}

@@ -680,26 +680,54 @@ def dbUpdateFullMovementInLedger(db, user, ledger, newMovement,
     """
     if userIsAdmin(db, user) or dbUserCanSeeLedger(db, user, ledger.ledger_id):
         if ledger.ledger_id == newMovement.ledger_id:
-            # can insert, proceed
-            if all(c.movement_id == newMovement.movement_id
-                    for c in newContributions.values()):
-                dbUpdateRecordOnTable(
+            # are all actors on DB passed to this update?
+            actorIdsOnDB = {
+                contribDict['actor_id']
+                for contribDict in dbRetrieveRecordsByKey(
                     db,
-                    'accounting_ledger_movements',
-                    newMovement.asDict(),
+                    'accounting_movement_contributions',
+                    {
+                        'ledger_id': ledger.ledger_id,
+                        'movement_id': newMovement.movement_id,
+                    },
                     dbTablesDesc=dbSchema,
                 )
-                for contrib in newContributions.values():
+            }
+            actorsIdsInNewContrib = {
+                nContrib.actor_id
+                for nContrib in newContributions.values()
+            }
+            actorIdsLeftOut = actorIdsOnDB - actorsIdsInNewContrib
+            if len(actorIdsLeftOut) == 0:
+                # can insert, proceed
+                if all(c.movement_id == newMovement.movement_id
+                        for c in newContributions.values()):
                     dbUpdateRecordOnTable(
                         db,
-                        'accounting_movement_contributions',
-                        contrib.asDict(),
+                        'accounting_ledger_movements',
+                        newMovement.asDict(),
                         dbTablesDesc=dbSchema,
                     )
-                dbTouchLedger(db, user, ledger, skipCommit=True)
-                #
-                db.commit()
-
+                    for contrib in newContributions.values():
+                        if contrib.actor_id in actorIdsOnDB:
+                            dbUpdateRecordOnTable(
+                                db,
+                                'accounting_movement_contributions',
+                                contrib.asDict(),
+                                dbTablesDesc=dbSchema,
+                            )
+                        else:
+                            dbAddRecordToTable(
+                                db,
+                                'accounting_movement_contributions',
+                                contrib.asDict(),
+                                dbTablesDesc=dbSchema,
+                            )
+                    dbTouchLedger(db, user, ledger, skipCommit=True)
+                    #
+                    db.commit()
+            else:
+                raise OstracionError('Actors mismatch in movement update')
         else:
             raise OstracionError('Malformed movement insertion')
     else:

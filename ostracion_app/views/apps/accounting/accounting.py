@@ -72,6 +72,7 @@ from ostracion_app.views.apps.accounting.models.MovementSubcategory import (
 from ostracion_app.views.apps.accounting.settings import (
     ledgerDatetimeFormat,
     ledgerDatetimeFormatDesc,
+    ledgerMovementPaginationPageSize,
 )
 from ostracion_app.views.apps.accounting.accountingUtils import (
     isLedgerId,
@@ -1021,7 +1022,6 @@ def accountingLedgerView(ledgerId, movementId=None):
                 if preexistingMovementId is None:
                     # new-item insertion
                     dbAddFullMovementToLedger(
-                        dbUpdateFullMovementInLedger,
                         db,
                         user,
                         ledger,
@@ -1051,6 +1051,7 @@ def accountingLedgerView(ledgerId, movementId=None):
         else:
             # we decide how to split (editing/nonediting)
             fullMovementObjects = dbGetLedgerFullMovements(db, user, ledger)
+            #
             if movementId is not None:
                 splitIndices = [
                     movIndex
