@@ -33,6 +33,8 @@ from ostracion_app.utilities.tools.formatting import (
     transformIfNotEmpty,
 )
 
+from ostracion_app.utilities.tools.extraction import safeInt
+
 from ostracion_app.utilities.database.permissions import (
     userRoleRequired,
 )
@@ -73,6 +75,7 @@ from ostracion_app.views.apps.accounting.settings import (
     ledgerDatetimeFormat,
     ledgerDatetimeFormatDesc,
     ledgerMovementPaginationPageSize,
+    ledgerMovementPaginationShownPagesPerSide,
 )
 from ostracion_app.views.apps.accounting.accountingUtils import (
     isLedgerId,
@@ -107,6 +110,7 @@ from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbAddFullMovementToLedger,
     dbUpdateFullMovementInLedger,
     dbGetLedgerFullMovements,
+    dbCountLedgerFullMovements,
     dbGetLedgerFullMovement,
     dbDeleteLedgerFullMovement,
 )
@@ -960,6 +964,8 @@ def accountingLedgerView(ledgerId, movementId=None):
         There is a form, used either to add a new movement
         or to edit a preexisting one (which determines also the form position).
         These operations go through this single route.
+
+        movementId is passed only when editing an existing movement.
     """
     user = g.user
     db = dbGetDatabase()
@@ -1049,9 +1055,43 @@ def accountingLedgerView(ledgerId, movementId=None):
                 )
                 raise OstracionError('Malformed movement insertion')
         else:
-            # we decide how to split (editing/nonediting)
-            fullMovementObjects = dbGetLedgerFullMovements(db, user, ledger)
-            #
+            # pagination info preparation
+            pageIndex0 = safeInt(request.args.get('page'), default=0)
+            recordCount = dbCountLedgerFullMovements(db, user, ledger)
+            totalPages = ((recordCount + ledgerMovementPaginationPageSize)
+                          // ledgerMovementPaginationPageSize)
+            pageIndex = max(0, min(pageIndex0, totalPages - 1))
+            fullMovementObjects = dbGetLedgerFullMovements(
+                db,
+                user,
+                ledger,
+                ledgerMovementPaginationPageSize,
+                pageIndex * ledgerMovementPaginationPageSize,
+            )
+            firstShownPage = max(
+                1,
+                pageIndex - ledgerMovementPaginationShownPagesPerSide,
+            )
+            lastShownPage = min(
+                pageIndex + ledgerMovementPaginationShownPagesPerSide,
+                totalPages - 1,
+            )
+            pagesToShow = [0] + list(range(
+                firstShownPage,
+                lastShownPage,
+            )) + [totalPages - 1]
+            paginationInfo = {
+                'page_index': pageIndex,
+                'total_pages': totalPages,
+                'row_count': recordCount,
+                'row_first_shown': (ledgerMovementPaginationPageSize
+                                    * pageIndex),
+                'row_last_shown': (ledgerMovementPaginationPageSize * pageIndex
+                                   + len(fullMovementObjects) - 1),
+                'pages_shown': pagesToShow,
+            }
+
+            # we decide how to split to insert edit form (editing/nonediting)
             if movementId is not None:
                 splitIndices = [
                     movIndex
@@ -1154,6 +1194,7 @@ def accountingLedgerView(ledgerId, movementId=None):
                 addmovementform=addmovementform,
                 paidFormFieldMap=paidFormFieldMap,
                 propFormFieldMap=propFormFieldMap,
+                paginationInfo=paginationInfo,
                 **pageFeatures,
             )
     else:

@@ -6,3 +6,4 @@ ledgerDatetimeFormatDesc = 'YYYY/MM/DD'
 
 # ledger page appearance
 ledgerMovementPaginationPageSize = 10
+ledgerMovementPaginationShownPagesPerSide = 6

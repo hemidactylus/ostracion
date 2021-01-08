@@ -97,4 +97,9 @@ Accumulated todos:
   - Remove the 'apps' task if it's empty (e.g. for anon user), as it is not there in the menu
   - icons to "apps" in the menu
 
+  - for pagination / filtering:
+      https://www.sqlitetutorial.net/sqlite-count-function/
+      https://stackoverflow.com/questions/3325515/sqlite-limit-offset-query
+
+
   + js to adapt subcats / show the description

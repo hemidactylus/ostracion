@@ -42,6 +42,7 @@ from ostracion_app.utilities.database.sqliteEngine import (
     dbUpdateRecordOnTable,
     dbDeleteRecordsByKey,
     dbRetrieveRecordsByKey,
+    dbCountRecordsByKey,
 )
 from ostracion_app.utilities.database.dbSchema import (
     dbSchema,
@@ -761,10 +762,12 @@ def _makeFullMovementStructure(_db, _ledger, _movdict):
     }
 
 
-def dbGetLedgerFullMovements(db, user, ledger):
+def dbGetLedgerFullMovements(db, user, ledger, pageSize=None, pageStart=0):
     """
         *TEMPORARY*, will have query driver, pagination, joins.
         Retrieve movements pertaining to a given ledger.
+
+        pageSize = None if infinite
     """
 
     if userIsAdmin(db, user) or dbUserCanSeeLedger(db, user, ledger.ledger_id):
@@ -779,6 +782,8 @@ def dbGetLedgerFullMovements(db, user, ledger):
                 ('date', 'DESC'),
                 ('last_edit_date', 'DESC'),
             ],
+            limit=pageSize,
+            offset=pageStart,
         )
         return [
             _makeFullMovementStructure(db, ledger, bareMovDict)
@@ -786,6 +791,21 @@ def dbGetLedgerFullMovements(db, user, ledger):
         ]
     else:
         raise OstracionError('Insufficient permissions')
+
+
+def dbCountLedgerFullMovements(db, user, ledger):
+    """
+        *TEMPORARY* will have querying
+        Count total number of movements [on a query] in a ledger
+    """
+    return dbCountRecordsByKey(
+        db,
+        'accounting_ledger_movements',
+        {
+            'ledger_id': ledger.ledger_id,
+        },
+        dbTablesDesc=dbSchema,
+    )
 
 
 def dbGetLedgerFullMovement(db, user, ledger, movementId):

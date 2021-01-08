@@ -37,6 +37,9 @@ from operator import itemgetter
 
 DB_DEBUG = False
 
+# for moot 'limit' clause in selects
+veryLargeIntegerName = '18446744073709551615'
+
 
 def listColumns(tableName, dbTablesDesc=None):
     """ Read the table structure and return an *ordered*
@@ -259,7 +262,7 @@ def dbRetrieveAllRecords(db, tableName, dbTablesDesc=None):
 
 def dbRetrieveRecordsByKey(db, tableName, keys,
                            whereClauses=[], dbTablesDesc=None,
-                           order=None):
+                           order=None, offset=None, limit=None):
     """ Fetch records (an iterable, possibly empty) from a table
         according to a certain query.
 
@@ -271,6 +274,9 @@ def dbRetrieveRecordsByKey(db, tableName, keys,
 
         "order", if not None, must be a list of 2-tuples (first ones first)
             [(fieldName, 'ASC'/'DESC'). ...]
+
+        'offset', if present (nonnegative integer), skips the first matches
+        'limit', if present (nonnegative integer), limits the max items yielded
     """
     cur = db.cursor()
     if len(keys) > 0:
@@ -298,12 +304,28 @@ def dbRetrieveRecordsByKey(db, tableName, keys,
             '%s %s' % (ordPair[0], ordPair[1])
             for ordPair in order
         ))
+    # limit/offset part
+    # (see https://dev.mysql.com/doc/refman/8.0/en/select.html)
+    if limit is None:
+        if offset is None:
+            limitClause = ''
+        else:
+            limitClause = ' LIMIT %i, %s' % (offset, veryLargeIntegerName)
+    else:
+        if offset is None:
+            limitClause = ' LIMIT %i' % limit
+        else:
+            limitClause = ' LIMIT %i, %i' % (
+                offset,
+                limit,
+            )
     #
-    selectStatement = 'SELECT %s FROM %s WHERE %s%s' % (
+    selectStatement = 'SELECT %s FROM %s WHERE %s%s%s' % (
         columnNames,
         tableName,
         whereClause,
         orderClause,
+        limitClause,
     )
     if DB_DEBUG:
         print('[dbRetrieveRecordsByKey] %s' % selectStatement)
@@ -318,6 +340,49 @@ def dbRetrieveRecordsByKey(db, tableName, keys,
             dict(zip(columnList, docT))
             for docT in docTupleList
         )
+    else:
+        return None
+
+
+def dbCountRecordsByKey(db, tableName, keys,
+                        whereClauses=[], dbTablesDesc=None):
+    """ Count records on a table according to a certain query.
+
+        'keys' and 'whereClauses' params are same as dbRetrieveRecordsByKey
+
+        Return a (nonnegative) integer.
+    """
+    cur = db.cursor()
+    if len(keys) > 0:
+        _kNames, _kValues = list(zip(*list(keys.items())))
+        kNames, kValues = list(_kNames), list(_kValues)
+    else:
+        kNames, kValues = [], []
+    #
+    kValues += [wc[1] for wc in whereClauses if isinstance(wc, tuple)]
+    fullWhereClauses = [
+        '%s=?' % kn
+        for kn in kNames
+    ] + [
+        wc[0] if isinstance(wc, tuple) else wc
+        for wc in whereClauses
+    ]
+    whereClause = ' AND '.join(fullWhereClauses)
+    #
+    countStatement = 'SELECT COUNT(*) FROM %s WHERE %s' % (
+        tableName,
+        whereClause,
+    )
+    if DB_DEBUG:
+        print('[dbCountRecordsByKey] %s' % countStatement)
+        print('[dbCountRecordsByKey] %s' % ','.join(
+            '%s' % iv
+            for iv in kValues
+        ))
+    cur.execute(countStatement, kValues)
+    docTupleList = list(cur.fetchall())
+    if len(docTupleList) > 0:
+        return docTupleList[0][0]
     else:
         return None
 
