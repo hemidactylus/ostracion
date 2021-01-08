@@ -18,9 +18,9 @@
 
               <span>
                 {% if filecontents.mode == 'plain' %}
-                    <pre><code>{{ filecontents.value }}</code></pre>
+                    <pre class="literal-text">{{ filecontents.value }}</pre>
                 {% elif filecontents.mode == 'markdown' %}
-                  <div>{{ filecontents.value | safe }}</div>
+                  <div class="markdown-inline-code">{{ filecontents.value | safe }}</div>
                 {% elif filecontents.mode == 'error' %}
                   <p><em>{{ filecontents.value }}</em></p>
                 {% elif filecontents.mode == 'image' %}

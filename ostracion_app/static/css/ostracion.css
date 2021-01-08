@@ -66,3 +66,17 @@ img.calendar-chosen-image {
   padding-top: 0.52rem;
   padding-bottom: 0.84rem;
 }
+
+.literal-text {
+  overflow-x: auto;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+
+p code {
+  font-weight: bold;
+  color: #0003bf;
+}
