@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% macro makemovementtable(mobjects) %}
+{% macro makemovementtable(mobjects, pagInfo) %}
 
                             {% for movementObj in mobjects %}
                                 <tr>
@@ -50,10 +50,10 @@
                                     </div>">
                                       i
                                     </a>
-                                    <a href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id, movementId=movementObj['movement'].movement_id) }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Edit">
+                                    <a href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id, movementId=movementObj['movement'].movement_id, page=pagInfo.page_index) }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Edit">
                                       E
                                     </a>
-                                    <a href="{{ url_for('accountingLedgerDeleteMovementView', ledgerId=ledger.ledger_id, movementId=movementObj['movement'].movement_id) }}" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
+                                    <a href="{{ url_for('accountingLedgerDeleteMovementView', ledgerId=ledger.ledger_id, movementId=movementObj['movement'].movement_id, page=pagInfo.page_index) }}" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
                                       X
                                     </a>
                                   </td>
@@ -63,27 +63,29 @@
 {% endmacro %}
 
 {% macro makepagination( pagInfo ) %}
-                    <nav aria-label="Page navigation example">
-                      <ul class="pagination justify-content-center pagination-sm">
-                        {% for thisPIndex in pagInfo.pages_shown %}
-                          {% if thisPIndex == pagInfo.page_index %}
-                            <li class="page-item active">
-                              <a class="page-link" href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id, page=thisPIndex) }}" tabindex="-1" data-toggle="tooltip" title="{{ pagInfo.row_first_shown + 1 }} to {{ pagInfo.row_last_shown + 1 }} of {{ pagInfo.row_count }}">
+                    {% if pagInfo.total_pages > 1 %}
+                      <nav>
+                        <ul class="pagination justify-content-center pagination-sm">
+                          {% for thisPIndex in pagInfo.pages_shown %}
+                            {% if thisPIndex == pagInfo.page_index %}
+                              <li class="page-item active" style="{% if thisPIndex == 0 %}margin-right: 12px;{% endif %}{% if thisPIndex == pagInfo.total_pages - 1 %}margin-left: 12px;{% endif %}">
+                                <a class="page-link" href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id, page=thisPIndex) }}" tabindex="-1" data-toggle="tooltip" title="{{ pagInfo.row_first_shown + 1 }} to {{ pagInfo.row_last_shown + 1 }} of {{ pagInfo.row_count }}">
+                                  {% if thisPIndex == pagInfo.total_pages - 1 %}<span aria-hidden="true">&raquo;</span>{% endif %}
+                                  {{ thisPIndex + 1 }}
+                                  {% if thisPIndex == 0 %}<span aria-hidden="true">&laquo;</span>{% endif %}
+                                </a>
+                              </li>
+                            {% else %}
+                              <li class="page-item" style="{% if thisPIndex == 0 %}margin-right: 12px;{% endif %}{% if thisPIndex == pagInfo.total_pages - 1 %}margin-left: 12px;{% endif %}"><a class="page-link" href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id, page=thisPIndex) }}" tabindex="-1">
                                 {% if thisPIndex == pagInfo.total_pages - 1 %}<span aria-hidden="true">&raquo;</span>{% endif %}
                                 {{ thisPIndex + 1 }}
                                 {% if thisPIndex == 0 %}<span aria-hidden="true">&laquo;</span>{% endif %}
-                              </a>
-                            </li>
-                          {% else %}
-                            <li class="page-item"><a class="page-link" href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id, page=thisPIndex) }}">
-                              {% if thisPIndex == pagInfo.total_pages - 1 %}<span aria-hidden="true">&raquo;</span>{% endif %}
-                              {{ thisPIndex + 1 }}
-                              {% if thisPIndex == 0 %}<span aria-hidden="true">&laquo;</span>{% endif %}
-                            </a></li>
-                          {% endif %}
-                        {% endfor %}
-                      </ul>
-                    </nav>
+                              </a></li>
+                            {% endif %}
+                          {% endfor %}
+                        </ul>
+                      </nav>
+                    {% endif %}
 {% endmacro %}
 
 
@@ -122,6 +124,39 @@
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                  <div class="col">
+
+                    <form method="post" name="query" action="{{ url_for('accountingLedgerAlterQueryView', ledgerId=ledger.ledger_id) }}">
+                      {{ queryform.hidden_tag() }}
+
+                      <div class="form-group">
+                        <label for="roledescription">Start date</label>
+                        {{ queryform.dateFrom(class_="form-control",tabindex=1) }}
+                        {% for error in queryform.dateFrom.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                      </div>
+
+                      <div class="form-group">
+                        <label for="roledescription">End date</label>
+                        {{ queryform.dateTo(class_="form-control",tabindex=2) }}
+                        {% for error in queryform.dateTo.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                      </div>
+
+                      <div class="form-group">
+                        {{ queryform.submit(class_='btn btn-primary btn-md',style='margin-right: 25px;',tabindex=3) }}
+                        <a href="#" class="btn btn-success" tabindex="4">
+                          Reset
+                        </a>
+                      </div>
+
+                    </form>
+
+                  </div>
+                </div>
 
                 <hr>
                 <div class="col">
@@ -145,72 +180,74 @@
                         </thead>
                         <tbody>
 
-                            {{ makemovementtable(preMovementObjects) }}
+                            {{ makemovementtable(preMovementObjects, paginationInfo) }}
 
-                            <form class="form-inline" method="post" name="addmovement" action="">
-                                {{ addmovementform.hidden_tag() }}
-                                <tr>
-                                  <td style="font-family: monospace;">
-                                    <a name="movementform"></a>
-                                    {{ addmovementform.date(class_="form-control",placeholder=ledgerDatetimeFormatDesc,tabindex=1) }}
-                                    {% for error in addmovementform.date.errors %}
-                                      <small class="form-text text-muted">{{ error }}</small>
-                                    {% endfor %}
-                                  </td>
-                                  <td style="font-family: monospace;">
-                                    {{ addmovementform.categoryId(class_="form-control",tabindex=2) }}
-                                    {% for error in addmovementform.categoryId.errors %}
-                                      <small class="form-text text-muted">{{ error }}</small>
-                                    {% endfor %}
-                                  </td>
-                                  <td style="font-family: monospace;">
-                                    {{ addmovementform.subcategoryId(class_="form-control",tabindex=3) }}
-                                    {% for error in addmovementform.subcategoryId.errors %}
-                                      <small class="form-text text-muted">{{ error }}</small>
-                                    {% endfor %}
-                                  </td>
+                            {% if displayMovementForm %}
+                              <form class="form-inline" method="post" name="addmovement" action="">
+                                  {{ addmovementform.hidden_tag() }}
+                                  <tr>
+                                    <td style="font-family: monospace;">
+                                      <a name="movementform"></a>
+                                      {{ addmovementform.date(class_="form-control",placeholder=ledgerDatetimeFormatDesc,tabindex=11) }}
+                                      {% for error in addmovementform.date.errors %}
+                                        <small class="form-text text-muted">{{ error }}</small>
+                                      {% endfor %}
+                                    </td>
+                                    <td style="font-family: monospace;">
+                                      {{ addmovementform.categoryId(class_="form-control",tabindex=12) }}
+                                      {% for error in addmovementform.categoryId.errors %}
+                                        <small class="form-text text-muted">{{ error }}</small>
+                                      {% endfor %}
+                                    </td>
+                                    <td style="font-family: monospace;">
+                                      {{ addmovementform.subcategoryId(class_="form-control",tabindex=13) }}
+                                      {% for error in addmovementform.subcategoryId.errors %}
+                                        <small class="form-text text-muted">{{ error }}</small>
+                                      {% endfor %}
+                                    </td>
 
-                                  <td>
-                                        {% for actor in actors %}
-                                            <div class="row" style="width:90%; margin-left: 0;">
-                                                {{ paidFormFieldMap[actor.actor_id](class_="form-control form-control-sm",placeholder=actor.name, tabindex=3+loop.index) }}
-                                                {% for error in paidFormFieldMap[actor.actor_id].errors %}
-                                                  <small class="form-text text-muted">{{ error }}</small>
-                                                {% endfor %}
-                                            </div>
-                                        {% endfor %}
-                                  </td>
-                                  <td>
-                                        {% for actor in actors %}
-                                            <div class="row" style="width:90%; margin-left: 0;">
-                                                {{ propFormFieldMap[actor.actor_id](class_="form-control form-control-sm",placeholder=actor.name, tabindex=3+numActors+loop.index) }}
-                                                {% for error in propFormFieldMap[actor.actor_id].errors %}
-                                                  <small class="form-text text-muted">{{ error }}</small>
-                                                {% endfor %}
-                                            </div>
-                                        {% endfor %}
-                                  </td>
+                                    <td>
+                                          {% for actor in actors %}
+                                              <div class="row" style="width:90%; margin-left: 0;">
+                                                  {{ paidFormFieldMap[actor.actor_id](class_="form-control form-control-sm",placeholder=actor.name, tabindex=14+loop.index) }}
+                                                  {% for error in paidFormFieldMap[actor.actor_id].errors %}
+                                                    <small class="form-text text-muted">{{ error }}</small>
+                                                  {% endfor %}
+                                              </div>
+                                          {% endfor %}
+                                    </td>
+                                    <td>
+                                          {% for actor in actors %}
+                                              <div class="row" style="width:90%; margin-left: 0;">
+                                                  {{ propFormFieldMap[actor.actor_id](class_="form-control form-control-sm",placeholder=actor.name, tabindex=14+numActors+loop.index) }}
+                                                  {% for error in propFormFieldMap[actor.actor_id].errors %}
+                                                    <small class="form-text text-muted">{{ error }}</small>
+                                                  {% endfor %}
+                                              </div>
+                                          {% endfor %}
+                                    </td>
 
-                                  <td>
-                                    {{ addmovementform.description(class_="form-control",placeholder="description...",tabindex=2*numActors+4) }}
-                                    {% for error in addmovementform.description.errors %}
-                                      <small class="form-text text-muted">{{ error }}</small>
-                                    {% endfor %}
-                                  </td>
-                                  <td>
-                                    {% if editeeMovement %}
-                                      {{ addmovementform.submit(class_='btn btn-primary btn-md', tabindex=2*numActors+5, value="S") }}
-                                      <a href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id) }}" class="btn btn-success btn-md" tabindex="{{ 2*numActors+6 }}" data-toggle="tooltip" title="Cancel editing">
-                                        N
-                                      </a>
-                                    {% else %}
-                                      {{ addmovementform.submit(class_='btn btn-primary btn-md',style='margin-right: 25px;', tabindex=2*numActors+5, value="+") }}
-                                    {% endif %}
-                                  </td>
-                                </tr>
-                            </form>
+                                    <td>
+                                      {{ addmovementform.description(class_="form-control",placeholder="description...",tabindex=10+2*numActors+4) }}
+                                      {% for error in addmovementform.description.errors %}
+                                        <small class="form-text text-muted">{{ error }}</small>
+                                      {% endfor %}
+                                    </td>
+                                    <td>
+                                      {% if editeeMovement %}
+                                        {{ addmovementform.submit(class_='btn btn-primary btn-md', tabindex=10+2*numActors+5, value="S") }}
+                                        <a href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id, page=paginationInfo.page_index) }}" class="btn btn-success btn-md" tabindex="{{ 10+2*numActors+6 }}" data-toggle="tooltip" title="Cancel editing">
+                                          N
+                                        </a>
+                                      {% else %}
+                                        {{ addmovementform.submit(class_='btn btn-primary btn-md',style='margin-right: 25px;', tabindex=10+2*numActors+5, value="+") }}
+                                      {% endif %}
+                                    </td>
+                                  </tr>
+                              </form>
+                            {% endif %}
 
-                            {{ makemovementtable(postMovementObjects) }}
+                            {{ makemovementtable(postMovementObjects, paginationInfo) }}
 
                         </tbody>
                       </table>

@@ -24,8 +24,10 @@ class ProhibitedIDChoice():
 
 class ValidDateTime():
     """Constrained date/time format"""
-    def __init__(self, datetimeFormat='%Y/%m/%d', message=None):
+    def __init__(self, datetimeFormat='%Y/%m/%d', message=None,
+                 optional=False):
         self.datetimeFormat = datetimeFormat
+        self.optional = optional
         if message is None:
             self.message = (
                 'Invalid date/time format. Use "%s"' % datetimeFormat
@@ -37,7 +39,11 @@ class ValidDateTime():
         if not isinstance(field.data, str):
             raise ValidationError(self.message)
         else:
-            try:
-                datetime.datetime.strptime(field.data, self.datetimeFormat)
-            except ValueError:
-                raise ValidationError(self.message)
+            if self.optional and field.data == '':
+                # empty-string is allowed if optional
+                pass
+            else:
+                try:
+                    datetime.datetime.strptime(field.data, self.datetimeFormat)
+                except ValueError:
+                    raise ValidationError(self.message)

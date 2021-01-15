@@ -60,6 +60,7 @@ from ostracion_app.views.apps.accounting.forms import (
     AccountingLedgerCategoryForm,
     AccountingLedgerSubcategoryForm,
     generateAccountingMovementForm,
+    generateAccountingLedgerQueryForm,
 )
 
 from ostracion_app.views.apps.accounting.models.Ledger import Ledger
@@ -988,7 +989,7 @@ def accountingLedgerView(ledgerId, movementId=None):
                         'accountingLedgerView',
                         ledgerId=ledger.ledger_id,
                     ),
-                    'name': 'Ledger "%s"' % ledger.name,
+                    'name': ledger.ledger_id,
                 }],
             )
         #
@@ -996,6 +997,12 @@ def accountingLedgerView(ledgerId, movementId=None):
             categoryTree,
             actorsInLedger,
         )
+        queryform = generateAccountingLedgerQueryForm(
+            categoryTree,
+            actorsInLedger,
+        )
+        pageIndex0 = safeInt(request.args.get('page'), default=0)
+        #
         if addmovementform.validate_on_submit():
             # try to load the preexisting movement if ID provided
             # (it means we are in the edit-existing-movement flow)
@@ -1047,6 +1054,7 @@ def accountingLedgerView(ledgerId, movementId=None):
                 return redirect(url_for(
                     'accountingLedgerView',
                     ledgerId=ledgerId,
+                    page=pageIndex0,
                 ))
             else:
                 request._onErrorUrl = url_for(
@@ -1056,7 +1064,6 @@ def accountingLedgerView(ledgerId, movementId=None):
                 raise OstracionError('Malformed movement insertion')
         else:
             # pagination info preparation
-            pageIndex0 = safeInt(request.args.get('page'), default=0)
             recordCount = dbCountLedgerFullMovements(db, user, ledger)
             totalPages = ((recordCount + ledgerMovementPaginationPageSize)
                           // ledgerMovementPaginationPageSize)
@@ -1173,6 +1180,11 @@ def accountingLedgerView(ledgerId, movementId=None):
                         transformIfNotEmpty(thisProp, int),
                         '',
                     )
+
+            # we decide whether to show the form at all (this controls
+            # both edit-form and new-item-form aka nonediting)
+            displayMovementForm = pageIndex == 0 or editeeMovement is not None
+
             #
             usernameToName = {
                 u.username: u.fullname
@@ -1192,6 +1204,8 @@ def accountingLedgerView(ledgerId, movementId=None):
                 ledgerDatetimeFormatDesc=ledgerDatetimeFormatDesc,
                 numActors=len(actorsInLedger),
                 addmovementform=addmovementform,
+                queryform=queryform,
+                displayMovementForm=displayMovementForm,
                 paidFormFieldMap=paidFormFieldMap,
                 propFormFieldMap=propFormFieldMap,
                 paginationInfo=paginationInfo,
@@ -1211,14 +1225,57 @@ def accountingLedgerDeleteMovementView(ledgerId, movementId):
     if ledger is not None:
         movementObj = dbGetLedgerFullMovement(db, user, ledger, movementId)
         if movementObj is not None:
+            pageIndex = safeInt(request.args.get('page'), default=0)
             dbDeleteLedgerFullMovement(
                 db,
                 user,
                 ledger,
                 movementObj['movement'],
             )
-            return redirect(url_for('accountingLedgerView', ledgerId=ledgerId))
+            return redirect(url_for(
+                'accountingLedgerView',
+                ledgerId=ledgerId,
+                page=pageIndex,
+            ))
         else:
             raise OstracionError('Movement not found')
+    else:
+        raise OstracionError('Ledger not found')
+
+
+@app.route('/apps/accounting/ledger/alterquery/<ledgerId>', methods=['POST'])
+def accountingLedgerAlterQueryView(ledgerId):
+    """
+        A POST-only route that receives a 'ledger movement query' form,
+        parses its arguments, alters the cookied query and redirects to
+        the ledger view for display.
+    """
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for('accountingLedgerView', ledgerId=ledgerId)
+    ledger = dbGetLedger(db, user, ledgerId)
+    if ledger is not None:
+        #
+        categoryTree = extractLedgerCategoryTree(db, user, ledger)
+        actorsInLedger = sorted(
+            dbGetActorsForLedger(db, user, ledger),
+            key=lambda a: a.actor_id.lower(),
+        )
+        queryform = generateAccountingLedgerQueryForm(
+            categoryTree,
+            actorsInLedger,
+        )
+        #
+        if queryform.validate_on_submit():
+            # should set cookie with new query
+            query = {
+                'dateFrom': queryform.dateFrom.data,
+                'dateTo': queryform.dateTo.data,
+            }
+            flashMessage('Info', 'Info', 'Setting query %s...' % str(query))
+            return redirect(url_for('accountingLedgerView', ledgerId=ledgerId))
+        else:
+            flashMessage('Error', 'Error', 'Validation error...')
+            return redirect(url_for('accountingLedgerView', ledgerId=ledgerId))
     else:
         raise OstracionError('Ledger not found')

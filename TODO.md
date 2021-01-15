@@ -102,4 +102,5 @@ Accumulated todos:
       https://stackoverflow.com/questions/3325515/sqlite-limit-offset-query
 
 
+forms
   + js to adapt subcats / show the description

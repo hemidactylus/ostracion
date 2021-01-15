@@ -126,6 +126,37 @@ class AccountingLedgerSubcategoryForm(FlaskForm):
                                    + [(cId, cId) for cId in choices])
 
 
+def generateAccountingLedgerQueryForm(categoryTree, actors):
+    """ Generate a form for queries on the ledger movements."""
+
+    class _qForm(FlaskForm):
+        submit = SubmitField('Search')
+        dateFrom = StringField(
+            'Date',
+            validators=[
+                ValidDateTime(
+                    ledgerDatetimeFormat,
+                    'Insert a valid "%s" date' % ledgerDatetimeFormatDesc,
+                    optional=True,
+                ),
+                Length(max=maxShortIdentifierLength),
+            ],
+        )
+        dateTo = StringField(
+            'Date',
+            validators=[
+                ValidDateTime(
+                    ledgerDatetimeFormat,
+                    'Insert a valid "%s" date' % ledgerDatetimeFormatDesc,
+                    optional=True,
+                ),
+                Length(max=maxShortIdentifierLength),
+            ],
+        )
+
+    return _qForm()
+
+
 def generateAccountingMovementForm(categoryTree, actors):
     """ Generate a form for a movement in a particular accounting ledger."""
 

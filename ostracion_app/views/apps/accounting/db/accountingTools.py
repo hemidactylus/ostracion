@@ -666,7 +666,8 @@ def dbAddFullMovementToLedger(db, user, ledger, newMovement, newContributions):
                 dbTouchLedger(db, user, ledger, skipCommit=True)
                 #
                 db.commit()
-
+            else:
+                raise OstracionError('Malformed movement insertion')
         else:
             raise OstracionError('Malformed movement insertion')
     else:
@@ -762,7 +763,7 @@ def _makeFullMovementStructure(_db, _ledger, _movdict):
     }
 
 
-def dbGetLedgerFullMovements(db, user, ledger, pageSize=None, pageStart=0):
+def dbGetLedgerFullMovements(db, user, ledger, pageSize=None, pageStart=None):
     """
         *TEMPORARY*, will have query driver, pagination, joins.
         Retrieve movements pertaining to a given ledger.

@@ -37,8 +37,8 @@ from operator import itemgetter
 
 DB_DEBUG = False
 
-# for moot 'limit' clause in selects
-veryLargeIntegerName = '18446744073709551615'
+# for moot 'limit' clause in selects (this is 2^63-1, i.e. a signed long max)
+veryLargeIntegerName = '9223372036854775807'
 
 
 def listColumns(tableName, dbTablesDesc=None):
