@@ -154,6 +154,15 @@ def generateAccountingLedgerQueryForm(categoryTree, actors):
             ],
         )
 
+        def receiveValues(self, query):
+            """Use the values in 'query' to set field data."""
+            if 'dateFrom' in query:
+                self.dateFrom.data = query['dateFrom'].strftime(
+                    ledgerDatetimeFormat,
+                )
+            if 'dateTo' in query:
+                self.dateTo.data = query['dateTo'].strftime(ledgerDatetimeFormat)
+
     return _qForm()
 
 

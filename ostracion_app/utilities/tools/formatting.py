@@ -61,7 +61,7 @@ def transformIfNotEmpty(txt, tformer=lambda t: t):
     else:
         try:
             return tformer(txt)
-        except Exception:
+        except Exception as e:
             return None
 
 

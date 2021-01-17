@@ -3,6 +3,7 @@
 from flask import url_for
 import datetime
 import uuid
+import json
 
 from ostracion_app.utilities.tools.extraction import (
     safeNone,
@@ -302,3 +303,66 @@ def parseNewMovementForm(db, user, ledger, movementForm, categoryTree,
                 'movement': movement,
                 'contributions': contributions,
             }
+
+
+def serializeLedgerQuery(query):
+    """
+        Prepare a cookie-savable string with a ledger-movement query stored
+        in it.
+
+        Default serdes is identity, with the exception of some fields.
+    """
+    serializable = {
+        k: {
+            'dateFrom': lambda w: datetime.datetime.strftime(
+                w,
+                '%Y-%m-%d %H:%M:%S',
+            ),
+            'dateTo': lambda w: datetime.datetime.strftime(
+                w,
+                '%Y-%m-%d %H:%M:%S',
+            ),
+        }.get(k, lambda w: w)(v)
+        for k, v in query.items()
+    }
+    return json.dumps(serializable)
+
+
+def deserializeLedgerQuery(sQuery):
+    """Reverse the serialization of serializeLedgerQuery."""
+    return {
+        k: {
+            'dateFrom': lambda w: datetime.datetime.strptime(
+                w,
+                '%Y-%m-%d %H:%M:%S',
+            ),
+            'dateTo': lambda w: datetime.datetime.strptime(
+                w,
+                '%Y-%m-%d %H:%M:%S',
+            ),
+        }.get(k, lambda w: w)(v)
+        for k, v in json.loads(sQuery).items()
+    }
+
+
+def retrieveCookiedLedgerQuery(req, ledger):
+    """Given a 'request' object, get its stored query."""
+    sQuery = req.cookies.get('accounting_ledger_query_%s' % ledger.ledger_id)
+    if sQuery is None:
+        return {}
+    else:
+        return deserializeLedgerQuery(sQuery)
+
+
+def setCookiedLedgerQuery(response, ledger, query):
+    """
+        Pile, on top of an already existing response, setting/deleting
+        the cookie containing the ledger query for a ledger.
+    """
+    cookieName = 'accounting_ledger_query_%s' % ledger.ledger_id
+    if query is not None:
+        response.set_cookie(cookieName, serializeLedgerQuery(query))
+    else:
+        response.set_cookie(cookieName, '', expires=0)
+    #
+    return response

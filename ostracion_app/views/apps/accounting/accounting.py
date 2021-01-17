@@ -86,6 +86,11 @@ from ostracion_app.views.apps.accounting.accountingUtils import (
     prepareLedgerSummary,
     prepareLedgerInfo,
     parseNewMovementForm,
+    retrieveCookiedLedgerQuery,
+    setCookiedLedgerQuery,
+    # TEMP debug the two following
+    serializeLedgerQuery,
+    deserializeLedgerQuery,
 )
 from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetLedger,
@@ -973,25 +978,11 @@ def accountingLedgerView(ledgerId, movementId=None):
     request._onErrorUrl = url_for('accountingIndexView')
     ledger = dbGetLedger(db, user, ledgerId)
     if ledger is not None:
-        #
         categoryTree = extractLedgerCategoryTree(db, user, ledger)
         actorsInLedger = sorted(
             dbGetActorsForLedger(db, user, ledger),
             key=lambda a: a.actor_id.lower(),
         )
-        pageFeatures = prepareTaskPageFeatures(
-                appsPageDescriptor,
-                ['root', 'accounting'],
-                g,
-                appendedItems=[{
-                    'kind': 'link',
-                    'target': url_for(
-                        'accountingLedgerView',
-                        ledgerId=ledger.ledger_id,
-                    ),
-                    'name': ledger.ledger_id,
-                }],
-            )
         #
         addmovementform = generateAccountingMovementForm(
             categoryTree,
@@ -1001,6 +992,13 @@ def accountingLedgerView(ledgerId, movementId=None):
             categoryTree,
             actorsInLedger,
         )
+        query = retrieveCookiedLedgerQuery(request, ledger)
+        flashMessage('Info', 'Info', 'Retrieved query: %s. I SHOULD USE IT IN QUERYING but not if it is {}' % (
+            'NONE' if query is None else serializeLedgerQuery(query)
+        ))
+        # query to queryform
+        queryform.receiveValues(query)
+        #
         pageIndex0 = safeInt(request.args.get('page'), default=0)
         #
         if addmovementform.validate_on_submit():
@@ -1063,153 +1061,15 @@ def accountingLedgerView(ledgerId, movementId=None):
                 )
                 raise OstracionError('Malformed movement insertion')
         else:
-            # pagination info preparation
-            recordCount = dbCountLedgerFullMovements(db, user, ledger)
-            totalPages = ((recordCount + ledgerMovementPaginationPageSize)
-                          // ledgerMovementPaginationPageSize)
-            pageIndex = max(0, min(pageIndex0, totalPages - 1))
-            fullMovementObjects = dbGetLedgerFullMovements(
+            return finalizeLedgerView(
                 db,
                 user,
                 ledger,
-                ledgerMovementPaginationPageSize,
-                pageIndex * ledgerMovementPaginationPageSize,
-            )
-            firstShownPage = max(
-                1,
-                pageIndex - ledgerMovementPaginationShownPagesPerSide,
-            )
-            lastShownPage = min(
-                pageIndex + ledgerMovementPaginationShownPagesPerSide,
-                totalPages - 1,
-            )
-            pagesToShow = [0] + list(range(
-                firstShownPage,
-                lastShownPage,
-            )) + [totalPages - 1]
-            paginationInfo = {
-                'page_index': pageIndex,
-                'total_pages': totalPages,
-                'row_count': recordCount,
-                'row_first_shown': (ledgerMovementPaginationPageSize
-                                    * pageIndex),
-                'row_last_shown': (ledgerMovementPaginationPageSize * pageIndex
-                                   + len(fullMovementObjects) - 1),
-                'pages_shown': pagesToShow,
-            }
-
-            # we decide how to split to insert edit form (editing/nonediting)
-            if movementId is not None:
-                splitIndices = [
-                    movIndex
-                    for movIndex, movObj in enumerate(fullMovementObjects)
-                    if movObj['movement'].movement_id == movementId
-                ]
-                if len(splitIndices) > 0:
-                    splitIndex = splitIndices[0]
-                else:
-                    splitIndex = None
-            else:
-                splitIndex = None
-            #
-            preMovementObjects = (
-                []
-                if splitIndex is None
-                else fullMovementObjects[:splitIndex]
-            )
-            postMovementObjects = (
-                fullMovementObjects
-                if splitIndex is None
-                else fullMovementObjects[splitIndex + 1:]
-            )
-            if splitIndex is None:
-                editeeMovement = None
-            else:
-                editeeMovement = fullMovementObjects[splitIndex]
-            #
-            paidFormFieldMap = {
-                actor.actor_id: getattr(addmovementform,
-                                        'actorpaid_%s' % actor.actor_id)
-                for actor in actorsInLedger
-            }
-            propFormFieldMap = {
-                actor.actor_id: getattr(addmovementform,
-                                        'actorprop_%s' % actor.actor_id)
-                for actor in actorsInLedger
-            }
-            #
-            if editeeMovement is None:
-                # new-movement form: just current date as default
-                addmovementform.date.data = datetime.datetime.now().strftime(
-                    ledgerDatetimeFormat,
-                )
-            else:
-                # edit-movement form: express the full movement
-                addmovementform.date.data = editeeMovement[
-                    'movement'].date.strftime(ledgerDatetimeFormat)
-                addmovementform.description.data = editeeMovement[
-                    'movement'].description
-                addmovementform.categoryId.data = editeeMovement[
-                    'movement'].category_id
-                addmovementform.subcategoryId.data = ('%s.%s' % (
-                    editeeMovement['movement'].category_id,
-                    editeeMovement['movement'].subcategory_id,
-                ))
-                for actor in actorsInLedger:
-                    if actor.actor_id in editeeMovement['contributions']:
-                        tMov = editeeMovement['contributions'][actor.actor_id]
-                        if tMov.paid != 0:
-                            thisPaid = tMov.paid
-                        else:
-                            thisPaid = None
-                        if tMov.proportion != 0:
-                            thisProp = tMov.proportion
-                        else:
-                            thisProp = None
-                    else:
-                        thisPaid = None
-                        thisProp = None
-                    paidFormFieldMap[actor.actor_id].data = applyDefault(
-                        transformIfNotEmpty(
-                            thisPaid,
-                            lambda pd: '%.2f' % pd,
-                        ),
-                        '',
-                    )
-                    propFormFieldMap[actor.actor_id].data = applyDefault(
-                        transformIfNotEmpty(thisProp, int),
-                        '',
-                    )
-
-            # we decide whether to show the form at all (this controls
-            # both edit-form and new-item-form aka nonediting)
-            displayMovementForm = pageIndex == 0 or editeeMovement is not None
-
-            #
-            usernameToName = {
-                u.username: u.fullname
-                for u in dbGetUsersForLedger(db, user, ledger)
-            }
-            #
-            return render_template(
-                'apps/accounting/ledger.html',
-                user=user,
-                ledger=ledger,
-                actors=actorsInLedger,
-                usernameToName=usernameToName,
-                editeeMovement=editeeMovement,
-                preMovementObjects=preMovementObjects,
-                postMovementObjects=postMovementObjects,
-                ledgerDatetimeFormat=ledgerDatetimeFormat,
-                ledgerDatetimeFormatDesc=ledgerDatetimeFormatDesc,
-                numActors=len(actorsInLedger),
-                addmovementform=addmovementform,
-                queryform=queryform,
-                displayMovementForm=displayMovementForm,
-                paidFormFieldMap=paidFormFieldMap,
-                propFormFieldMap=propFormFieldMap,
-                paginationInfo=paginationInfo,
-                **pageFeatures,
+                movementId,
+                queryform,
+                addmovementform,
+                actorsInLedger,
+                pageIndex0,
             )
     else:
         raise OstracionError('Ledger not found')
@@ -1269,13 +1129,236 @@ def accountingLedgerAlterQueryView(ledgerId):
         if queryform.validate_on_submit():
             # should set cookie with new query
             query = {
-                'dateFrom': queryform.dateFrom.data,
-                'dateTo': queryform.dateTo.data,
+                k: v
+                for k, v in {
+                    'dateFrom': transformIfNotEmpty(
+                        queryform.dateFrom.data,
+                        tformer=lambda s: datetime.datetime.strptime(
+                            s,
+                            ledgerDatetimeFormat,
+                        ),
+                    ),
+                    'dateTo': transformIfNotEmpty(
+                        queryform.dateTo.data,
+                        tformer=lambda s: datetime.datetime.strptime(
+                            s,
+                            ledgerDatetimeFormat,
+                        ),
+                    ),
+                }.items()
+                if v is not None
             }
-            flashMessage('Info', 'Info', 'Setting query %s...' % str(query))
-            return redirect(url_for('accountingLedgerView', ledgerId=ledgerId))
+            flashMessage('Info', 'Info', 'Setting query %s...' % query)
+            response0 = redirect(url_for('accountingLedgerView', ledgerId=ledgerId))
+            response = setCookiedLedgerQuery(response0, ledger, query)
+            return response
         else:
-            flashMessage('Error', 'Error', 'Validation error...')
-            return redirect(url_for('accountingLedgerView', ledgerId=ledgerId))
+            categoryTree = extractLedgerCategoryTree(db, user, ledger)
+            #
+            addmovementform = generateAccountingMovementForm(
+                categoryTree,
+                actorsInLedger,
+            )
+            return finalizeLedgerView(
+                db,
+                user,
+                ledger,
+                movementId=None,
+                queryform=queryform,
+                addmovementform=addmovementform,
+                actorsInLedger=actorsInLedger,
+                pageIndex0=0,
+            )
     else:
         raise OstracionError('Ledger not found')
+
+
+@app.route('/apps/accounting/ledger/resetquery/<ledgerId>', methods=['GET'])
+def accountingLedgerResetQueryView(ledgerId):
+    """
+        A get-and-redirect route to reset (erase) the ledger query, which
+        results in the cookied query to be deleted.
+    """
+    user = g.user
+    db = dbGetDatabase()
+    request._onErrorUrl = url_for('accountingLedgerView', ledgerId=ledgerId)
+    ledger = dbGetLedger(db, user, ledgerId)
+    if ledger is not None:
+        flashMessage('Info', 'Info', 'Resetting query')
+        response0 = redirect(url_for('accountingLedgerView', ledgerId=ledgerId))
+        response = setCookiedLedgerQuery(response0, ledger, None)
+        return response
+    else:
+        raise OstracionError('Ledger not found')
+
+
+def finalizeLedgerView(db, user, ledger, movementId, queryform,
+                       addmovementform, actorsInLedger, pageIndex0):
+    """
+        Utility function where two (proper) routes end up: the set-query
+        and (some cases of) the generic view-ledger.
+        This expects to run within a request context, prepares pagination
+        and positioning things and invokes the template for viewing a ledger.
+    """
+    pageFeatures = prepareTaskPageFeatures(
+        appsPageDescriptor,
+        ['root', 'accounting'],
+        g,
+        appendedItems=[{
+            'kind': 'link',
+            'target': url_for(
+                'accountingLedgerView',
+                ledgerId=ledger.ledger_id,
+            ),
+            'name': ledger.ledger_id,
+        }],
+    )
+
+    # pagination info preparation
+    recordCount = dbCountLedgerFullMovements(db, user, ledger)
+    totalPages = ((recordCount + ledgerMovementPaginationPageSize - 1)
+                  // ledgerMovementPaginationPageSize)
+    pageIndex = max(0, min(pageIndex0, totalPages - 1))
+    fullMovementObjects = dbGetLedgerFullMovements(
+        db,
+        user,
+        ledger,
+        ledgerMovementPaginationPageSize,
+        pageIndex * ledgerMovementPaginationPageSize,
+    )
+    firstShownPage = max(
+        1,
+        pageIndex - ledgerMovementPaginationShownPagesPerSide,
+    )
+    lastShownPage = min(
+        pageIndex + ledgerMovementPaginationShownPagesPerSide,
+        totalPages - 1,
+    )
+    pagesToShow = [0] + list(range(
+        firstShownPage,
+        lastShownPage,
+    )) + [totalPages - 1]
+    paginationInfo = {
+        'page_index': pageIndex,
+        'total_pages': totalPages,
+        'row_count': recordCount,
+        'row_first_shown': (ledgerMovementPaginationPageSize
+                            * pageIndex),
+        'row_last_shown': (ledgerMovementPaginationPageSize * pageIndex
+                           + len(fullMovementObjects) - 1),
+        'pages_shown': pagesToShow,
+    }
+
+    # we decide how to split to insert edit form (editing/nonediting)
+    if movementId is not None:
+        splitIndices = [
+            movIndex
+            for movIndex, movObj in enumerate(fullMovementObjects)
+            if movObj['movement'].movement_id == movementId
+        ]
+        if len(splitIndices) > 0:
+            splitIndex = splitIndices[0]
+        else:
+            splitIndex = None
+    else:
+        splitIndex = None
+    #
+    preMovementObjects = (
+        []
+        if splitIndex is None
+        else fullMovementObjects[:splitIndex]
+    )
+    postMovementObjects = (
+        fullMovementObjects
+        if splitIndex is None
+        else fullMovementObjects[splitIndex + 1:]
+    )
+    if splitIndex is None:
+        editeeMovement = None
+    else:
+        editeeMovement = fullMovementObjects[splitIndex]
+    #
+    paidFormFieldMap = {
+        actor.actor_id: getattr(addmovementform,
+                                'actorpaid_%s' % actor.actor_id)
+        for actor in actorsInLedger
+    }
+    propFormFieldMap = {
+        actor.actor_id: getattr(addmovementform,
+                                'actorprop_%s' % actor.actor_id)
+        for actor in actorsInLedger
+    }
+    #
+    if editeeMovement is None:
+        # new-movement form: just current date as default
+        addmovementform.date.data = datetime.datetime.now().strftime(
+            ledgerDatetimeFormat,
+        )
+    else:
+        # edit-movement form: express the full movement
+        addmovementform.date.data = editeeMovement[
+            'movement'].date.strftime(ledgerDatetimeFormat)
+        addmovementform.description.data = editeeMovement[
+            'movement'].description
+        addmovementform.categoryId.data = editeeMovement[
+            'movement'].category_id
+        addmovementform.subcategoryId.data = ('%s.%s' % (
+            editeeMovement['movement'].category_id,
+            editeeMovement['movement'].subcategory_id,
+        ))
+        for actor in actorsInLedger:
+            if actor.actor_id in editeeMovement['contributions']:
+                tMov = editeeMovement['contributions'][actor.actor_id]
+                if tMov.paid != 0:
+                    thisPaid = tMov.paid
+                else:
+                    thisPaid = None
+                if tMov.proportion != 0:
+                    thisProp = tMov.proportion
+                else:
+                    thisProp = None
+            else:
+                thisPaid = None
+                thisProp = None
+            paidFormFieldMap[actor.actor_id].data = applyDefault(
+                transformIfNotEmpty(
+                    thisPaid,
+                    lambda pd: '%.2f' % pd,
+                ),
+                '',
+            )
+            propFormFieldMap[actor.actor_id].data = applyDefault(
+                transformIfNotEmpty(thisProp, int),
+                '',
+            )
+
+    # we decide whether to show the form at all (this controls
+    # both edit-form and new-item-form aka nonediting)
+    displayMovementForm = pageIndex == 0 or editeeMovement is not None
+
+    #
+    usernameToName = {
+        u.username: u.fullname
+        for u in dbGetUsersForLedger(db, user, ledger)
+    }
+    #
+    return render_template(
+        'apps/accounting/ledger.html',
+        user=user,
+        ledger=ledger,
+        actors=actorsInLedger,
+        usernameToName=usernameToName,
+        editeeMovement=editeeMovement,
+        preMovementObjects=preMovementObjects,
+        postMovementObjects=postMovementObjects,
+        ledgerDatetimeFormat=ledgerDatetimeFormat,
+        ledgerDatetimeFormatDesc=ledgerDatetimeFormatDesc,
+        numActors=len(actorsInLedger),
+        addmovementform=addmovementform,
+        queryform=queryform,
+        displayMovementForm=displayMovementForm,
+        paidFormFieldMap=paidFormFieldMap,
+        propFormFieldMap=propFormFieldMap,
+        paginationInfo=paginationInfo,
+        **pageFeatures,
+    )

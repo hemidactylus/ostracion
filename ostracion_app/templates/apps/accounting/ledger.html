@@ -63,29 +63,30 @@
 {% endmacro %}
 
 {% macro makepagination( pagInfo ) %}
+                <div class="row text-center">
+                  <div class="col">
+                    <small class="form-text text-muted">
+                      Showing entries {{ pagInfo.row_first_shown + 1 }} to {{ pagInfo.row_last_shown + 1 }} of {{ pagInfo.row_count }}
+                    </small>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col">
                     {% if pagInfo.total_pages > 1 %}
                       <nav>
                         <ul class="pagination justify-content-center pagination-sm">
                           {% for thisPIndex in pagInfo.pages_shown %}
-                            {% if thisPIndex == pagInfo.page_index %}
-                              <li class="page-item active" style="{% if thisPIndex == 0 %}margin-right: 12px;{% endif %}{% if thisPIndex == pagInfo.total_pages - 1 %}margin-left: 12px;{% endif %}">
-                                <a class="page-link" href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id, page=thisPIndex) }}" tabindex="-1" data-toggle="tooltip" title="{{ pagInfo.row_first_shown + 1 }} to {{ pagInfo.row_last_shown + 1 }} of {{ pagInfo.row_count }}">
-                                  {% if thisPIndex == pagInfo.total_pages - 1 %}<span aria-hidden="true">&raquo;</span>{% endif %}
-                                  {{ thisPIndex + 1 }}
-                                  {% if thisPIndex == 0 %}<span aria-hidden="true">&laquo;</span>{% endif %}
-                                </a>
-                              </li>
-                            {% else %}
-                              <li class="page-item" style="{% if thisPIndex == 0 %}margin-right: 12px;{% endif %}{% if thisPIndex == pagInfo.total_pages - 1 %}margin-left: 12px;{% endif %}"><a class="page-link" href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id, page=thisPIndex) }}" tabindex="-1">
-                                {% if thisPIndex == pagInfo.total_pages - 1 %}<span aria-hidden="true">&raquo;</span>{% endif %}
-                                {{ thisPIndex + 1 }}
-                                {% if thisPIndex == 0 %}<span aria-hidden="true">&laquo;</span>{% endif %}
-                              </a></li>
-                            {% endif %}
+                            <li class="page-item {% if thisPIndex == pagInfo.page_index %}active{% endif %}" style="{% if thisPIndex == 0 %}margin-right: 12px;{% endif %}{% if thisPIndex == pagInfo.total_pages - 1 %}margin-left: 12px;{% endif %}"><a class="page-link" href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id, page=thisPIndex) }}" {% if thisPIndex == pagInfo.page_index %}tabindex="-1"{% endif %}>
+                              {% if thisPIndex == pagInfo.total_pages - 1 %}<span aria-hidden="true">&raquo;</span>{% endif %}
+                              {{ thisPIndex + 1 }}
+                              {% if thisPIndex == 0 %}<span aria-hidden="true">&laquo;</span>{% endif %}
+                            </a></li>
                           {% endfor %}
                         </ul>
                       </nav>
                     {% endif %}
+                  </div>
+                </div>
 {% endmacro %}
 
 
@@ -148,7 +149,7 @@
 
                       <div class="form-group">
                         {{ queryform.submit(class_='btn btn-primary btn-md',style='margin-right: 25px;',tabindex=3) }}
-                        <a href="#" class="btn btn-success" tabindex="4">
+                        <a href="{{ url_for('accountingLedgerResetQueryView', ledgerId=ledger.ledger_id) }}" class="btn btn-success" tabindex="4">
                           Reset
                         </a>
                       </div>
@@ -159,9 +160,7 @@
                 </div>
 
                 <hr>
-                <div class="col">
-                  {{ makepagination( paginationInfo ) }}
-                </div>
+                {{ makepagination( paginationInfo ) }}
 
                 <div class="row">
                     <div class="col">
@@ -255,9 +254,7 @@
                     </div>
                 </div>
 
-                <div class="col">
-                  {{ makepagination( paginationInfo ) }}
-                </div>
+                {{ makepagination( paginationInfo ) }}
                 <hr>
 
             </div>
