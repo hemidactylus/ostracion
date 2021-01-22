@@ -88,9 +88,6 @@ from ostracion_app.views.apps.accounting.accountingUtils import (
     parseNewMovementForm,
     retrieveCookiedLedgerQuery,
     setCookiedLedgerQuery,
-    # TEMP debug the two following
-    serializeLedgerQuery,
-    deserializeLedgerQuery,
 )
 from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetLedger,
@@ -993,9 +990,6 @@ def accountingLedgerView(ledgerId, movementId=None):
             actorsInLedger,
         )
         query = retrieveCookiedLedgerQuery(request, ledger)
-        flashMessage('Info', 'Info', 'Retrieved query: %s. I SHOULD USE IT IN QUERYING but not if it is {}' % (
-            'NONE' if query is None else serializeLedgerQuery(query)
-        ))
         # query to queryform
         queryform.receiveValues(query)
         #
@@ -1062,14 +1056,15 @@ def accountingLedgerView(ledgerId, movementId=None):
                 raise OstracionError('Malformed movement insertion')
         else:
             return finalizeLedgerView(
-                db,
-                user,
-                ledger,
-                movementId,
-                queryform,
-                addmovementform,
-                actorsInLedger,
-                pageIndex0,
+                db=db,
+                user=user,
+                ledger=ledger,
+                movementId=movementId,
+                queryform=queryform,
+                query=query,
+                addmovementform=addmovementform,
+                actorsInLedger=actorsInLedger,
+                pageIndex0=pageIndex0,
             )
     else:
         raise OstracionError('Ledger not found')
@@ -1134,37 +1129,46 @@ def accountingLedgerAlterQueryView(ledgerId):
                     'dateFrom': transformIfNotEmpty(
                         queryform.dateFrom.data,
                         tformer=lambda s: datetime.datetime.strptime(
-                            s,
+                            s.strip(),
                             ledgerDatetimeFormat,
                         ),
                     ),
                     'dateTo': transformIfNotEmpty(
                         queryform.dateTo.data,
                         tformer=lambda s: datetime.datetime.strptime(
-                            s,
+                            s.strip(),
                             ledgerDatetimeFormat,
                         ),
+                    ),
+                    'description': (
+                        queryform.description.data.strip()
+                        if queryform.description.data.strip() != ''
+                        else None
                     ),
                 }.items()
                 if v is not None
             }
-            flashMessage('Info', 'Info', 'Setting query %s...' % query)
-            response0 = redirect(url_for('accountingLedgerView', ledgerId=ledgerId))
+            response0 = redirect(url_for(
+                'accountingLedgerView',
+                ledgerId=ledgerId,
+            ))
             response = setCookiedLedgerQuery(response0, ledger, query)
             return response
         else:
             categoryTree = extractLedgerCategoryTree(db, user, ledger)
+            query = retrieveCookiedLedgerQuery(request, ledger)
             #
             addmovementform = generateAccountingMovementForm(
                 categoryTree,
                 actorsInLedger,
             )
             return finalizeLedgerView(
-                db,
-                user,
-                ledger,
+                db=db,
+                user=user,
+                ledger=ledger,
                 movementId=None,
                 queryform=queryform,
+                query=query,
                 addmovementform=addmovementform,
                 actorsInLedger=actorsInLedger,
                 pageIndex0=0,
@@ -1184,15 +1188,17 @@ def accountingLedgerResetQueryView(ledgerId):
     request._onErrorUrl = url_for('accountingLedgerView', ledgerId=ledgerId)
     ledger = dbGetLedger(db, user, ledgerId)
     if ledger is not None:
-        flashMessage('Info', 'Info', 'Resetting query')
-        response0 = redirect(url_for('accountingLedgerView', ledgerId=ledgerId))
+        response0 = redirect(url_for(
+            'accountingLedgerView',
+            ledgerId=ledgerId,
+        ))
         response = setCookiedLedgerQuery(response0, ledger, None)
         return response
     else:
         raise OstracionError('Ledger not found')
 
 
-def finalizeLedgerView(db, user, ledger, movementId, queryform,
+def finalizeLedgerView(db, user, ledger, movementId, queryform, query,
                        addmovementform, actorsInLedger, pageIndex0):
     """
         Utility function where two (proper) routes end up: the set-query
@@ -1215,16 +1221,17 @@ def finalizeLedgerView(db, user, ledger, movementId, queryform,
     )
 
     # pagination info preparation
-    recordCount = dbCountLedgerFullMovements(db, user, ledger)
+    recordCount = dbCountLedgerFullMovements(db, user, ledger, query)
     totalPages = ((recordCount + ledgerMovementPaginationPageSize - 1)
                   // ledgerMovementPaginationPageSize)
     pageIndex = max(0, min(pageIndex0, totalPages - 1))
     fullMovementObjects = dbGetLedgerFullMovements(
-        db,
-        user,
-        ledger,
-        ledgerMovementPaginationPageSize,
-        pageIndex * ledgerMovementPaginationPageSize,
+        db=db,
+        user=user,
+        ledger=ledger,
+        query=query,
+        pageSize=ledgerMovementPaginationPageSize,
+        pageStart=pageIndex * ledgerMovementPaginationPageSize,
     )
     firstShownPage = max(
         1,
@@ -1334,8 +1341,12 @@ def finalizeLedgerView(db, user, ledger, movementId, queryform,
 
     # we decide whether to show the form at all (this controls
     # both edit-form and new-item-form aka nonediting)
-    displayMovementForm = pageIndex == 0 or editeeMovement is not None
-
+    if editeeMovement is not None:
+        displayMovementForm = True
+    else:
+        displayMovementForm = len(query) == 0 and pageIndex == 0
+    # for appearance's sake
+    applyingQuery = len(query) > 0
     #
     usernameToName = {
         u.username: u.fullname
@@ -1357,6 +1368,7 @@ def finalizeLedgerView(db, user, ledger, movementId, queryform,
         addmovementform=addmovementform,
         queryform=queryform,
         displayMovementForm=displayMovementForm,
+        applyingQuery=applyingQuery,
         paidFormFieldMap=paidFormFieldMap,
         propFormFieldMap=propFormFieldMap,
         paginationInfo=paginationInfo,

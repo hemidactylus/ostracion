@@ -35,6 +35,7 @@ from ostracion_app.views.apps.accounting.validators import (
 from ostracion_app.views.apps.accounting.settings import (
     ledgerDatetimeFormat,
     ledgerDatetimeFormatDesc,
+    categoryIdsCharacterSet,
 )
 
 
@@ -44,7 +45,7 @@ class AccountingBaseLedgerForm(FlaskForm):
         'ledgerId',
         validators=[
             InputRequired(),
-            CharacterSelector(),
+            CharacterSelector(characterSet=categoryIdsCharacterSet),
             Length(max=maxShortIdentifierLength),
         ],
     )
@@ -68,7 +69,7 @@ class AccountingLedgerActorForm(FlaskForm):
         'actorId',
         validators=[
             InputRequired(),
-            CharacterSelector(),
+            CharacterSelector(characterSet=categoryIdsCharacterSet),
             Length(max=maxShortIdentifierLength),
         ],
     )
@@ -85,7 +86,7 @@ class AccountingLedgerCategoryForm(FlaskForm):
         'categoryId',
         validators=[
             InputRequired(),
-            CharacterSelector(),
+            CharacterSelector(characterSet=categoryIdsCharacterSet),
             Length(max=maxShortIdentifierLength),
         ],
     )
@@ -109,7 +110,7 @@ class AccountingLedgerSubcategoryForm(FlaskForm):
         'subcategoryId',
         validators=[
             InputRequired(),
-            CharacterSelector(),
+            CharacterSelector(characterSet=categoryIdsCharacterSet),
             Length(max=maxShortIdentifierLength),
         ],
     )
@@ -153,6 +154,7 @@ def generateAccountingLedgerQueryForm(categoryTree, actors):
                 Length(max=maxShortIdentifierLength),
             ],
         )
+        description = StringField('Description')
 
         def receiveValues(self, query):
             """Use the values in 'query' to set field data."""
@@ -161,7 +163,11 @@ def generateAccountingLedgerQueryForm(categoryTree, actors):
                     ledgerDatetimeFormat,
                 )
             if 'dateTo' in query:
-                self.dateTo.data = query['dateTo'].strftime(ledgerDatetimeFormat)
+                self.dateTo.data = query['dateTo'].strftime(
+                    ledgerDatetimeFormat,
+                )
+            if 'description' in query:
+                self.description.data = query['description']
 
     return _qForm()
 

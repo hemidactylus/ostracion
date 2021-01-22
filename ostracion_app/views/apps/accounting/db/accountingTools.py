@@ -7,6 +7,7 @@ import datetime
 from ostracion_app.utilities.tools.dictTools import (
     recursivelyMergeDictionaries
 )
+from ostracion_app.utilities.tools.extraction import safeNone
 
 from ostracion_app.views.apps.accounting.models.Actor import Actor
 from ostracion_app.views.apps.accounting.models.\
@@ -47,6 +48,38 @@ from ostracion_app.utilities.database.sqliteEngine import (
 from ostracion_app.utilities.database.dbSchema import (
     dbSchema,
 )
+
+
+# helper functions
+def ledgerQueryToWhereClauses(q):
+    """Make a (dict) ledger-query into a whereClauses array."""
+    _desc = safeNone(q.get('description'), '')
+    return [
+        # fieldvalue-based query parts
+        qPair
+        for qPair in (
+            (qPhrase, q.get(qFName))
+            for qPhrase, qFName in (
+                ('date>=?', 'dateFrom'),
+                ('date<=?', 'dateTo'),
+            )
+        )
+        if qPair[1] is not None
+    ] + [
+        # particular constructs
+        qLitPair
+        for qLitPair in (
+            (
+                'description LIKE ?',
+                (
+                    '%%%s%%' % _desc
+                    if _desc != ''
+                    else None
+                ),
+            ),
+        )
+        if qLitPair[1] is not None
+    ]
 
 
 def dbGetLedger(db, user, ledgerId):
@@ -763,15 +796,16 @@ def _makeFullMovementStructure(_db, _ledger, _movdict):
     }
 
 
-def dbGetLedgerFullMovements(db, user, ledger, pageSize=None, pageStart=None):
+def dbGetLedgerFullMovements(db, user, ledger, query={}, pageSize=None,
+                             pageStart=None):
     """
         *TEMPORARY*, will have query driver, pagination, joins.
         Retrieve movements pertaining to a given ledger.
 
         pageSize = None if infinite
     """
-
     if userIsAdmin(db, user) or dbUserCanSeeLedger(db, user, ledger.ledger_id):
+        queryWhereClauses = ledgerQueryToWhereClauses(query)
         bareMovQuery = dbRetrieveRecordsByKey(
             db,
             'accounting_ledger_movements',
@@ -783,6 +817,7 @@ def dbGetLedgerFullMovements(db, user, ledger, pageSize=None, pageStart=None):
                 ('date', 'DESC'),
                 ('last_edit_date', 'DESC'),
             ],
+            whereClauses=queryWhereClauses,
             limit=pageSize,
             offset=pageStart,
         )
@@ -794,17 +829,19 @@ def dbGetLedgerFullMovements(db, user, ledger, pageSize=None, pageStart=None):
         raise OstracionError('Insufficient permissions')
 
 
-def dbCountLedgerFullMovements(db, user, ledger):
+def dbCountLedgerFullMovements(db, user, ledger, query={}):
     """
         *TEMPORARY* will have querying
         Count total number of movements [on a query] in a ledger
     """
+    queryWhereClauses = ledgerQueryToWhereClauses(query)
     return dbCountRecordsByKey(
         db,
         'accounting_ledger_movements',
         {
             'ledger_id': ledger.ledger_id,
         },
+        whereClauses=queryWhereClauses,
         dbTablesDesc=dbSchema,
     )
 

@@ -50,7 +50,7 @@
                                     </div>">
                                       i
                                     </a>
-                                    <a href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id, movementId=movementObj['movement'].movement_id, page=pagInfo.page_index) }}" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Edit">
+                                    <a href="{{ url_for('accountingLedgerView', ledgerId=ledger.ledger_id, movementId=movementObj['movement'].movement_id, page=pagInfo.page_index) }}#movementform" class="btn btn-primary btn-sm" data-toggle="tooltip" title="Edit">
                                       E
                                     </a>
                                     <a href="{{ url_for('accountingLedgerDeleteMovementView', ledgerId=ledger.ledger_id, movementId=movementObj['movement'].movement_id, page=pagInfo.page_index) }}" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
@@ -66,7 +66,7 @@
                 <div class="row text-center">
                   <div class="col">
                     <small class="form-text text-muted">
-                      Showing entries {{ pagInfo.row_first_shown + 1 }} to {{ pagInfo.row_last_shown + 1 }} of {{ pagInfo.row_count }}
+                      Showing {% if applyingQuery %}matching{% endif %} entries {{ pagInfo.row_first_shown + 1 }} to {{ pagInfo.row_last_shown + 1 }} of {{ pagInfo.row_count }}
                     </small>
                   </div>
                 </div>
@@ -132,24 +132,32 @@
                       {{ queryform.hidden_tag() }}
 
                       <div class="form-group">
-                        <label for="roledescription">Start date</label>
-                        {{ queryform.dateFrom(class_="form-control",tabindex=1) }}
+                        <!-- <label for="dateFrom">Start date</label> -->
+                        {{ queryform.dateFrom(class_="form-control form-control-sm", placeholder="Start date", tabindex=1) }}
                         {% for error in queryform.dateFrom.errors %}
                           <small class="form-text text-muted">{{ error }}</small>
                         {% endfor %}
                       </div>
 
                       <div class="form-group">
-                        <label for="roledescription">End date</label>
-                        {{ queryform.dateTo(class_="form-control",tabindex=2) }}
+                        <!-- <label for="dateTo">End date</label> -->
+                        {{ queryform.dateTo(class_="form-control form-control-sm", placeholder="End date", tabindex=2) }}
                         {% for error in queryform.dateTo.errors %}
                           <small class="form-text text-muted">{{ error }}</small>
                         {% endfor %}
                       </div>
 
                       <div class="form-group">
-                        {{ queryform.submit(class_='btn btn-primary btn-md',style='margin-right: 25px;',tabindex=3) }}
-                        <a href="{{ url_for('accountingLedgerResetQueryView', ledgerId=ledger.ledger_id) }}" class="btn btn-success" tabindex="4">
+                        <!-- <label for="description">End date</label> -->
+                        {{ queryform.description(class_="form-control form-control-sm", placeholder="Description", tabindex=3) }}
+                        {% for error in queryform.description.errors %}
+                          <small class="form-text text-muted">{{ error }}</small>
+                        {% endfor %}
+                      </div>
+
+                      <div class="form-group">
+                        {{ queryform.submit(class_='btn btn-primary btn-sm',style='margin-right: 25px;',tabindex=4) }}
+                        <a href="{{ url_for('accountingLedgerResetQueryView', ledgerId=ledger.ledger_id) }}" class="btn btn-success btn-sm" tabindex="5">
                           Reset
                         </a>
                       </div>

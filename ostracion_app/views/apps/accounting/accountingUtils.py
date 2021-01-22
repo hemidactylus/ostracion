@@ -360,7 +360,7 @@ def setCookiedLedgerQuery(response, ledger, query):
         the cookie containing the ledger query for a ledger.
     """
     cookieName = 'accounting_ledger_query_%s' % ledger.ledger_id
-    if query is not None:
+    if query is not None and len(query) > 0:
         response.set_cookie(cookieName, serializeLedgerQuery(query))
     else:
         response.set_cookie(cookieName, '', expires=0)

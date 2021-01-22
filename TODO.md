@@ -100,6 +100,8 @@ Accumulated todos:
 forms
   + js to adapt subcats / show the description
 
+sqliteEngine: carefully factor together common parts of counts and retrieverecords!
+
 fill query form on ledger view
 
 inform on cookies for calendar and accounting

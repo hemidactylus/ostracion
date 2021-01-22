@@ -44,6 +44,9 @@ class ValidDateTime():
                 pass
             else:
                 try:
-                    datetime.datetime.strptime(field.data, self.datetimeFormat)
+                    datetime.datetime.strptime(
+                        field.data.strip(),
+                        self.datetimeFormat,
+                    )
                 except ValueError:
                     raise ValidationError(self.message)
