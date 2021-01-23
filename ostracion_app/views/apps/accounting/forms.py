@@ -39,6 +39,64 @@ from ostracion_app.views.apps.accounting.settings import (
 )
 
 
+def _makeCategorySelect(categoryTree, allowNone):
+    """Create a select field with values read off the input."""
+    if allowNone:
+        vals = []
+    else:
+        vals = [
+            ProhibitedIDChoice(
+                message='Please choose one',
+            ),
+        ]
+    #
+    return SelectField(
+        'Category',
+        default='',
+        validators=vals,
+        choices=(
+            [('', 'Choose category...')] + [
+                (
+                    catO['category'].category_id,
+                    catO['category'].category_id,
+                )
+                for catO in categoryTree
+            ]
+        ),
+    )
+
+
+def _makeSubcategorySelect(categoryTree, allowNone):
+    """Create a select field with values read off the input."""
+    if allowNone:
+        vals = []
+    else:
+        vals = [
+            ProhibitedIDChoice(
+                message='Please choose one',
+            ),
+        ]
+    #
+    return SelectField(
+        'Subcategory',
+        default='',
+        validators=vals,
+        choices=(
+            [('', 'Choose subcategory...')] + [
+                (
+                    '%s.%s' % (
+                        catO['category'].category_id,
+                        subcat.subcategory_id,
+                    ),
+                    subcat.subcategory_id,
+                )
+                for catO in categoryTree
+                for subcat in catO['subcategories']
+            ]
+        ),
+    )
+
+
 class AccountingBaseLedgerForm(FlaskForm):
     """Basic ledger properties form"""
     ledgerId = StringField(
@@ -131,7 +189,7 @@ def generateAccountingLedgerQueryForm(categoryTree, actors):
     """ Generate a form for queries on the ledger movements."""
 
     class _qForm(FlaskForm):
-        submit = SubmitField('Search')
+        submit = SubmitField('Apply filters')
         dateFrom = StringField(
             'Date',
             validators=[
@@ -155,6 +213,8 @@ def generateAccountingLedgerQueryForm(categoryTree, actors):
             ],
         )
         description = StringField('Description')
+        categoryId = _makeCategorySelect(categoryTree, allowNone=True)
+        subcategoryId = _makeSubcategorySelect(categoryTree, allowNone=True)
 
         def receiveValues(self, query):
             """Use the values in 'query' to set field data."""
@@ -168,6 +228,18 @@ def generateAccountingLedgerQueryForm(categoryTree, actors):
                 )
             if 'description' in query:
                 self.description.data = query['description']
+            if 'categoryId' in query:
+                self.categoryId.data = query['categoryId']
+                if 'subcategoryId' in query:
+                    self.subcategoryId.data = '%s.%s' % (
+                        query['categoryId'],
+                        query['subcategoryId'],
+                    )
+                else:
+                    self.subcategoryId.data = ''
+            else:
+                self.categoryId.data = ''
+                self.subcategoryId.data = ''
 
     return _qForm()
 
@@ -191,46 +263,8 @@ def generateAccountingMovementForm(categoryTree, actors):
             'Description',
             validators=[Length(max=maxIdentifierLength)],
         )
-        categoryId = SelectField(
-            'Category',
-            default='',
-            validators=[
-                ProhibitedIDChoice(
-                    message='Please choose one',
-                ),
-            ],
-            choices=(
-                [('', 'Choose category...')] + [
-                    (
-                        catO['category'].category_id,
-                        catO['category'].category_id,
-                    )
-                    for catO in categoryTree
-                ]
-            ),
-        )
-        subcategoryId = SelectField(
-            'Subcategory',
-            default='',
-            validators=[
-                ProhibitedIDChoice(
-                    message='Please choose one',
-                ),
-            ],
-            choices=(
-                [('', 'Choose subcategory...')] + [
-                    (
-                        '%s.%s' % (
-                            catO['category'].category_id,
-                            subcat.subcategory_id,
-                        ),
-                        subcat.subcategory_id,
-                    )
-                    for catO in categoryTree
-                    for subcat in catO['subcategories']
-                ]
-            ),
-        )
+        categoryId = _makeCategorySelect(categoryTree, allowNone=False)
+        subcategoryId = _makeSubcategorySelect(categoryTree, allowNone=False)
     #
     paidFields = {}
     propFields = {}

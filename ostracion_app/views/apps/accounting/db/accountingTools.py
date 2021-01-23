@@ -62,6 +62,8 @@ def ledgerQueryToWhereClauses(q):
             for qPhrase, qFName in (
                 ('date>=?', 'dateFrom'),
                 ('date<=?', 'dateTo'),
+                ('category_id=?', 'categoryId'),
+                ('subcategory_id=?', 'subcategoryId'),
             )
         )
         if qPair[1] is not None

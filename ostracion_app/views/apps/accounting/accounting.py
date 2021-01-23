@@ -1145,6 +1145,22 @@ def accountingLedgerAlterQueryView(ledgerId):
                         if queryform.description.data.strip() != ''
                         else None
                     ),
+                    'categoryId': (
+                        queryform.categoryId.data
+                        if queryform.categoryId.data != ''
+                        else None
+                    ),
+                    'subcategoryId': (
+                        queryform.subcategoryId.data.split('.')[1]
+                        if (
+                            queryform.subcategoryId.data != '' and
+                            (
+                                queryform.categoryId.data
+                                == queryform.subcategoryId.data.split('.')[0]
+                            )
+                        )
+                        else None
+                    ),
                 }.items()
                 if v is not None
             }

@@ -106,11 +106,12 @@
                             {{ ledger.name }}
                             <i>({{ ledger.ledger_id }})</i>
                         </h5>
-                        {% if ledger.description %}
-                            <p>
-                                {{ ledger.description }}
-                            </p>
-                        {% endif %}
+                        <p>
+                          {% if ledger.description %}
+                            <span style="margin-right:15px;">{{ ledger.description }}</span>
+                          {% endif %}
+                          <a href="#queryBlock" data-toggle="collapse" class="btn btn-secondary btn-sm">Filters...</a>
+                        </p>
                     </div>
                     <div class="col">
                         <div class="row">
@@ -125,39 +126,66 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row collapse {% if applyingQuery -%}show{%- endif%}" id="queryBlock">
                   <div class="col">
+                    <hr>
 
                     <form method="post" name="query" action="{{ url_for('accountingLedgerAlterQueryView', ledgerId=ledger.ledger_id) }}">
                       {{ queryform.hidden_tag() }}
 
-                      <div class="form-group">
-                        <!-- <label for="dateFrom">Start date</label> -->
-                        {{ queryform.dateFrom(class_="form-control form-control-sm", placeholder="Start date", tabindex=1) }}
-                        {% for error in queryform.dateFrom.errors %}
-                          <small class="form-text text-muted">{{ error }}</small>
-                        {% endfor %}
+                      <div class="form-group row">
+                        <label for="dateFrom" class="col-sm-1 col-form-label">Start date</label>
+                        <div class="col-sm">
+                          {{ queryform.dateFrom(class_="form-control form-control-sm", placeholder=ledgerDatetimeFormatDesc, tabindex=1) }}
+                          {% for error in queryform.dateFrom.errors %}
+                            <small class="form-text text-muted">{{ error }}</small>
+                          {% endfor %}
+                        </div>
+                      </div>
+
+                      <div class="form-group row">
+                        <label for="dateTo" class="col-sm-1 col-form-label">End date</label>
+                        <div class="col-sm">
+                          {{ queryform.dateTo(class_="form-control form-control-sm", placeholder=ledgerDatetimeFormatDesc, tabindex=2) }}
+                          {% for error in queryform.dateTo.errors %}
+                            <small class="form-text text-muted">{{ error }}</small>
+                          {% endfor %}
+                        </div>
+                      </div>
+
+                      <div class="form-group row">
+                        <label for="description" class="col-sm-1 col-form-label">Description</label>
+                        <div class="col-sm">
+                          {{ queryform.description(class_="form-control form-control-sm", placeholder="Partial case-insensitive matching", tabindex=3) }}
+                          {% for error in queryform.description.errors %}
+                            <small class="form-text text-muted">{{ error }}</small>
+                          {% endfor %}
+                        </div>
+                      </div>
+
+                      <div class="form-group row">
+                        <label for="categoryId" class="col-sm-1 col-form-label">Category</label>
+                        <div class="col-sm">
+                          {{ queryform.categoryId(class_="form-control form-control-sm", tabindex=4) }}
+                          {% for error in queryform.categoryId.errors %}
+                            <small class="form-text text-muted">{{ error }}</small>
+                          {% endfor %}
+                        </div>
+                      </div>
+
+                      <div class="form-group row">
+                        <label for="subcategoryId" class="col-sm-1 col-form-label">Subcategory</label>
+                        <div class="col-sm">
+                          {{ queryform.subcategoryId(class_="form-control form-control-sm", tabindex=5) }}
+                          {% for error in queryform.subcategoryId.errors %}
+                            <small class="form-text text-muted">{{ error }}</small>
+                          {% endfor %}
+                        </div>
                       </div>
 
                       <div class="form-group">
-                        <!-- <label for="dateTo">End date</label> -->
-                        {{ queryform.dateTo(class_="form-control form-control-sm", placeholder="End date", tabindex=2) }}
-                        {% for error in queryform.dateTo.errors %}
-                          <small class="form-text text-muted">{{ error }}</small>
-                        {% endfor %}
-                      </div>
-
-                      <div class="form-group">
-                        <!-- <label for="description">End date</label> -->
-                        {{ queryform.description(class_="form-control form-control-sm", placeholder="Description", tabindex=3) }}
-                        {% for error in queryform.description.errors %}
-                          <small class="form-text text-muted">{{ error }}</small>
-                        {% endfor %}
-                      </div>
-
-                      <div class="form-group">
-                        {{ queryform.submit(class_='btn btn-primary btn-sm',style='margin-right: 25px;',tabindex=4) }}
-                        <a href="{{ url_for('accountingLedgerResetQueryView', ledgerId=ledger.ledger_id) }}" class="btn btn-success btn-sm" tabindex="5">
+                        {{ queryform.submit(class_='btn btn-primary btn-sm',style='margin-right: 25px;',tabindex=6) }}
+                        <a href="{{ url_for('accountingLedgerResetQueryView', ledgerId=ledger.ledger_id) }}" class="btn btn-success btn-sm" tabindex="7">
                           Reset
                         </a>
                       </div>

@@ -102,6 +102,4 @@ forms
 
 sqliteEngine: carefully factor together common parts of counts and retrieverecords!
 
-fill query form on ledger view
-
 inform on cookies for calendar and accounting
