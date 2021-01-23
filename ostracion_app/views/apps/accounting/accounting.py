@@ -3,6 +3,7 @@
         An app to manage ledgers of debts/credits among arbitrary actors
 """
 
+import json
 import datetime
 from flask import (
     redirect,
@@ -1062,6 +1063,7 @@ def accountingLedgerView(ledgerId, movementId=None):
                 movementId=movementId,
                 queryform=queryform,
                 query=query,
+                categoryTree=categoryTree,
                 addmovementform=addmovementform,
                 actorsInLedger=actorsInLedger,
                 pageIndex0=pageIndex0,
@@ -1185,6 +1187,7 @@ def accountingLedgerAlterQueryView(ledgerId):
                 movementId=None,
                 queryform=queryform,
                 query=query,
+                categoryTree=categoryTree,
                 addmovementform=addmovementform,
                 actorsInLedger=actorsInLedger,
                 pageIndex0=0,
@@ -1214,8 +1217,9 @@ def accountingLedgerResetQueryView(ledgerId):
         raise OstracionError('Ledger not found')
 
 
-def finalizeLedgerView(db, user, ledger, movementId, queryform, query,
-                       addmovementform, actorsInLedger, pageIndex0):
+def finalizeLedgerView(db, user, ledger, movementId, queryform, query, 
+                       categoryTree, addmovementform, actorsInLedger,
+                       pageIndex0):
     """
         Utility function where two (proper) routes end up: the set-query
         and (some cases of) the generic view-ledger.
@@ -1368,6 +1372,16 @@ def finalizeLedgerView(db, user, ledger, movementId, queryform, query,
         u.username: u.fullname
         for u in dbGetUsersForLedger(db, user, ledger)
     }
+    # in-page-js injected variables
+    categoryTreeJSON = json.dumps(
+        {
+            catObj['category'].category_id: [
+                subcat.subcategory_id
+                for subcat in catObj['subcategories']
+            ]
+            for catObj in categoryTree
+        }
+    )
     #
     return render_template(
         'apps/accounting/ledger.html',
@@ -1383,6 +1397,7 @@ def finalizeLedgerView(db, user, ledger, movementId, queryform, query,
         numActors=len(actorsInLedger),
         addmovementform=addmovementform,
         queryform=queryform,
+        categoryTreeJSON=categoryTreeJSON,
         displayMovementForm=displayMovementForm,
         applyingQuery=applyingQuery,
         paidFormFieldMap=paidFormFieldMap,
