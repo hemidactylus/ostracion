@@ -134,6 +134,26 @@
                       {{ queryform.hidden_tag() }}
 
                       <div class="form-group row">
+                        <label for="categoryId" class="col-sm-1 col-form-label">Category</label>
+                        <div class="col-sm">
+                          {{ queryform.categoryId(class_="form-control form-control-sm",id="queFormCategoryId", tabindex=4) }}
+                          {% for error in queryform.categoryId.errors %}
+                            <small class="form-text text-muted">{{ error }}</small>
+                          {% endfor %}
+                        </div>
+                      </div>
+
+                      <div class="form-group row">
+                        <label for="subcategoryId" class="col-sm-1 col-form-label">Subcategory</label>
+                        <div class="col-sm">
+                          {{ queryform.subcategoryId(class_="form-control form-control-sm",id="queFormSubcategoryId", tabindex=5) }}
+                          {% for error in queryform.subcategoryId.errors %}
+                            <small class="form-text text-muted">{{ error }}</small>
+                          {% endfor %}
+                        </div>
+                      </div>
+
+                      <div class="form-group row">
                         <label for="dateFrom" class="col-sm-1 col-form-label">Start date</label>
                         <div class="col-sm">
                           {{ queryform.dateFrom(class_="form-control form-control-sm", placeholder=ledgerDatetimeFormatDesc, tabindex=1) }}
@@ -158,26 +178,6 @@
                         <div class="col-sm">
                           {{ queryform.description(class_="form-control form-control-sm", placeholder="Partial case-insensitive matching", tabindex=3) }}
                           {% for error in queryform.description.errors %}
-                            <small class="form-text text-muted">{{ error }}</small>
-                          {% endfor %}
-                        </div>
-                      </div>
-
-                      <div class="form-group row">
-                        <label for="categoryId" class="col-sm-1 col-form-label">Category</label>
-                        <div class="col-sm">
-                          {{ queryform.categoryId(class_="form-control form-control-sm",id="queFormCategoryId", tabindex=4) }}
-                          {% for error in queryform.categoryId.errors %}
-                            <small class="form-text text-muted">{{ error }}</small>
-                          {% endfor %}
-                        </div>
-                      </div>
-
-                      <div class="form-group row">
-                        <label for="subcategoryId" class="col-sm-1 col-form-label">Subcategory</label>
-                        <div class="col-sm">
-                          {{ queryform.subcategoryId(class_="form-control form-control-sm",id="queFormSubcategoryId", tabindex=5) }}
-                          {% for error in queryform.subcategoryId.errors %}
                             <small class="form-text text-muted">{{ error }}</small>
                           {% endfor %}
                         </div>
