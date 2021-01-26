@@ -9,7 +9,7 @@ function accountingResetSubcategoryDropdown(catListId, subcatListId, choiceTree,
     Remember the ids in the second dropdown are "CAT_ID.SUBCAT_ID".
   */
   var subcatList = $(`#${subcatListId}`);
-  // emprtying
+  // emptying
   subcatList.empty();
   // filling (incl. empty case)
   var catList = $(`#${catListId}`);
@@ -30,4 +30,17 @@ function accountingResetSubcategoryDropdown(catListId, subcatListId, choiceTree,
   if( fullSubIds.indexOf(prevFullSubcatId) >= 0 ){
     subcatList.val(`${prevFullSubcatId}`); 
   }
+}
+
+function accountingRefreshGroupDescriptionText(grpListId, grpHelpId, fullIdToDescriptionMap) {
+  var grpList = $(`#${grpListId}`);
+  var description = fullIdToDescriptionMap[grpList.val()] || '';
+  $(`#${grpHelpId}`)[0].innerHTML = description;
+}
+
+function accountingAttachGroupDescriptionText(grpListId, grpHelpId, fullIdToDescriptionMap) {
+  var grpList = $(`#${grpListId}`);
+  grpList.change( function(e) {
+    accountingRefreshGroupDescriptionText(grpListId, grpHelpId, fullIdToDescriptionMap);
+  });
 }

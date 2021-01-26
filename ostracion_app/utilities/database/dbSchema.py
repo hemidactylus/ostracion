@@ -260,6 +260,8 @@ dbSchema = {
             ('icon_file_id', 'TEXT'),
             ('icon_file_id_username', 'TEXT'),
             ('icon_mime_type', 'TEXT'),
+            ('summary', 'TEXT'),
+            ('summary_date', 'TIMESTAMP'),
         ],
         'foreign_keys': {
             'users': [

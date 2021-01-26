@@ -66,7 +66,11 @@
                 <div class="row text-center">
                   <div class="col">
                     <small class="form-text text-muted">
-                      Showing {% if applyingQuery %}matching{% endif %} entries {{ pagInfo.row_first_shown + 1 }} to {{ pagInfo.row_last_shown + 1 }} of {{ pagInfo.row_count }}
+                      {% if pagInfo.row_count > 0 %}
+                        Showing {% if applyingQuery %}matching{% endif %} entries {{ pagInfo.row_first_shown + 1 }} to {{ pagInfo.row_last_shown + 1 }} of {{ pagInfo.row_count }}
+                      {% else %}
+                        No {% if applyingQuery %}matching{% endif %} entries to show
+                      {% endif %}
                     </small>
                   </div>
                 </div>
@@ -102,27 +106,36 @@
                         <img src="{{ url_for('appItemThumbnailView', mode='accounting_ledger', dummyId=ledger.icon_file_id+'_', itemId=ledger.ledger_id) }}" class="rounded" width="100%">
                     </div>
                     <div class="col">
-                        <h5>
-                            {{ ledger.name }}
-                            <i>({{ ledger.ledger_id }})</i>
-                        </h5>
-                        <p>
-                          {% if ledger.description %}
-                            <span style="margin-right:15px;">{{ ledger.description }}</span>
-                          {% endif %}
-                          <a href="#queryBlock" data-toggle="collapse" class="btn btn-secondary btn-sm">Filters...</a>
-                        </p>
-                    </div>
-                    <div class="col">
                         <div class="row">
-                            <div class="col">
-                                Dues: X, Y, Z
-                            </div>
+                          <div class="col">
+                            <strong>
+                              {{ ledger.name }}
+                              <i>({{ ledger.ledger_id }})</i>
+                            </strong>
+                            {% if ledger.description %}
+                              <span style="margin-right:15px;"> - {{ ledger.description }}</span>
+                            {% endif %}
+                          </div>
                         </div>
                         <div class="row">
-                            <div class="col">
-                                <i>(as of: 2020-12-31)</i>
-                            </div>
+                          <div class="col">
+                            Balance:
+                            {% if duesMap['summary'] | length == 0 %}
+                              <span class="badge badge-primary">All even</span>
+                            {% else %}
+                              {% for duesActorPair in duesMap['summary'] %}
+                                <span class="badge {% if duesActorPair[1] > 0 -%}badge-success{%- else -%}badge-danger{%- endif -%}">
+                                  {{ actorIdToName.get(duesActorPair[0], duesActorPair[0]) }}: {{ '%+.2f' % duesActorPair[1] }}
+                                </span>
+                              {% endfor %}
+                            {% endif %}
+                            <small class="text-muted">
+                              last changed: {{ duesMap['summary_date'].strftime('%b %d %H:%M') }}
+                            </small>
+                            <small style="margin-left:5px;">
+                              <a href="#queryBlock" data-toggle="collapse" class="btn btn-secondary btn-sm" style="padding-top: 0.05rem; padding-bottom:0.05rem;">F</a>
+                            </small>
+                          </div>
                         </div>
                     </div>
                 </div>
@@ -137,6 +150,7 @@
                         <label for="categoryId" class="col-sm-1 col-form-label">Category</label>
                         <div class="col-sm">
                           {{ queryform.categoryId(class_="form-control form-control-sm",id="queFormCategoryId", tabindex=4) }}
+                          <small class="text-muted" id="queFormCategoryIdHelper" style="font-style: italic;"></small>
                           {% for error in queryform.categoryId.errors %}
                             <small class="form-text text-muted">{{ error }}</small>
                           {% endfor %}
@@ -147,6 +161,7 @@
                         <label for="subcategoryId" class="col-sm-1 col-form-label">Subcategory</label>
                         <div class="col-sm">
                           {{ queryform.subcategoryId(class_="form-control form-control-sm",id="queFormSubcategoryId", tabindex=5) }}
+                          <small class="text-muted" id="queFormSubcategoryIdHelper" style="font-style: italic;"></small>
                           {% for error in queryform.subcategoryId.errors %}
                             <small class="form-text text-muted">{{ error }}</small>
                           {% endfor %}
@@ -230,12 +245,14 @@
                                     </td>
                                     <td style="font-family: monospace;">
                                       {{ addmovementform.categoryId(class_="form-control",id="movFormCategoryId",tabindex=12) }}
+                                      <small class="text-muted" id="movementFormCategoryIdHelper" style="font-style: italic;"></small>
                                       {% for error in addmovementform.categoryId.errors %}
                                         <small class="form-text text-muted">{{ error }}</small>
                                       {% endfor %}
                                     </td>
                                     <td style="font-family: monospace;">
                                       {{ addmovementform.subcategoryId(class_="form-control",id="movFormSubcategoryId",tabindex=13) }}
+                                      <small class="text-muted" id="movementFormSubcategoryIdHelper" style="font-style: italic;"></small>
                                       {% for error in addmovementform.subcategoryId.errors %}
                                         <small class="form-text text-muted">{{ error }}</small>
                                       {% endfor %}
@@ -304,7 +321,6 @@
       <script type="text/javascript">
 
         var catChoices = JSON.parse('{{ categoryTreeJSON | safe }}');
-        console.log(catChoices);
 
         var prevMovSubcatId = $("#movFormSubcategoryId").val();
         var prevQueSubcatId = $("#queFormSubcategoryId").val();
@@ -318,6 +334,22 @@
 
         accountingResetSubcategoryDropdown("movFormCategoryId", "movFormSubcategoryId", catChoices, prevMovSubcatId);
         accountingResetSubcategoryDropdown("queFormCategoryId", "queFormSubcategoryId", catChoices, prevQueSubcatId);
+
+        var catFullIdToDescriptionMap = JSON.parse('{{ catFullIdToDescriptionJSON | safe }}');
+        var subcatFullIdToDescriptionMap = JSON.parse('{{ subcatFullIdToDescriptionJSON | safe }}');
+
+        {% if displayMovementForm %}
+          accountingAttachGroupDescriptionText("movFormCategoryId", "movementFormCategoryIdHelper", catFullIdToDescriptionMap);
+          accountingAttachGroupDescriptionText("movFormSubcategoryId", "movementFormSubcategoryIdHelper", subcatFullIdToDescriptionMap);
+          accountingRefreshGroupDescriptionText("movFormCategoryId", "movementFormCategoryIdHelper", catFullIdToDescriptionMap);
+          accountingRefreshGroupDescriptionText("movFormSubcategoryId", "movementFormSubcategoryIdHelper", subcatFullIdToDescriptionMap);
+        {% endif %}
+
+        accountingAttachGroupDescriptionText("queFormCategoryId", "queFormCategoryIdHelper", catFullIdToDescriptionMap);
+        accountingAttachGroupDescriptionText("queFormSubcategoryId", "queFormSubcategoryIdHelper", subcatFullIdToDescriptionMap);
+        accountingRefreshGroupDescriptionText("queFormCategoryId", "queFormCategoryIdHelper", catFullIdToDescriptionMap);
+        accountingRefreshGroupDescriptionText("queFormSubcategoryId", "queFormSubcategoryIdHelper", subcatFullIdToDescriptionMap);
+
       </script>
 
 {% endblock %}

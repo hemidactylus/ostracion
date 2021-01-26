@@ -96,8 +96,6 @@ Accumulated todos:
   - icons to "apps" in the menu
   - handle ledger-wise recalculations (and updated cached recalc'ed part)
 
-forms: a side-help collapsed pane to show the description of cats/subcats
-
 sqliteEngine: carefully factor together common parts of counts and retrieverecords!
 
 inform on cookies for calendar and accounting

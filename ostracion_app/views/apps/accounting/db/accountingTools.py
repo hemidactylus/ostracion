@@ -122,8 +122,6 @@ def dbCreateLedger(db, user, newLedger):
             newLedger.asDict(),
             dbTablesDesc=dbSchema,
         )
-        #
-        dbTouchLedger(db, user, newLedger, skipCommit=True)
         db.commit()
     else:
         raise OstracionError('Insufficient permissions')
@@ -823,10 +821,10 @@ def dbGetLedgerFullMovements(db, user, ledger, query={}, pageSize=None,
             limit=pageSize,
             offset=pageStart,
         )
-        return [
+        return (
             _makeFullMovementStructure(db, ledger, bareMovDict)
             for bareMovDict in bareMovQuery
-        ]
+        )
     else:
         raise OstracionError('Insufficient permissions')
 

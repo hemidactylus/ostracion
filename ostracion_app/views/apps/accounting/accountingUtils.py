@@ -11,6 +11,11 @@ from ostracion_app.utilities.tools.extraction import (
     safeFloat,
 )
 
+from ostracion_app.utilities.tools.dictTools import (
+    recursivelyMergeDictionaries,
+    convertIterableToDictOfLists,
+)
+
 from ostracion_app.views.apps.appsPageTreeDescriptor import appsPageDescriptor
 
 from ostracion_app.utilities.viewTools.pathTools import (
@@ -32,8 +37,11 @@ from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetSubcategoriesForLedger,
     dbGetUsersForLedger,
     dbGetActorsForLedger,
+    dbUpdateLedger,
+    dbGetLedgerFullMovements,
 )
 from ostracion_app.views.apps.accounting.settings import ledgerDatetimeFormat
+from ostracion_app.views.apps.accounting.models.Ledger import Ledger
 from ostracion_app.views.apps.accounting.models.LedgerMovement import (
     LedgerMovement,
 )
@@ -366,3 +374,60 @@ def setCookiedLedgerQuery(response, ledger, query):
         response.set_cookie(cookieName, '', expires=0)
     #
     return response
+
+
+def refreshLedgerDuesMap(db, user, ledger):
+    """
+        Return the summary/summary_date info of a ledger packing it properly,
+        updating the contents (on DB as well) if necessary.
+    """
+    if ledger.summary_date < ledger.last_edit_date:
+        # perform updates: recalculates balance ...
+        fullMovements = dbGetLedgerFullMovements(db, user, ledger)
+        balance = convertIterableToDictOfLists(
+            (
+                (actorId, contribution)
+                for movementObj in fullMovements
+                for actorId, contribution in movementObj[
+                    'contributions'].items()
+            ),
+            keyer=lambda conP: conP[0],
+            valuer=lambda conP: (conP[1].paid, conP[1].due),
+        )
+
+        def _reducePairs(pairs):
+            if len(pairs) > 0:
+                paids, dues = zip(*pairs)
+                return sum(paids) - sum(dues)
+            else:
+                return 0.0
+
+        duesMap = [
+            duePair
+            for duePair in (
+                (actorId, _reducePairs(actorPairs))
+                for actorId, actorPairs in sorted(balance.items())
+            )
+            if duePair[1] != 0
+        ]
+        # then update ledger summary/summaruy_date
+        newLedger = Ledger(**recursivelyMergeDictionaries(
+            {
+                'ledger_id': ledger.ledger_id,
+                'summary': json.dumps(duesMap),
+                'summary_date': datetime.datetime.now(),
+            },
+            defaultMap=ledger.asDict(),
+        ))
+        dbUpdateLedger(db, user, newLedger)
+        #
+        ledgerF = newLedger
+    else:
+        ledgerF = ledger
+    #
+    summary = json.loads(ledgerF.summary)
+    summaryDate = ledgerF.summary_date
+    return {
+        'summary_date': summaryDate,
+        'summary': summary,
+    }

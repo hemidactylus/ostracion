@@ -89,6 +89,7 @@ from ostracion_app.views.apps.accounting.accountingUtils import (
     parseNewMovementForm,
     retrieveCookiedLedgerQuery,
     setCookiedLedgerQuery,
+    refreshLedgerDuesMap,
 )
 from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetLedger,
@@ -204,18 +205,21 @@ def accountingNewLedgerView():
             )
         else:
             #
+            dateNow = datetime.datetime.now()
             newLedger = Ledger(
                 ledger_id=form.ledgerId.data,
                 name=form.name.data,
                 description=form.description.data,
                 creator_username=user.username,
-                creation_date=datetime.datetime.now(),
-                configuration_date=datetime.datetime.now(),
-                last_edit_date=datetime.datetime.now(),
+                creation_date=dateNow,
+                configuration_date=dateNow,
+                last_edit_date=dateNow,
                 last_edit_username=user.username,
                 icon_file_id='',
                 icon_file_id_username=user.username,
                 icon_mime_type='',
+                summary='{}',
+                summary_date=dateNow,
             )
             dbCreateLedger(db, user, newLedger)
             return redirect(url_for('accountingIndexView'))
@@ -1245,14 +1249,14 @@ def finalizeLedgerView(db, user, ledger, movementId, queryform, query,
     totalPages = ((recordCount + ledgerMovementPaginationPageSize - 1)
                   // ledgerMovementPaginationPageSize)
     pageIndex = max(0, min(pageIndex0, totalPages - 1))
-    fullMovementObjects = dbGetLedgerFullMovements(
+    fullMovementObjects = list(dbGetLedgerFullMovements(
         db=db,
         user=user,
         ledger=ledger,
         query=query,
         pageSize=ledgerMovementPaginationPageSize,
         pageStart=pageIndex * ledgerMovementPaginationPageSize,
-    )
+    ))
     firstShownPage = max(
         1,
         pageIndex - ledgerMovementPaginationShownPagesPerSide,
@@ -1372,6 +1376,10 @@ def finalizeLedgerView(db, user, ledger, movementId, queryform, query,
         u.username: u.fullname
         for u in dbGetUsersForLedger(db, user, ledger)
     }
+    actorIdToName = {
+        a.actor_id: a.name
+        for a in actorsInLedger
+    }
     # in-page-js injected variables
     categoryTreeJSON = json.dumps(
         {
@@ -1382,12 +1390,34 @@ def finalizeLedgerView(db, user, ledger, movementId, queryform, query,
             for catObj in categoryTree
         }
     )
+    catFullIdToDescriptionJSON = json.dumps(
+        {
+            catObj['category'].category_id: catObj['category'].description
+            for catObj in categoryTree
+        }
+    )
+    subcatFullIdToDescriptionJSON = json.dumps(
+        {
+            (
+                '%s.%s' % (
+                    catObj['category'].category_id,
+                    subcat.subcategory_id,
+                )
+            ): subcat.description
+            for catObj in categoryTree
+            for subcat in catObj['subcategories']
+        }
+    )
+    # balance refreshing if needed
+    duesMap = refreshLedgerDuesMap(db, user, ledger)
     #
     return render_template(
         'apps/accounting/ledger.html',
         user=user,
         ledger=ledger,
         actors=actorsInLedger,
+        actorIdToName=actorIdToName,
+        duesMap=duesMap,
         usernameToName=usernameToName,
         editeeMovement=editeeMovement,
         preMovementObjects=preMovementObjects,
@@ -1398,6 +1428,8 @@ def finalizeLedgerView(db, user, ledger, movementId, queryform, query,
         addmovementform=addmovementform,
         queryform=queryform,
         categoryTreeJSON=categoryTreeJSON,
+        catFullIdToDescriptionJSON=catFullIdToDescriptionJSON,
+        subcatFullIdToDescriptionJSON=subcatFullIdToDescriptionJSON,
         displayMovementForm=displayMovementForm,
         applyingQuery=applyingQuery,
         paidFormFieldMap=paidFormFieldMap,
