@@ -789,10 +789,12 @@ def _makeFullMovementStructure(_db, _ledger, _movdict):
         )
     }
     contribPropSum = sum(con.proportion for con in contributions.values())
+    contribPaidSum = sum(con.paid for con in contributions.values())
     return {
         'movement': movement,
         'contributions': contributions,
         'contribution_prop_total': contribPropSum,
+        'contribution_paid_total': contribPaidSum,
     }
 
 

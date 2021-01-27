@@ -17,7 +17,7 @@
                                         {% for actor in actors %}
                                             {% if movementObj['contributions'][actor.actor_id] %}
                                               {% if movementObj['contributions'][actor.actor_id].paid %}
-                                                <span class="badge badge-primary">
+                                                <span class="badge badge-primary" data-toggle="tooltip" data-html="true" title="Paid: <b>{{ '%.2f' % movementObj['contributions'][actor.actor_id].paid }}</b>/{{ '%.2f' % movementObj['contribution_paid_total'] }} {% if movementObj['contribution_paid_total'] != 0 %}({{ '%i' % (100.0 * movementObj['contributions'][actor.actor_id].paid / movementObj['contribution_paid_total'] ) }}%){% endif %}">
                                                   <i>{{ actor.name }}</i>: <strong>{{ '%.2f' % movementObj['contributions'][actor.actor_id].paid }}</strong>
                                                 </span>
                                               {% endif %}
