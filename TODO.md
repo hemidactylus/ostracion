@@ -78,24 +78,21 @@ Boxes of type 'real fs'
 
 ### Calendar app
 (in general, with application in calendar) gather/present information on aspect ratio for images
+Add title to page zero of calendar (very char- and len-constrained, must not escape-and-inject nor break the layout
 
 ### Accounting app - DOING -
 
-Accumulated todos:
-  - add removal of items from tables when erasing a user
-  - getAllLedgers is for admins only: make getUserLedgers to handle ordinary view (which for admins covers all)
-  - in dbRemoveActor, make it impossible to remove actors if they have movement contribs
+Prioritary todos:
+  - add removal of items from tables when erasing a user, dbDeleteUser. Do a generalised app->deletion-hook map like for the thumbnails
+  - upon user deletion, what to do with the movements? and anonymize user contribs to ledger
+  - Actual images (=default images for ledger, add-ledger and so on)
+
+Lower-priority
   - tooltip in in-table "add" button, how to?
   - filter ledger-user-choice with: those with the accounting app only
     - how to deal with: user loses the 'accounting' app role, yet they are in some ledgers?
-  - handle last_edit_date / last_edit_username at each movement operation on ledger
-  - upon user deletion, what to do with the movements? and anonymize user contribs to ledger
-  - Actual images (=default images for ledger, add-ledger and so on)
   - native sqlite joins for movement/movcontribs
   - Remove the 'apps' task if it's empty (e.g. for anon user), as it is not there in the menu
   - icons to "apps" in the menu
-  - handle ledger-wise recalculations (and updated cached recalc'ed part)
-
-sqliteEngine: carefully factor together common parts of counts and retrieverecords!
-
-inform on cookies for calendar and accounting
+  - sqliteEngine: carefully factor together common parts of counts and retrieverecords!
+  - inform on cookies for calendar and accounting

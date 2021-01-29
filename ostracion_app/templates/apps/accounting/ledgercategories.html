@@ -95,7 +95,7 @@
                                     <a href="{{ url_for('accountingLedgerMoveCategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id, direction='down') }}" class="btn {% if loop.last -%}disabled btn-secondary{%- else -%}btn-success{%- endif %}"
                                       style="font-family: 'Zapf Dingbats';"
                                       data-toggle="tooltip" title="Move down">&#9662;</a>
-                                    <a href="{{ url_for('accountingLedgerRemoveCategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id) }}" class="btn btn-danger btn-md" data-toggle="tooltip" title="Delete">
+                                    <a href="{{ url_for('accountingLedgerRemoveCategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id) }}" class="btn btn-danger btn-md {% if representedCategoryTree[catObj.category.category_id]['represented'] %}disabled{% endif %}" data-toggle="tooltip" title="Delete">
                                       X
                                     </a>
                                   </td>
@@ -118,7 +118,7 @@
                                       <a href="{{ url_for('accountingLedgerMoveSubcategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id, subcategoryId=subcat.subcategory_id, direction='down') }}" class="btn btn-sm {% if loop.last -%}disabled btn-secondary{%- else -%}btn-success{%- endif %}"
                                         style="font-family: 'Zapf Dingbats';"
                                         data-toggle="tooltip" title="Move down">&#9662;</a>
-                                      <a href="{{ url_for('accountingLedgerRemoveSubcategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id, subcategoryId=subcat.subcategory_id) }}" class="btn btn-danger btn-sm" data-toggle="tooltip" title="Delete">
+                                      <a href="{{ url_for('accountingLedgerRemoveSubcategoryView', ledgerId=ledger.ledger_id, categoryId=catObj.category.category_id, subcategoryId=subcat.subcategory_id) }}" class="btn btn-danger btn-sm {% if representedCategoryTree[catObj.category.category_id]['subcategories'][subcat.subcategory_id] %}disabled{% endif %}" data-toggle="tooltip" title="Delete">
                                         X
                                       </a>
                                     </td>

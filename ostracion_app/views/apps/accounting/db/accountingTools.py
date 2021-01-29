@@ -653,6 +653,36 @@ def dbMoveSubcategoryInLedger(db, user, ledger, category, subcategory,
         raise OstracionError('Unknown subcategory')
 
 
+def dbIsCategoryRepresentedInLedger(db, user, ledger, category):
+    """
+        Return whether a category appears in at least one movement.
+    """
+    return dbRetrieveRecordByKey(
+        db,
+        'accounting_ledger_movements',
+        {
+            'ledger_id': ledger.ledger_id,
+            'category_id': category.category_id,
+        },
+        dbTablesDesc=dbSchema,
+    ) is not None
+
+
+def dbIsSubcategoryRepresentedInLedger(db, user, ledger, subcategory):
+    """
+        Return whether a subcategory appears in at least one movement.
+    """
+    return dbRetrieveRecordByKey(
+        db,
+        'accounting_ledger_movements',
+        {
+            'ledger_id': ledger.ledger_id,
+            'subcategory_id': subcategory.subcategory_id,
+        },
+        dbTablesDesc=dbSchema,
+    ) is not None
+
+
 def dbTouchLedger(db, user, ledger, skipCommit=False):
     """Update last_edit_date and last_edit_username of a ledger."""
     if userIsAdmin(db, user) or dbUserCanSeeLedger(db, user, ledger.ledger_id):

@@ -90,6 +90,7 @@ from ostracion_app.views.apps.accounting.accountingUtils import (
     retrieveCookiedLedgerQuery,
     setCookiedLedgerQuery,
     refreshLedgerDuesMap,
+    extractUsedCategoryTreeForLedger,
 )
 from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetLedger,
@@ -119,6 +120,7 @@ from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetLedgerFullMovement,
     dbDeleteLedgerFullMovement,
 )
+from ostracion_app.utilities.database.sqliteEngine import SqliteIntegrityError
 
 from ostracion_app.app_main import app
 
@@ -580,6 +582,12 @@ def accountingRemoveActorView(ledgerId, actorId):
     #
     if ledger is not None:
         if actor is not None:
+            try:
+                # removing the actor
+                dbDeleteActor(db, user, ledger, actor)
+            except SqliteIntegrityError:
+                db.rollback()
+                raise OstracionError('Actor is in use')
             # record config editing
             newLedger = Ledger(**recursivelyMergeDictionaries(
                 {
@@ -588,8 +596,6 @@ def accountingRemoveActorView(ledgerId, actorId):
                 defaultMap=ledger.asDict(),
             ))
             dbUpdateLedger(db, user, newLedger)
-            # removing the actor
-            dbDeleteActor(db, user, ledger, actor)
             return redirect(url_for(
                 'accountingLedgerActorsView',
                 ledgerId=ledger.ledger_id,
@@ -622,7 +628,12 @@ def accountingLedgerCategoriesView(ledgerId):
         subcategoryform.fillCategoryChoices(
             [cObj['category'].category_id for cObj in categoryTree],
         )
-        #
+        representedCategoryTree = extractUsedCategoryTreeForLedger(
+            db,
+            user,
+            ledger,
+            categoryTree,
+        )
         return render_template(
             'apps/accounting/ledgercategories.html',
             user=user,
@@ -632,6 +643,7 @@ def accountingLedgerCategoriesView(ledgerId):
             categoryTree=categoryTree,
             categoryform=categoryform,
             subcategoryform=subcategoryform,
+            representedCategoryTree=representedCategoryTree,
             #
             backToUrl=url_for('accountingIndexView'),
             **pageFeatures,
@@ -835,16 +847,20 @@ def accountingLedgerRemoveCategoryView(ledgerId, categoryId):
     ledger = dbGetLedger(db, user, ledgerId)
     category = dbGetCategory(db, user, ledgerId, categoryId)
     if ledger is not None and category is not None:
-        # record config editing
-        newLedger = Ledger(**recursivelyMergeDictionaries(
-            {
-                'configuration_date': datetime.datetime.now(),
-            },
-            defaultMap=ledger.asDict(),
-        ))
-        dbUpdateLedger(db, user, newLedger)
         # erase category
-        dbEraseCategoryFromLedger(db, user, ledger, category)
+        try:
+            dbEraseCategoryFromLedger(db, user, ledger, category)
+            # record config editing
+            newLedger = Ledger(**recursivelyMergeDictionaries(
+                {
+                    'configuration_date': datetime.datetime.now(),
+                },
+                defaultMap=ledger.asDict(),
+            ))
+            dbUpdateLedger(db, user, newLedger)
+        except SqliteIntegrityError:
+            db.rollback()
+            raise OstracionError('Category is in use')
         return redirect(url_for(
             'accountingLedgerCategoriesView',
             ledgerId=ledger.ledger_id,
@@ -871,16 +887,26 @@ def accountingLedgerRemoveSubcategoryView(ledgerId, categoryId, subcategoryId):
     subcategory = dbGetSubcategory(db, user, ledgerId, categoryId,
                                    subcategoryId)
     if ledger is not None and category is not None and subcategory is not None:
-        # record config editing
-        newLedger = Ledger(**recursivelyMergeDictionaries(
-            {
-                'configuration_date': datetime.datetime.now(),
-            },
-            defaultMap=ledger.asDict(),
-        ))
-        dbUpdateLedger(db, user, newLedger)
         # erase subcategory
-        dbDeleteSubcategoryFromLedger(db, user, ledger, category, subcategory)
+        try:
+            dbDeleteSubcategoryFromLedger(
+                db,
+                user,
+                ledger,
+                category,
+                subcategory,
+            )
+            # record config editing
+            newLedger = Ledger(**recursivelyMergeDictionaries(
+                {
+                    'configuration_date': datetime.datetime.now(),
+                },
+                defaultMap=ledger.asDict(),
+            ))
+            dbUpdateLedger(db, user, newLedger)
+        except SqliteIntegrityError:
+            db.rollback()
+            raise OstracionError('Subcategory is in use')
         return redirect(url_for(
             'accountingLedgerCategoriesView',
             ledgerId=ledger.ledger_id,
@@ -1221,7 +1247,7 @@ def accountingLedgerResetQueryView(ledgerId):
         raise OstracionError('Ledger not found')
 
 
-def finalizeLedgerView(db, user, ledger, movementId, queryform, query, 
+def finalizeLedgerView(db, user, ledger, movementId, queryform, query,
                        categoryTree, addmovementform, actorsInLedger,
                        pageIndex0):
     """

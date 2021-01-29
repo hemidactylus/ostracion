@@ -39,6 +39,8 @@ from ostracion_app.views.apps.accounting.db.accountingTools import (
     dbGetActorsForLedger,
     dbUpdateLedger,
     dbGetLedgerFullMovements,
+    dbIsCategoryRepresentedInLedger,
+    dbIsSubcategoryRepresentedInLedger,
 )
 from ostracion_app.views.apps.accounting.settings import ledgerDatetimeFormat
 from ostracion_app.views.apps.accounting.models.Ledger import Ledger
@@ -430,4 +432,32 @@ def refreshLedgerDuesMap(db, user, ledger):
     return {
         'summary_date': summaryDate,
         'summary': summary,
+    }
+
+
+def extractUsedCategoryTreeForLedger(db, user, ledger, categoryTree):
+    """
+        Make a categoryTree into a mapping of the sub/categories that are
+        actually used in some movements on DB.
+        (this is used to disable the "delete" button for categories).
+    """
+    return {
+        catObj['category'].category_id: {
+            'represented': dbIsCategoryRepresentedInLedger(
+                db,
+                user,
+                ledger,
+                catObj['category'],
+            ),
+            'subcategories': {
+                subcategory.subcategory_id: dbIsSubcategoryRepresentedInLedger(
+                    db,
+                    user,
+                    ledger,
+                    subcategory,
+                )
+                for subcategory in catObj['subcategories']
+            }
+        }
+        for catObj in categoryTree
     }
