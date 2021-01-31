@@ -37,9 +37,11 @@ from ostracion_app.utilities.tools.formatting import (
 from ostracion_app.utilities.database.dbTools import (
     dbGetDatabase,
 )
+from ostracion_app.utilities.database.userDeletion import (
+    dbDeleteUser,
+)
 from ostracion_app.utilities.database.userTools import (
     dbUpdateUser,
-    dbDeleteUser,
     getUserFullName,
 )
 

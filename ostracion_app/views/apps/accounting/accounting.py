@@ -19,7 +19,7 @@ from ostracion_app.utilities.database.dbTools import (
 )
 
 from ostracion_app.utilities.tools.dictTools import (
-    recursivelyMergeDictionaries
+    recursivelyMergeDictionaries,
 )
 
 from ostracion_app.utilities.exceptions.exceptions import (
@@ -252,6 +252,11 @@ def accountingEditLedgerView(ledgerId):
         overrides={
             'pageTitle': 'Edit ledger "%s"' % ledgerId,
             'pageSubtitle': 'Change ledger properties',
+            'iconUrl': makeSettingImageUrl(
+                g,
+                'custom_apps_images',
+                'accounting_ledger',
+            ),
         },
         appendedItems=[{
             'kind': 'link',
@@ -385,6 +390,11 @@ def accountingLedgerUsersView(ledgerId):
         overrides={
             'pageTitle': 'Users for ledger "%s"' % ledgerId,
             'pageSubtitle': 'Define Ostracion users with access to the ledger',
+            'iconUrl': makeSettingImageUrl(
+                g,
+                'custom_apps_images',
+                'accounting_ledger',
+            ),
         },
         appendedItems=[{
             'kind': 'link',
@@ -516,6 +526,11 @@ def accountingLedgerActorsView(ledgerId):
         overrides={
             'pageTitle': 'Actors for ledger "%s"' % ledgerId,
             'pageSubtitle': 'Configure actors taking part in the ledger',
+            'iconUrl': makeSettingImageUrl(
+                g,
+                'custom_apps_images',
+                'accounting_ledger',
+            ),
         },
         appendedItems=[{
             'kind': 'link',
@@ -617,7 +632,17 @@ def accountingLedgerCategoriesView(ledgerId):
     db = dbGetDatabase()
     request._onErrorUrl = url_for('accountingIndexView')
     #
-    pageFeatures = prepareAccountingCategoryViewFeatures(g, ledgerId)
+    pageFeatures = prepareAccountingCategoryViewFeatures(
+        g,
+        ledgerId,
+        overrides={
+            'iconUrl': makeSettingImageUrl(
+                g,
+                'custom_apps_images',
+                'accounting_ledger',
+            ),
+        },
+    )
     ledger = dbGetLedger(db, user, ledgerId)
     if ledger is None:
         raise OstracionError('Unknown ledger "%s"' % ledgerId)
@@ -1398,10 +1423,15 @@ def finalizeLedgerView(db, user, ledger, movementId, queryform, query,
     # for appearance's sake
     applyingQuery = len(query) > 0
     #
-    usernameToName = {
-        u.username: u.fullname
-        for u in dbGetUsersForLedger(db, user, ledger)
-    }
+    usernameToName = recursivelyMergeDictionaries(
+        {
+            u.username: u.fullname
+            for u in dbGetUsersForLedger(db, user, ledger)
+        },
+        defaultMap={
+            '': dbGetUser(db, '').fullname,
+        },
+    )
     actorIdToName = {
         a.actor_id: a.name
         for a in actorsInLedger

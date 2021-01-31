@@ -60,18 +60,9 @@ appsPageDescriptor = {
                             'subtitle': ('Create a new ledger'),
                             'image_id': (
                                 'custom_apps_images',
-                                'accounting',
+                                'accounting_new_ledger',
                             ),
                             'endpoint_name': ('accountingNewLedgerView', {}),
-                        },
-                        'editledger': {
-                            'title': 'Edit ledger',
-                            'subtitle': ('Change ledger name and description'),
-                            'image_id': (
-                                'custom_apps_images',
-                                'accounting',
-                            ),
-                            'endpoint_name': ('accountingEditLedgerView', {}),
                         },
                     },
                 },

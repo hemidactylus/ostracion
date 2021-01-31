@@ -129,7 +129,8 @@ def dbCreateLedger(db, user, newLedger):
 
 def dbUpdateLedger(db, user, newLedger, skipCommit=False):
     """Update an existing ledger row."""
-    if userIsAdmin(db, user):
+    if (userIsAdmin(db, user) or
+            dbUserCanSeeLedger(db, user, newLedger.ledger_id)):
         dbUpdateRecordOnTable(
             db,
             'accounting_ledgers',
@@ -315,6 +316,21 @@ def dbAddActorToLedger(db, user, ledger, newActor):
         db.commit()
     else:
         raise OstracionError('Actor exists already')
+
+
+def dbFindFirstAvailableLedgerName(db, prefix, suffix):
+    """ Build a ledger name without name conflicts.
+        Used e.g. upon account deletions for cases of forced renames,
+    """
+    tryIndex = 1
+    while dbRetrieveRecordByKey(
+        db,
+        'accounting_ledgers',
+        {'name': '%s%i%s' % (prefix, tryIndex, suffix)},
+        dbTablesDesc=dbSchema,
+    ) is not None:
+        tryIndex += 1
+    return '%s%i%s' % (prefix, tryIndex, suffix)
 
 
 def dbGetActor(db, user, ledgerId, actorId):

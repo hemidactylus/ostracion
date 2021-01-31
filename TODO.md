@@ -82,11 +82,6 @@ Add title to page zero of calendar (very char- and len-constrained, must not esc
 
 ### Accounting app - DOING -
 
-Prioritary todos:
-  - add removal of items from tables when erasing a user, dbDeleteUser. Do a generalised app->deletion-hook map like for the thumbnails
-  - upon user deletion, what to do with the movements? and anonymize user contribs to ledger
-  - Actual images (=default images for ledger, add-ledger and so on)
-
 Lower-priority
   - tooltip in in-table "add" button, how to?
   - filter ledger-user-choice with: those with the accounting app only

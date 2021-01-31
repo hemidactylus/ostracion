@@ -45,11 +45,13 @@ from ostracion_app.utilities.models.BoxRolePermission import BoxRolePermission
 from ostracion_app.utilities.database.dbTools import (
     dbGetDatabase,
 )
+from ostracion_app.utilities.database.userDeletion import (
+    dbDeleteUser,
+)
 from ostracion_app.utilities.database.userTools import (
     dbGetUser,
     dbUpdateUser,
     dbCreateUser,
-    dbDeleteUser,
     dbGetAllUsers,
     getUserFullName,
 )

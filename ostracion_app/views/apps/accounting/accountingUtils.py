@@ -92,7 +92,7 @@ def extractLedgerCategoryTree(db, user, ledger):
     )
 
 
-def prepareAccountingCategoryViewFeatures(g, ledgerId):
+def prepareAccountingCategoryViewFeatures(g, ledgerId, overrides={}):
     """
         Factored-away preparation of features for the "ledger categories"
         admin-only page.
@@ -101,13 +101,17 @@ def prepareAccountingCategoryViewFeatures(g, ledgerId):
         appsPageDescriptor,
         ['root', 'accounting'],
         g,
-        overrides={
-            'pageTitle': 'Categories for ledger "%s"' % ledgerId,
-            'pageSubtitle': ('Configure categorisation of ledger movements. '
-                             'Use the "+" buttons to add new categories/subc'
-                             'ategories, and the buttons on each row to '
-                             'delete/move the item.'),
-        },
+        overrides=recursivelyMergeDictionaries(
+            overrides,
+            defaultMap={
+                'pageTitle': 'Categories for ledger "%s"' % ledgerId,
+                'pageSubtitle': ('Configure categorisation of ledger '
+                                 'movements. Use the "+" buttons to add '
+                                 'new categories/subcategories, and the '
+                                 'buttons on each row to delete/move the '
+                                 'item.'),
+            },
+        ),
         appendedItems=[{
             'kind': 'link',
             'target': None,

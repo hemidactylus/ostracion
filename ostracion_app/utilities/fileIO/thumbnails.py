@@ -151,7 +151,6 @@ def resizeToThumbnail(srcFile, dstFile, thumbnailFormat):
         )
         if arg is not None
     ]
-    print(resizingArguments)
     resizingOutput = subprocess.run(
         resizingArguments,
         stdout=subprocess.PIPE,
