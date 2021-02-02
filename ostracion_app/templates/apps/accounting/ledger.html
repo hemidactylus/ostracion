@@ -320,7 +320,7 @@
       <script src="/static/js/apps/accounting/main.js" type="text/javascript"></script>
       <script type="text/javascript">
 
-        var catChoices = JSON.parse('{{ categoryTreeJSON | safe }}');
+        var catChoices = {{ categoryTreeJSON | safe }};
 
         var prevMovSubcatId = $("#movFormSubcategoryId").val();
         var prevQueSubcatId = $("#queFormSubcategoryId").val();
@@ -335,8 +335,8 @@
         accountingResetSubcategoryDropdown("movFormCategoryId", "movFormSubcategoryId", catChoices, prevMovSubcatId);
         accountingResetSubcategoryDropdown("queFormCategoryId", "queFormSubcategoryId", catChoices, prevQueSubcatId);
 
-        var catFullIdToDescriptionMap = JSON.parse('{{ catFullIdToDescriptionJSON | safe }}');
-        var subcatFullIdToDescriptionMap = JSON.parse('{{ subcatFullIdToDescriptionJSON | safe }}');
+        var catFullIdToDescriptionMap = {{ catFullIdToDescriptionJSON | safe }};
+        var subcatFullIdToDescriptionMap = {{ subcatFullIdToDescriptionJSON | safe }};
 
         {% if displayMovementForm %}
           accountingAttachGroupDescriptionText("movFormCategoryId", "movementFormCategoryIdHelper", catFullIdToDescriptionMap);

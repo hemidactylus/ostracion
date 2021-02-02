@@ -1444,13 +1444,15 @@ def finalizeLedgerView(db, user, ledger, movementId, queryform, query,
                 for subcat in catObj['subcategories']
             ]
             for catObj in categoryTree
-        }
+        },
+        ensure_ascii=True,
     )
     catFullIdToDescriptionJSON = json.dumps(
         {
             catObj['category'].category_id: catObj['category'].description
             for catObj in categoryTree
-        }
+        },
+        ensure_ascii=True,
     )
     subcatFullIdToDescriptionJSON = json.dumps(
         {
@@ -1462,7 +1464,8 @@ def finalizeLedgerView(db, user, ledger, movementId, queryform, query,
             ): subcat.description
             for catObj in categoryTree
             for subcat in catObj['subcategories']
-        }
+        },
+        ensure_ascii=True,
     )
     # balance refreshing if needed
     duesMap = refreshLedgerDuesMap(db, user, ledger)
