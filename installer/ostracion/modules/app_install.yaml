@@ -64,6 +64,7 @@
     state: stopped
     enabled: true
   tags: app_update
+  ignore_errors: true
 
 - name: Making a backup copy of the database (DELETE IT BY HAND LATER)
   become_user: '{{ webapp_username }}'
@@ -72,6 +73,7 @@
     src: /home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion/ostracion_app/db/ostracion.db
     dest: /home/{{ webapp_username }}/{{ app_configuration.base_dir }}/ostracion/ostracion_app/db/BACKUP_ostracion.db
   tags: app_update
+  ignore_errors: true
 
 - name: Invoking post-install script
   become: false
